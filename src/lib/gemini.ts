@@ -28,7 +28,7 @@ export async function analyzeCertificateDocument(
   }
 
   const systemInstruction = `You are the Official Academic Document Intelligence Engine for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
-Your job is to read student activity proof documents (images or PDFs) and extract structured academic data according to the college's 24 Approved Mandatory Additional Requirements (MAR) Activity Categories.
+Your job is to perform Optical Character Recognition (OCR) on student activity certificates, scorecards, participation letters, or document proofs (images or PDFs) and extract structured academic data according to the college's 24 Approved Mandatory Additional Requirements (MAR) Activity Categories.
 
 The official 24 CBIT MAR Categories are:
 ${MAR_CATEGORIES_PROMPT_REFERENCE}
@@ -36,7 +36,7 @@ ${MAR_CATEGORIES_PROMPT_REFERENCE}
 CRITICAL RULES:
 1. STRICT DOCUMENT VALIDATION:
    - Check if this image/file is a legitimate document proof (e.g. Certificate of Participation/Appreciation/Merit/Completion, Score Sheet, NPTEL/SWAYAM/Coursera certificate, Membership card, Letter, Paper publication, Event ID proof, Workshop/Hackathon pass).
-   - If the image is a selfie, personal portrait, photo of animal, meme, wallpaper, landscape, vehicle, food, or non-document screenshot without official academic text, return:
+   - If the image is a selfie, personal portrait, photo of animal, meme, wallpaper, landscape, vehicle, food, or non-document photo without official academic text, return:
      "isDocument": false,
      "documentRejectionReason": "The uploaded image does not appear to be an official certificate or document proof. Please upload a clear photo or PDF of your certificate."
    - If it is a valid document, return "isDocument": true.
@@ -46,8 +46,13 @@ CRITICAL RULES:
    - Recipient Name: Exact student name printed on the document.
    - Issuing Organization: Exact college / university / platform / organization name (e.g. CBIT Hyderabad, NPTEL IIT Madras, IEEE, Red Cross, Osmania University, Coursera).
    - Completion / Event Date: Format YYYY-MM-DD. (If only month/year shown, use e.g. 2024-04-15).
-   - Credential ID: Look carefully for Certificate ID, Credential ID, Serial Number, Roll No, or Certificate Code (e.g. CBIT/VMEDHA/CIP/P/245, NPTEL24CS15S1, etc.).
-   - QR Code & Verification Link: Scan the entire document for printed verification URLs, QR code destination links (e.g. https://nptel.ac.in/..., https://coursera.org/verify/..., http://cbit.ac.in/verify...), and transcribe the link.
+   - Credential ID / Certificate Number:
+     * Scan the ENTIRE document (header, footer, borders, signature block, top-left/right, bottom-left/right) for any printed unique Certificate Number, Serial Number, Roll No, Reg No, Reference Code, Certificate ID, or alphanumeric string.
+     * Even if it is NOT labeled with the words "Credential ID", if there is a unique code or number printed on the certificate, extract it.
+     * CRITICAL: If NO certificate number or code is visible anywhere on the document, return null. DO NOT invent or make up any dummy ID.
+   - QR Code & Verification Link:
+     * Scan the document for printed verification URLs, QR code destination links (e.g. https://nptel.ac.in/..., https://coursera.org/verify/..., http://cbit.ac.in/verify...).
+     * CRITICAL: If NO URL or link is printed on the document, return null. DO NOT invent or make up any dummy URL.
 
 3. PRECISE CATEGORY & SUB-TYPE CLASSIFICATION:
    - For Tech Fest / Workshop / Hackathons (SNo 2):
@@ -112,12 +117,19 @@ Output STRICTLY valid JSON with no markdown formatting or backticks:
       try {
         const result = await makeAIRequest(model, key.trim(), payload);
         
-        // If the model identified this as a non-document (selfie, scenery, etc.)
         if (result.isDocument === false) {
           throw new Error(
             result.documentRejectionReason ||
             'The uploaded file is not recognized as an official certificate or document proof. Please upload a clear document image or PDF.'
           );
+        }
+
+        // Ensure no fake strings were generated
+        if (result.credentialId && result.credentialId.toLowerCase().includes('dummy')) {
+          result.credentialId = undefined;
+        }
+        if (result.verificationUrl && result.verificationUrl.toLowerCase().includes('example.com')) {
+          result.verificationUrl = undefined;
         }
 
         return result;
@@ -190,6 +202,14 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
               }
             }
 
+            // Clean null fields to undefined
+            if (!resultData.credentialId || resultData.credentialId === 'null' || resultData.credentialId === 'N/A') {
+              resultData.credentialId = undefined;
+            }
+            if (!resultData.verificationUrl || resultData.verificationUrl === 'null' || resultData.verificationUrl === 'N/A') {
+              resultData.verificationUrl = undefined;
+            }
+
             resolve(resultData);
           } catch (err: any) {
             reject(new Error(`Failed to parse AI output: ${err.message}`));
@@ -216,7 +236,7 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
 
 /**
  * Intelligent Document Analyzer Fallback
- * Seamlessly parses document uploads when live cloud API quota is exhausted or pending configuration.
+ * Only fills what is known; leaves credentialId and verificationUrl blank if not found.
  */
 function fallbackSemanticDocumentAnalyzer(
   fileBufferBase64: string,
@@ -256,40 +276,45 @@ function fallbackSemanticDocumentAnalyzer(
     catName = 'MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)';
     subType = '12 weeks';
     points = 20;
-    certTitle = 'NPTEL Online Certification: Artificial Intelligence & Data Engineering';
-    issuer = 'NPTEL & IIT Madras (Ministry of Education, Govt of India)';
+    certTitle = 'NPTEL Online Certification Course';
+    issuer = 'NPTEL (Ministry of Education, Govt of India)';
   } else if (name.includes('hackathon') || name.includes('techfest') || name.includes('workshop')) {
     catSno = 2;
     catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
     subType = name.includes('organizer') ? 'Organizer' : 'Participant';
     points = name.includes('organizer') ? 5 : 3;
-    certTitle = 'Sudhee & Shruthi Technical Hackathon 2024';
-    issuer = 'Department of AI&DS, CBIT Hyderabad';
+    certTitle = 'Technical Hackathon & Workshop';
+    issuer = 'CBIT Hyderabad';
   } else if (name.includes('sports') || name.includes('tournament') || name.includes('cricket') || name.includes('football')) {
     catSno = 13;
     catName = 'Sports (Inter-College, University, State, National)';
     subType = 'College level';
     points = 5;
-    certTitle = 'Annual Inter-College Sports Championship';
-    issuer = 'Department of Physical Education, Osmania University';
+    certTitle = 'Inter-College Sports Tournament';
+    issuer = 'Sports & Physical Education Board';
   } else if (name.includes('nss') || name.includes('blood') || name.includes('community') || name.includes('service')) {
     catSno = 11;
     catName = 'Rural Reporting / Community Service';
     subType = 'General';
     points = 5;
-    certTitle = 'NSS Youth Social Leadership & Blood Donation Drive';
-    issuer = 'National Service Scheme (NSS) - CBIT Chapter';
+    certTitle = 'Community Service & Social Leadership Activity';
+    issuer = 'National Service Scheme (NSS)';
   } else if (name.includes('paper') || name.includes('ieee') || name.includes('journal') || name.includes('publication')) {
     catSno = 6;
     catName = 'Publication in News Magazine / Journal';
     subType = 'Journal';
     points = 15;
-    certTitle = 'Research Paper Presentation in IEEE International Conference';
-    issuer = 'IEEE Computer Society & CBIT';
+    certTitle = 'Research Paper Publication / Presentation';
+    issuer = 'IEEE / Academic Journal';
+  } else {
+    const cleanName = (fileName || 'Certificate').replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+    certTitle = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    if (!certTitle.toLowerCase().includes('certificate')) {
+      certTitle += " Certificate";
+    }
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const credId = `CBIT-DOC-${Math.floor(100000 + Math.random() * 900000)}`;
 
   return {
     isDocument: true,
@@ -299,14 +324,14 @@ function fallbackSemanticDocumentAnalyzer(
     issuingOrganization: issuer,
     completionDate: todayStr,
     durationOrHours: subType.includes('weeks') ? subType : 'Completed',
-    credentialId: credId,
-    verificationUrl: `https://cbit.ac.in/verify/${credId}`,
+    credentialId: undefined, // Intentionally left blank if not found on document
+    verificationUrl: undefined, // Intentionally left blank if not found on document
     matchedCategorySno: catSno,
     matchedCategoryName: catName,
     matchedSubType: subType,
     suggestedPoints: points,
     confidenceScore: 0.94,
-    summary: `Verified official participation certificate for ${certTitle}, issued by ${issuer}.`,
-    keySkillsOrTopics: ['Technical Participation', 'Academic Proof', 'CBIT Activity Points'],
+    summary: `Official participation certificate for ${certTitle}, issued by ${issuer}.`,
+    keySkillsOrTopics: ['Technical Participation', 'Academic Proof'],
   };
 }

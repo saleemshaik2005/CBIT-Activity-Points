@@ -83,6 +83,7 @@ async function prepareOptimizedFile(file: File): Promise<File> {
 
 /**
  * Resilient Client-Side Document Intelligence Fallback
+ * Never creates dummy IDs or dummy URLs.
  */
 function createClientFallbackExtraction(fileName: string): AIExtractionResult {
   const name = (fileName || '').toLowerCase();
@@ -99,36 +100,36 @@ function createClientFallbackExtraction(fileName: string): AIExtractionResult {
     catName = 'MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)';
     subType = '12 weeks';
     points = 20;
-    certTitle = 'NPTEL Online Certification: Artificial Intelligence & Data Engineering';
-    issuer = 'NPTEL & IIT Madras (Ministry of Education, Govt of India)';
+    certTitle = 'NPTEL Online Certification Course';
+    issuer = 'NPTEL (Ministry of Education, Govt of India)';
   } else if (name.includes('hackathon') || name.includes('techfest') || name.includes('workshop')) {
     catSno = 2;
     catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
     subType = name.includes('organizer') ? 'Organizer' : 'Participant';
     points = name.includes('organizer') ? 5 : 3;
-    certTitle = 'Sudhee & Shruthi Technical Hackathon 2024';
-    issuer = 'Department of AI&DS, CBIT Hyderabad';
+    certTitle = 'Technical Hackathon & Workshop';
+    issuer = 'CBIT Hyderabad';
   } else if (name.includes('sports') || name.includes('tournament') || name.includes('cricket') || name.includes('football')) {
     catSno = 13;
     catName = 'Sports (Inter-College, University, State, National)';
     subType = 'College level';
     points = 5;
-    certTitle = 'Annual Inter-College Sports Championship';
+    certTitle = 'Inter-College Sports Tournament';
     issuer = 'Department of Physical Education, Osmania University';
   } else if (name.includes('nss') || name.includes('blood') || name.includes('community') || name.includes('service')) {
     catSno = 11;
     catName = 'Rural Reporting / Community Service';
     subType = 'General';
     points = 5;
-    certTitle = 'NSS Youth Social Leadership & Blood Donation Drive';
-    issuer = 'National Service Scheme (NSS) - CBIT Chapter';
+    certTitle = 'Social Leadership & Community Service Drive';
+    issuer = 'National Service Scheme (NSS)';
   } else if (name.includes('paper') || name.includes('ieee') || name.includes('journal') || name.includes('publication')) {
     catSno = 6;
     catName = 'Publication in News Magazine / Journal';
     subType = 'Journal';
     points = 15;
-    certTitle = 'Research Paper Presentation in IEEE International Conference';
-    issuer = 'IEEE Computer Society & CBIT';
+    certTitle = 'Research Paper Presentation';
+    issuer = 'IEEE / Academic Journal';
   } else {
     const cleanName = fileName.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
     certTitle = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
@@ -138,7 +139,6 @@ function createClientFallbackExtraction(fileName: string): AIExtractionResult {
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const credId = `CBIT-DOC-${Math.floor(100000 + Math.random() * 900000)}`;
 
   return {
     isDocument: true,
@@ -148,15 +148,15 @@ function createClientFallbackExtraction(fileName: string): AIExtractionResult {
     issuingOrganization: issuer,
     completionDate: todayStr,
     durationOrHours: subType.includes('weeks') ? subType : 'Completed',
-    credentialId: credId,
-    verificationUrl: `https://cbit.ac.in/verify/${credId}`,
+    credentialId: undefined, // Blank if not found
+    verificationUrl: undefined, // Blank if not found
     matchedCategorySno: catSno,
     matchedCategoryName: catName,
     matchedSubType: subType,
     suggestedPoints: points,
     confidenceScore: 0.95,
     summary: `Verified official participation certificate for ${certTitle}, issued by ${issuer}.`,
-    keySkillsOrTopics: ['Technical Participation', 'Academic Proof', 'CBIT Activity Points'],
+    keySkillsOrTopics: ['Technical Participation', 'Academic Proof'],
   };
 }
 
@@ -202,6 +202,14 @@ export const CertificateUploader: React.FC = () => {
 
       const formData = new FormData();
       formData.append('file', fileToUpload);
+
+      // Check if user stored a custom Gemini API Key in localStorage
+      if (typeof window !== 'undefined') {
+        const storedApiKey = localStorage.getItem('cbit_gemini_api_key');
+        if (storedApiKey) {
+          formData.append('apiKey', storedApiKey);
+        }
+      }
 
       let extractedData: AIExtractionResult | null = null;
 
