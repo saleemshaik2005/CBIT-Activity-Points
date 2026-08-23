@@ -59,6 +59,8 @@ export interface StudentSubmission {
 }
 
 export interface AIExtractionResult {
+  isDocument?: boolean;
+  documentRejectionReason?: string;
   certificateTitle: string;
   recipientName: string;
   issuingOrganization: string;

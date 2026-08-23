@@ -19,8 +19,8 @@ export default function StudentUploadPage() {
           <span>Back to Dashboard</span>
         </Link>
 
-        <span className="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full border border-blue-200 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Powered by Gemini 2.0 Flash
+        <span className="text-xs bg-[#eef5ec] text-[#385529] font-bold px-3 py-1 rounded-full border border-[#385529]/30 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-[#a16b15]" /> Automated AI Document Verification
         </span>
       </div>
 

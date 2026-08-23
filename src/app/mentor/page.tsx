@@ -69,7 +69,7 @@ export default function MentorQueuePage() {
             <h2 className="text-sm font-serif font-bold text-[#385529] uppercase tracking-wider">
               Pending Submissions ({pendingSubmissions.length})
             </h2>
-            <span className="text-xs text-[#a16b15] font-medium">Powered by Gemini AI Document Intelligence</span>
+            <span className="text-xs text-[#385529] font-medium">Powered by Institutional AI Document Intelligence</span>
           </div>
 
           <div className="space-y-4">

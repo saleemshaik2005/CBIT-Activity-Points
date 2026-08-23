@@ -175,7 +175,7 @@ export default function StudentDashboardPage() {
             </div>
             <h3 className="text-lg font-serif font-bold">Have a new certificate?</h3>
             <p className="text-xs text-[#e2ebd9] leading-relaxed">
-              Upload any certificate image or PDF. Our Google Gemini AI will instantly extract the event name, date, organization, and calculate your activity points!
+              Upload any certificate image or PDF. Our AI Document Intelligence will instantly extract the event name, date, organization, and calculate your activity points!
             </p>
           </div>
 

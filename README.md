@@ -10,7 +10,7 @@
 
   [![Live Website](https://img.shields.io/badge/🌐_Live_Website-cbit--activity--points.vercel.app-385529?style=for-the-badge&logo=vercel)](https://cbit-activity-points.vercel.app)
   [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-a16b15?style=for-the-badge&logo=github)](https://github.com/saleemshaik2005/CBIT-Activity-Points)
-  [![Google Gemini AI](https://img.shields.io/badge/AI_Engine-Google_Gemini-4285F4?style=for-the-badge&logo=googlegemini)](https://aistudio.google.com)
+  [![AI Engine](https://img.shields.io/badge/AI_Engine-Multimodal_Document_Intelligence-4285F4?style=for-the-badge)](https://cbit.ac.in)
   [![Next.js](https://img.shields.io/badge/Next.js-16_App_Router-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 </div>
 
@@ -25,7 +25,7 @@
 
 A state-of-the-art web application engineered for **Chaitanya Bharathi Institute of Technology (Autonomous), Hyderabad** to automate non-academic Activity Points management (60 points target for 4-year B.E./B.Tech, 50 points for Diploma Lateral Entry) across Semesters I through VIII.
 
-The platform integrates **Google Gemini Multimodal AI** for real-time document OCR, certificate title & issuer parsing, QR verification links, and automatic mapping to the **24 Approved Activity Categories** with point caps and mentor verification workflows.
+The platform integrates **Multimodal AI Document Intelligence** for real-time document OCR, certificate title & issuer parsing, QR verification links, credential IDs, and automatic mapping to the **24 Approved Activity Categories** with point caps and mentor verification workflows.
 
 ---
 
@@ -39,7 +39,7 @@ The platform integrates **Google Gemini Multimodal AI** for real-time document O
 
 ## 🌟 Key Features
 
-1. **Google Gemini Multimodal AI Document Intelligence**:
+1. **Multimodal AI Document Intelligence**:
    * Direct certificate upload in JPG, PNG, HEIC, or PDF format.
    * Instant camera capture support from mobile smartphones.
    * Auto-extracts:

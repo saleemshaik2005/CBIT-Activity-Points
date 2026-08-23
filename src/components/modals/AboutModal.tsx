@@ -115,7 +115,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div>
                   <h5 className="font-bold text-[#1c2718]">AI Instant OCR & Category Mapping</h5>
                   <p className="text-[11px] text-gray-600 mt-0.5">
-                    Google Gemini Multimodal AI extracts the certificate title, organization, dates, credential ID, and maps to the correct <strong>CBIT Category (1 to 24)</strong> with suggested points. You can edit any field before submitting.
+                    Automated AI Document Intelligence extracts the certificate title, organization, dates, credential ID, QR links, and maps to the correct <strong>CBIT Category (1 to 24)</strong> with suggested points. You can edit any field before submitting.
                   </p>
                 </div>
               </div>
