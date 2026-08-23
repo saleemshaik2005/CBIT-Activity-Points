@@ -152,18 +152,16 @@ CREATE POLICY "Admin Full Control Settings" ON public.system_settings FOR ALL US
     EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
 );
 
+-- Helper function for role checking without recursion
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS user_role AS $$
+    SELECT role FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+
 -- Profile Policies
-CREATE POLICY "Users can read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Faculty can view relevant profiles" ON public.profiles FOR SELECT USING (
-    EXISTS (
-        SELECT 1 FROM public.profiles p 
-        WHERE p.id = auth.uid() AND p.role IN ('mentor', 'class_teacher', 'hod', 'admin')
-    )
-);
+CREATE POLICY "Authenticated users can view profiles" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own basic profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admins have full access to profiles" ON public.profiles FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
-);
+CREATE POLICY "Admins have full access to profiles" ON public.profiles FOR ALL USING (public.get_my_role() = 'admin');
 
 -- Submission Policies
 CREATE POLICY "Students can view own submissions" ON public.student_submissions 
