@@ -10,7 +10,7 @@ import {
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#1c2718] dark:bg-[#080d14] text-[#e2ebd9] dark:text-gray-400 border-t-4 border-[#a16b15] dark:border-emerald-600/40 mt-auto transition-colors">
+    <footer className="bg-[#1c2718] dark:bg-[#14151a] text-[#e2ebd9] dark:text-gray-400 border-t-4 border-[#a16b15] dark:border-[#282932] mt-auto transition-colors">
       
       {/* Main Footer Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -28,7 +28,7 @@ export const Footer: React.FC = () => {
                 <h3 className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
                   CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
                 </h3>
-                <p className="text-xs text-[#dfa94b] dark:text-emerald-400 font-medium">
+                <p className="text-xs text-[#dfa94b] dark:text-gray-300 font-medium">
                   Autonomous Activity Points & AI Document Verification Platform • Hyderabad-75
                 </p>
               </div>
@@ -43,9 +43,9 @@ export const Footer: React.FC = () => {
                 href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-bold text-white hover:text-[#dfa94b] dark:hover:text-emerald-300 inline-flex items-center gap-1.5 bg-[#273e1c] dark:bg-[#111827] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 dark:border-gray-700 transition-colors"
+                className="text-xs font-bold text-white hover:text-[#dfa94b] dark:hover:text-gray-200 inline-flex items-center gap-1.5 bg-[#273e1c] dark:bg-[#1c1d22] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 dark:border-[#2a2b33] transition-colors"
               >
-                <Github className="w-4 h-4 text-[#dfa94b] dark:text-emerald-400" />
+                <Github className="w-4 h-4 text-[#dfa94b] dark:text-gray-300" />
                 <span>GitHub Repository & Source Code</span>
                 <ExternalLink className="w-3 h-3 ml-0.5" />
               </a>
@@ -53,8 +53,8 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Column 2: Project Development Attribution */}
-          <div className="md:col-span-5 space-y-2.5 bg-[#273e1c]/80 dark:bg-[#111827]/80 p-4 sm:p-5 rounded-2xl border border-[#a16b15]/40 dark:border-gray-800">
-            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b] dark:text-emerald-400">
+          <div className="md:col-span-5 space-y-2.5 bg-[#273e1c]/80 dark:bg-[#1c1d22] p-4 sm:p-5 rounded-2xl border border-[#a16b15]/40 dark:border-[#2a2b33]">
+            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b] dark:text-gray-200">
               Project Development & Mentorship
             </h4>
 
@@ -72,14 +72,14 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright Bar */}
-      <div className="bg-[#121b0f] dark:bg-[#05080c] border-t border-[#385529]/60 dark:border-gray-800/80 px-4 py-3 text-xs text-[#8a9f7e] dark:text-gray-500">
+      <div className="bg-[#121b0f] dark:bg-[#0f1014] border-t border-[#385529]/60 dark:border-[#23242c] px-4 py-3 text-xs text-[#8a9f7e] dark:text-gray-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div>
             © {new Date().getFullYear()} CBIT Activity Point System • CBIT (Autonomous), Gandipet, Hyderabad - 500075.
           </div>
           <div className="flex items-center space-x-1 text-[11px]">
             <span>Developed by AI&DS Students with</span>
-            <Heart className="w-3 h-3 text-[#a71a1b] dark:text-red-400 fill-current" />
+            <Heart className="w-3 h-3 text-[#a71a1b] dark:text-rose-400 fill-current" />
             <span>for CBIT Hyderabad</span>
           </div>
         </div>

@@ -42,10 +42,10 @@ export default function StudentHistoryPage() {
     <div className="space-y-6">
       
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Activity Submission Logs</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <h1 className="text-2xl font-serif font-extrabold text-[#385529] dark:text-gray-100">Activity Submission Logs</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Complete record of your submitted certificates, mentor verification status, and feedback remarks.
           </p>
         </div>
@@ -53,33 +53,33 @@ export default function StudentHistoryPage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={handleDownloadPDF}
-            className="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-xl border border-gray-300 shadow-2xs hover:shadow-xs transition-all flex items-center space-x-2"
+            className="px-4 py-2.5 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all flex items-center space-x-2 cursor-pointer"
           >
-            <Download className="w-4 h-4 text-blue-600" />
-            <span>Download Official MAR Sheet (PDF)</span>
+            <Download className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
+            <span>Download MAR Sheet (PDF)</span>
           </button>
 
           <Link
             href="/student/upload"
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-2"
+            className="px-5 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-2 border-b-2 border-[#a16b15] dark:border-[#383a45]"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
             <span>Upload New</span>
           </Link>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#1a1b20] p-4 rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs">
         <div className="flex items-center space-x-2">
           {['all', 'approved', 'pending_mentor', 'rejected'].map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors cursor-pointer ${
                 filterStatus === status
-                  ? 'bg-blue-600 text-white shadow-2xs'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#385529] dark:bg-[#2a2b33] text-white shadow-2xs'
+                  : 'bg-[#faf9f5] dark:bg-[#121214] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22232a]'
               }`}
             >
               {status === 'pending_mentor' ? 'Pending Review' : status}
@@ -94,17 +94,17 @@ export default function StudentHistoryPage() {
             placeholder="Search activities or organizations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50"
+            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100"
           />
         </div>
       </div>
 
       {/* Submissions List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 space-y-3">
-          <FileCheck className="w-10 h-10 text-gray-300 mx-auto" />
-          <h3 className="text-sm font-bold text-gray-700">No submissions found</h3>
-          <p className="text-xs text-gray-500">
+        <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-12 text-center border border-[#e8e3d8] dark:border-[#2c2d36] space-y-3">
+          <FileCheck className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto" />
+          <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">No submissions found</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             No activity submissions match your active filter criteria.
           </p>
         </div>
@@ -115,14 +115,14 @@ export default function StudentHistoryPage() {
             return (
               <div
                 key={sub.id}
-                className="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs hover:shadow-sm transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white dark:bg-[#1a1b20] rounded-2xl p-5 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs hover:shadow-sm transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-bold bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md border border-blue-200">
+                    <span className="text-[11px] font-bold bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-gray-300 px-2.5 py-0.5 rounded-md border border-[#385529]/20 dark:border-[#2e3039]">
                       Category #{cat?.sno || 1}: {cat?.name}
                     </span>
-                    <span className="text-[11px] font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md">
+                    <span className="text-[11px] font-semibold bg-[#faf9f5] dark:bg-[#121214] text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-md border border-[#e8e3d8] dark:border-[#2e3039]">
                       Semester {sub.semester}
                     </span>
                     <span className="text-[11px] text-gray-400">
@@ -130,22 +130,22 @@ export default function StudentHistoryPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-gray-900">{sub.activity_title}</h3>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">{sub.activity_title}</h3>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center gap-1">
-                      <Building className="w-3.5 h-3.5 text-gray-400" />
+                      <Building className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
                       {sub.issuing_organization}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      <Calendar className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
                       {sub.event_date}
                     </span>
                   </div>
 
                   {sub.mentor_remarks && (
-                    <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700">
-                      <span className="font-bold text-gray-800">
+                    <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#22232a] border border-gray-200 dark:border-[#2e3039] text-xs text-gray-700 dark:text-gray-300">
+                      <span className="font-bold text-gray-800 dark:text-gray-200">
                         Mentor Feedback ({sub.approver_name || 'Faculty'}):
                       </span>{' '}
                       {sub.mentor_remarks}
@@ -154,9 +154,9 @@ export default function StudentHistoryPage() {
                 </div>
 
                 {/* Right: Points & Status */}
-                <div className="flex items-center justify-between md:flex-col md:items-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between md:flex-col md:items-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 dark:border-[#2c2d36] flex-shrink-0">
                   <div className="text-right">
-                    <span className="text-base font-extrabold text-blue-700">
+                    <span className="text-base font-extrabold text-[#385529] dark:text-emerald-400">
                       {sub.status === 'approved' ? `+${sub.awarded_points || sub.claimed_points}` : sub.claimed_points} pts
                     </span>
                     <p className="text-[10px] text-gray-400">
@@ -166,17 +166,17 @@ export default function StudentHistoryPage() {
 
                   <div className="flex items-center space-x-2">
                     {sub.status === 'approved' && (
-                      <span className="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center text-xs font-bold text-[#385529] dark:text-emerald-400 bg-[#eef5ec] dark:bg-[#22232a] px-3 py-1 rounded-full border border-[#385529]/20 dark:border-[#2e3039]">
                         <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Approved
                       </span>
                     )}
                     {sub.status === 'pending_mentor' && (
-                      <span className="inline-flex items-center text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                      <span className="inline-flex items-center text-xs font-bold text-[#a16b15] dark:text-amber-400 bg-[#fbf5eb] dark:bg-[#22232a] px-3 py-1 rounded-full border border-[#a16b15]/30 dark:border-[#2e3039]">
                         <Clock className="w-3.5 h-3.5 mr-1" /> Under Review
                       </span>
                     )}
                     {sub.status === 'rejected' && (
-                      <span className="inline-flex items-center text-xs font-bold text-red-700 bg-red-50 px-3 py-1 rounded-full border border-red-200">
+                      <span className="inline-flex items-center text-xs font-bold text-red-700 dark:text-rose-400 bg-red-50 dark:bg-[#22232a] px-3 py-1 rounded-full border border-red-200 dark:border-[#2e3039]">
                         <AlertCircle className="w-3.5 h-3.5 mr-1" /> Rejected
                       </span>
                     )}
@@ -185,7 +185,7 @@ export default function StudentHistoryPage() {
                       href={sub.certificate_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-[#385529] dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#22232a] rounded-lg transition-colors"
                       title="View Certificate"
                     >
                       <Eye className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function StudentHistoryPage() {
                     {sub.status !== 'approved' && (
                       <button
                         onClick={() => deleteSubmission(sub.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors cursor-pointer"
                         title="Delete Submission"
                       >
                         <Trash2 className="w-4 h-4" />

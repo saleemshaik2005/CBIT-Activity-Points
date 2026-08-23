@@ -12,7 +12,7 @@ export default function AdminRulesPage() {
   if (currentUser.role !== 'admin') {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-4">
-        <div className="w-16 h-16 bg-[#fbf5eb] dark:bg-[#1a2817] text-[#a16b15] dark:text-[#fbbf24] rounded-2xl flex items-center justify-center mx-auto border border-[#a16b15]/30 shadow-xs">
+        <div className="w-16 h-16 bg-[#fbf5eb] dark:bg-[#1a1b20] text-[#a16b15] dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto border border-[#a16b15]/30 dark:border-[#2c2d36] shadow-xs">
           <AlertCircle className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-serif font-bold text-gray-900 dark:text-white">
@@ -24,7 +24,7 @@ export default function AdminRulesPage() {
         <div className="pt-2 flex items-center justify-center gap-3">
           <button
             onClick={() => switchRole('admin')}
-            className="px-5 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#4ade80] dark:hover:bg-[#22c55e] text-white dark:text-[#0d140b] text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+            className="px-5 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
           >
             <span>Switch to Admin Role</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -41,13 +41,13 @@ export default function AdminRulesPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/admin"
-          className="inline-flex items-center space-x-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-[#385529] dark:hover:text-[#4ade80] transition-colors"
+          className="inline-flex items-center space-x-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-[#385529] dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Admin Hub</span>
         </Link>
 
-        <span className="text-xs bg-[#fbf5eb] dark:bg-[#1a2817] text-[#a16b15] dark:text-[#fbbf24] font-bold px-3 py-1 rounded-full border border-[#a16b15]/30 flex items-center gap-1.5">
+        <span className="text-xs bg-[#fbf5eb] dark:bg-[#22232a] text-[#a16b15] dark:text-amber-400 font-bold px-3 py-1 rounded-full border border-[#a16b15]/30 dark:border-[#2e3039] flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5" /> Dynamic Rules Configuration
         </span>
       </div>

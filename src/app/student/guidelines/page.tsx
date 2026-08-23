@@ -24,22 +24,22 @@ export default function StudentGuidelinesPage() {
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-2">
-        <div className="flex items-center space-x-2 text-blue-600">
+      <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-2">
+        <div className="flex items-center space-x-2 text-[#385529] dark:text-gray-300">
           <BookOpen className="w-5 h-5" />
-          <h1 className="text-xl font-extrabold text-gray-900">
+          <h1 className="text-xl font-serif font-extrabold text-gray-900 dark:text-white">
             CBIT MAR Guidelines & Point Rubrics
           </h1>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Official Mandatory Additional Requirements (MAR) activity point distribution for B.Tech students at Chaitanya Bharathi Institute of Technology.
         </p>
 
-        <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-gray-700">
-          <span className="bg-blue-50 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+        <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-gray-700 dark:text-gray-300">
+          <span className="bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 px-3 py-1 rounded-full border border-[#385529]/20 dark:border-[#2e3039]">
             4-Year Regular B.Tech: <strong>{settings.regular_target_points} Points</strong> required
           </span>
-          <span className="bg-purple-50 text-purple-800 px-3 py-1 rounded-full border border-purple-200">
+          <span className="bg-[#fbf5eb] dark:bg-[#22232a] text-[#a16b15] dark:text-amber-400 px-3 py-1 rounded-full border border-[#a16b15]/30 dark:border-[#2e3039]">
             Lateral Entry (Diploma): <strong>{settings.lateral_entry_target_points} Points</strong> required
           </span>
         </div>
@@ -53,7 +53,7 @@ export default function StudentGuidelinesPage() {
           placeholder="Search guidelines (e.g. MOOCs, Sports, Hackathons, Blood donation)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs"
+          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-gray-100 shadow-2xs"
         />
       </div>
 
@@ -65,25 +65,25 @@ export default function StudentGuidelinesPage() {
           return (
             <div
               key={sno}
-              className="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs hover:shadow-sm transition-all space-y-3"
+              className="bg-white dark:bg-[#1a1b20] rounded-2xl p-5 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs hover:shadow-sm transition-all space-y-3"
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-md">
+                <span className="text-xs font-bold bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-gray-300 px-2.5 py-0.5 rounded-md border border-transparent dark:border-[#2e3039]">
                   Activity #{sno}
                 </span>
-                <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 bg-[#faf9f5] dark:bg-[#121214] px-2 py-0.5 rounded-md border border-[#e8e3d8] dark:border-[#2e3039]">
                   Max Cap: {primary.max_points_allowed} pts
                 </span>
               </div>
 
-              <h3 className="text-sm font-bold text-gray-900 leading-snug">{primary.name}</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug">{primary.name}</h3>
 
               {primary.description && (
-                <p className="text-xs text-gray-500 leading-relaxed">{primary.description}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{primary.description}</p>
               )}
 
               {/* Sub-types and points */}
-              <div className="pt-2 border-t border-gray-100 space-y-1.5">
+              <div className="pt-2 border-t border-gray-100 dark:border-[#2c2d36] space-y-1.5">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                   Points Allocation:
                 </span>
@@ -91,12 +91,12 @@ export default function StudentGuidelinesPage() {
                   {matching.map((sub, i) => (
                     <div
                       key={i}
-                      className="text-xs bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1.5"
+                      className="text-xs bg-[#faf9f5] dark:bg-[#121214] text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] flex items-center gap-1.5"
                     >
                       <span className="font-medium">
                         {sub.sub_type && sub.sub_type !== 'General' ? `${sub.sub_type}:` : 'Standard:'}
                       </span>
-                      <strong className="text-blue-700 font-extrabold">{sub.default_points} pts</strong>
+                      <strong className="text-[#385529] dark:text-emerald-400 font-extrabold">{sub.default_points} pts</strong>
                     </div>
                   ))}
                 </div>

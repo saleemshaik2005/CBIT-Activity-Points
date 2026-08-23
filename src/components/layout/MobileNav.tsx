@@ -60,7 +60,7 @@ export const MobileNav: React.FC = () => {
   const items = roleNavItems[currentUser.role] || roleNavItems.student;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#151f12]/95 backdrop-blur-md border-t-2 border-[#a16b15] shadow-xl px-2 py-1.5 pb-safe transition-colors">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#18191e]/95 backdrop-blur-md border-t border-[#e8e3d8] dark:border-[#282932] shadow-xl px-2 py-1.5 pb-safe transition-colors">
       <div className="flex items-center justify-around">
         {items.map((item) => {
           const Icon = item.icon;
@@ -73,14 +73,14 @@ export const MobileNav: React.FC = () => {
               href={item.href}
               className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
                 isActive
-                  ? 'text-[#385529] dark:text-[#4ade80] font-bold'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-[#a71a1b]'
+                  ? 'text-[#385529] dark:text-white font-bold'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-[#a71a1b] dark:hover:text-gray-200'
               }`}
             >
-              <div className={`p-1 rounded-lg relative ${isActive ? 'bg-[#eef5ec] dark:bg-[#22351e]' : ''}`}>
-                <Icon className={`w-5 h-5 ${isActive ? 'text-[#385529] dark:text-[#4ade80] stroke-[2.5]' : 'text-[#a16b15] dark:text-[#fbbf24]'}`} />
+              <div className={`p-1 rounded-lg relative ${isActive ? 'bg-[#eef5ec] dark:bg-[#22232a]' : ''}`}>
+                <Icon className={`w-5 h-5 ${isActive ? 'text-[#385529] dark:text-emerald-400 stroke-[2.5]' : 'text-[#a16b15] dark:text-gray-400'}`} />
                 {isNotif && unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#a71a1b] text-white font-bold text-[8px] flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#a71a1b] dark:bg-red-500 text-white font-bold text-[8px] flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}

@@ -63,7 +63,7 @@ export default function RegisterPage() {
             className="w-14 h-14 object-contain group-hover:scale-105 transition-transform"
           />
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-serif font-black text-[#385529] dark:text-[#4ade80] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-serif font-black text-[#385529] dark:text-gray-100 tracking-tight">
           Sign Up
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -72,17 +72,17 @@ export default function RegisterPage() {
       </div>
 
       {/* Main Registration Card */}
-      <div className="w-full max-w-lg bg-white dark:bg-[#151f12] rounded-3xl p-6 sm:p-8 border border-[#e8e3d8] dark:border-[#2b3d26] shadow-xl space-y-6">
+      <div className="w-full max-w-lg bg-white dark:bg-[#1a1b20] rounded-3xl p-6 sm:p-8 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xl space-y-6">
         
         {/* Role Tabs */}
-        <div className="flex bg-[#faf9f5] dark:bg-[#1a2817] p-1 rounded-2xl border border-[#e8e3d8] dark:border-[#2b3d26]">
+        <div className="flex bg-[#faf9f5] dark:bg-[#121214] p-1 rounded-2xl border border-[#e8e3d8] dark:border-[#2e3039]">
           <button
             type="button"
             onClick={() => setRole('student')}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               role === 'student'
-                ? 'bg-[#385529] text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-[#385529]'
+                ? 'bg-[#385529] dark:bg-[#22232a] text-white shadow-xs'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <GraduationCap className="w-4 h-4" />
@@ -92,10 +92,10 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => setRole('faculty')}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               role === 'faculty'
-                ? 'bg-[#385529] text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-[#385529]'
+                ? 'bg-[#385529] dark:bg-[#22232a] text-white shadow-xs'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Briefcase className="w-4 h-4" />
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                   placeholder="name@cbit.ac.in"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
                 />
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function RegisterPage() {
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
               >
                 {CBIT_DEPARTMENTS.map((dept) => (
                   <option key={dept.code} value={dept.name}>
@@ -171,7 +171,7 @@ export default function RegisterPage() {
                   placeholder={role === 'student' ? '160122771045' : 'FAC-014'}
                   value={rollNumber}
                   onChange={(e) => setRollNumber(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
                 />
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function RegisterPage() {
               <select
                 value={isLateralEntry ? 'lateral' : 'regular'}
                 onChange={(e) => setIsLateralEntry(e.target.value === 'lateral')}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
               >
                 <option value="regular">Regular Student (4-Year B.Tech — 60 Points Target)</option>
                 <option value="lateral">Diploma Lateral Entry (Sem III to VIII — 50 Points Target)</option>
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2b3d26] bg-gray-50/50 dark:bg-[#1a2817] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
               />
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#4ade80] dark:hover:bg-[#22c55e] text-white dark:text-[#0d140b] font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 border-b-2 border-[#a16b15] cursor-pointer"
+            className="w-full py-3 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 border-b-2 border-[#a16b15] dark:border-emerald-700 cursor-pointer"
           >
             <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -222,12 +222,12 @@ export default function RegisterPage() {
         </form>
 
         {/* Footer Link */}
-        <div className="text-center pt-2 border-t border-gray-100 dark:border-[#2b3d26]">
+        <div className="text-center pt-2 border-t border-gray-100 dark:border-[#2a2b33]">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="text-[#a16b15] dark:text-[#fbbf24] font-bold hover:underline"
+              className="text-[#a16b15] dark:text-amber-400 font-bold hover:underline"
             >
               Log In
             </Link>

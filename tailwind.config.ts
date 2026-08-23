@@ -25,6 +25,15 @@ export default {
           slatelight: '#f0f4f8',
           border: '#e6ded3',
         },
+        dark: {
+          bg: '#121214',
+          card: '#1a1b20',
+          elevated: '#22232a',
+          border: '#2c2d36',
+          borderSubtle: '#23242c',
+          text: '#f3f4f6',
+          muted: '#9ca3af',
+        },
       },
       fontFamily: {
         serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
@@ -33,6 +42,7 @@ export default {
       boxShadow: {
         'cbit': '0 2px 8px rgba(56, 85, 41, 0.08)',
         'cbit-lg': '0 10px 25px -5px rgba(56, 85, 41, 0.12), 0 8px 10px -6px rgba(56, 85, 41, 0.08)',
+        'dark-card': '0 1px 3px rgba(0, 0, 0, 0.3)',
       }
     },
   },

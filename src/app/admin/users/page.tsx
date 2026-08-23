@@ -14,7 +14,7 @@ export default function AdminUsersPage() {
     { id: '3', name: 'Mohammed Farhan', email: 'farhan.le@cbit.ac.in', roll: '160122771301', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
     { id: '4', name: 'Dr. D. Ramana', email: 'dramana.aids@cbit.ac.in', roll: 'FAC-AIDS-01', role: 'mentor' as UserRole, mentor: '-' },
     { id: '5', name: 'Prof. M. Srinivasa Rao', email: 'srinivasa.cse@cbit.ac.in', roll: 'FAC-008', role: 'class_teacher' as UserRole, mentor: '-' },
-    { id: '6', name: 'Prof. Y. Rama Devi', email: 'hod_cse@cbit.ac.in', roll: 'FAC-001', role: 'hod' as UserRole, mentor: '-' },
+    { id: '6', name: 'Dr. K. Radhika', email: 'hod_aids@cbit.ac.in', roll: 'FAC-001', role: 'hod' as UserRole, mentor: '-' },
   ]);
 
   const mentors = ['Dr. D. Ramana', 'Dr. K. Radhika', 'Prof. M. Srinivasa Rao', 'Dr. T. Sridevi', 'Dr. B. Indira'];
@@ -37,17 +37,17 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border-t-4 border-[#385529] border-x border-b border-[#e8e3d8] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border-t-4 border-[#385529] dark:border-emerald-600 border-x border-b border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs">
         <div className="space-y-1">
           <Link
             href="/admin"
-            className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#385529] hover:text-[#a71a1b] transition-colors mb-1"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#385529] dark:text-gray-300 hover:text-[#a71a1b] dark:hover:text-white transition-colors mb-1"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Admin Hub</span>
           </Link>
-          <h1 className="text-2xl font-serif font-extrabold text-[#385529]">User Management & Mentor Allocation</h1>
-          <p className="text-xs text-gray-500">
+          <h1 className="text-2xl font-serif font-extrabold text-[#385529] dark:text-gray-100">User Management & Mentor Allocation</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Assign user roles and map students to their designated faculty counselors across departments.
           </p>
         </div>
@@ -61,15 +61,15 @@ export default function AdminUsersPage() {
           placeholder="Search by student name, roll number, or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#e8e3d8] focus:outline-none focus:ring-2 focus:ring-[#385529] bg-white shadow-2xs"
+          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-gray-100 shadow-2xs"
         />
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-[#e8e3d8] shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1b20] rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#faf9f5] border-b border-[#e8e3d8] text-[#385529] font-serif font-bold uppercase tracking-wider">
+            <thead className="bg-[#faf9f5] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-[#385529] dark:text-gray-300 font-serif font-bold uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">Name & Email</th>
                 <th className="py-3 px-3">Roll / ID</th>
@@ -77,19 +77,19 @@ export default function AdminUsersPage() {
                 <th className="py-3 px-3">Assigned Faculty Mentor</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-[#2c2d36]">
               {filtered.map((user) => (
-                <tr key={user.id} className="hover:bg-[#faf9f5] transition-colors">
+                <tr key={user.id} className="hover:bg-[#faf9f5] dark:hover:bg-[#22232a] transition-colors">
                   <td className="py-3.5 px-4">
-                    <div className="font-bold text-[#1c2718]">{user.name}</div>
-                    <div className="text-[11px] text-gray-500">{user.email}</div>
+                    <div className="font-bold text-[#1c2718] dark:text-white">{user.name}</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">{user.email}</div>
                   </td>
-                  <td className="py-3.5 px-3 font-semibold text-gray-700">{user.roll}</td>
+                  <td className="py-3.5 px-3 font-semibold text-gray-700 dark:text-gray-300">{user.roll}</td>
                   <td className="py-3.5 px-3">
                     <select
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                      className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] font-medium bg-white capitalize"
+                      className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] font-medium bg-white dark:bg-[#121214] text-gray-900 dark:text-gray-100 capitalize"
                     >
                       <option value="student">Student</option>
                       <option value="mentor">Mentor</option>
@@ -103,7 +103,7 @@ export default function AdminUsersPage() {
                       <select
                         value={user.mentor}
                         onChange={(e) => handleMentorChange(user.id, e.target.value)}
-                        className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] font-medium bg-white"
+                        className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] font-medium bg-white dark:bg-[#121214] text-gray-900 dark:text-gray-100"
                       >
                         {mentors.map((m) => (
                           <option key={m} value={m}>
