@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
@@ -12,16 +12,17 @@ import {
   CheckCircle,
   GraduationCap,
   Users,
-  Smartphone,
   ArrowRight,
+  HelpCircle,
+  Github,
   BookOpen,
-  FileCheck,
 } from 'lucide-react';
-import { CBIT_DEPARTMENTS } from '@/lib/mar-constants';
+import { AboutModal } from '@/components/modals/AboutModal';
 
 export default function HomePage() {
   const { switchRole } = useApp();
   const router = useRouter();
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   const handleSelectRole = (role: UserRole, targetPath: string) => {
     switchRole(role);
@@ -32,13 +33,26 @@ export default function HomePage() {
     <div className="space-y-12 py-4">
       
       {/* Hero Section */}
-      <section className="text-center space-y-4 max-w-4xl mx-auto pt-2">
+      <section className="text-center space-y-5 max-w-4xl mx-auto pt-2">
         
-        <div className="inline-flex items-center space-x-2 bg-[#fbf5eb] text-[#a16b15] text-xs font-bold px-4 py-1.5 rounded-full border border-[#a16b15]/40 shadow-xs">
-          <Award className="w-4 h-4 text-[#a16b15]" />
-          <span className="uppercase tracking-wide font-serif">
-            CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
-          </span>
+        {/* Official College Crest Banner */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <img
+            src="/images/cbit-crest.png"
+            alt="CBIT Crest"
+            className="w-16 h-16 object-contain drop-shadow-md"
+          />
+          <div className="text-center sm:text-left">
+            <div className="inline-flex items-center space-x-2 bg-[#fbf5eb] text-[#a16b15] text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full border border-[#a16b15]/40 shadow-xs">
+              <Award className="w-3.5 h-3.5 text-[#a16b15]" />
+              <span className="uppercase tracking-wide font-serif">
+                CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">
+              Affiliated to Osmania University • Hyderabad-500075 • NAAC A++
+            </p>
+          </div>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-[#385529] tracking-tight leading-tight">
@@ -55,7 +69,7 @@ export default function HomePage() {
         </p>
 
         {/* Primary Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
             onClick={() => handleSelectRole('student', '/student')}
             className="px-6 py-3 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15]"
@@ -70,6 +84,14 @@ export default function HomePage() {
           >
             <ShieldCheck className="w-4 h-4 text-[#a16b15]" />
             <span>Faculty Verification Queue</span>
+          </button>
+
+          <button
+            onClick={() => setIsAboutOpen(true)}
+            className="px-5 py-3 bg-[#fbf5eb] hover:bg-[#f5e9d3] text-[#a16b15] font-bold text-sm rounded-xl border border-[#a16b15]/40 shadow-xs hover:shadow transition-all flex items-center space-x-2"
+          >
+            <HelpCircle className="w-4 h-4 text-[#a16b15]" />
+            <span>About & User Guide</span>
           </button>
         </div>
       </section>
@@ -200,90 +222,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Official CBIT Departments Directory Section */}
-      <section className="bg-white rounded-2xl p-6 sm:p-8 border border-[#e8e3d8] shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e8e3d8] pb-4">
-          <div>
-            <h2 className="text-lg font-serif font-bold text-[#385529] uppercase tracking-wide flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-[#a16b15]" />
-              <span>Official Academic Departments & Courses (UG & PG)</span>
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Approved programs offering Mandatory Additional Requirements (MAR) Activity Points at CBIT Hyderabad.
-            </p>
-          </div>
-          <a
-            href="https://www.cbit.ac.in/admission_post/ug-pg-course-list/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs font-bold text-[#a16b15] hover:underline inline-flex items-center gap-1"
-          >
-            <span>cbit.ac.in Course Directory</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-          {CBIT_DEPARTMENTS.map((dept) => (
-            <div
-              key={dept.code}
-              className="p-3.5 rounded-xl bg-[#faf9f5] border border-[#e8e3d8] hover:border-[#a16b15]/50 transition-all space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-[#385529] bg-[#eef5ec] px-2 py-0.5 rounded border border-[#385529]/20 font-serif">
-                  {dept.code}
-                </span>
-                <span className="text-[10px] text-gray-500 font-semibold">
-                  Intake: {dept.intake} seats
-                </span>
-              </div>
-              <h4 className="text-xs font-bold text-[#1c2718] leading-tight">
-                {dept.name}
-              </h4>
-              <p className="text-[11px] text-gray-600">
-                Head of Dept: <strong className="text-[#385529]">{dept.hod}</strong>
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Institutional Banner */}
-      <section className="bg-gradient-to-r from-[#385529] via-[#273e1c] to-[#1a2813] text-white rounded-3xl p-8 sm:p-10 shadow-xl border-t-4 border-[#a16b15] relative overflow-hidden">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-[#dfa94b]">
-              <Sparkles className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-white text-sm">Gemini AI Document OCR</h4>
-            </div>
-            <p className="text-xs text-[#e2ebd9] leading-relaxed">
-              Upload certificates in JPG, PNG, or PDF format. AI automatically parses event details and calculates points according to CBIT rubrics.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-[#dfa94b]">
-              <Smartphone className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-white text-sm">Unified PWA (Web & Mobile)</h4>
-            </div>
-            <p className="text-xs text-[#e2ebd9] leading-relaxed">
-              Use seamlessly on laptops or install directly onto your smartphone with offline readiness and camera certificate capture.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-[#dfa94b]">
-              <FileCheck className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-white text-sm">Official Printable Activity Sheet</h4>
-            </div>
-            <p className="text-xs text-[#e2ebd9] leading-relaxed">
-              Generate 1-click printable PDF matching the exact 24-row physical CBIT Record of Activities sheet with Mentor and HoD signature blocks.
-            </p>
-          </div>
-
-        </div>
-      </section>
+      {/* About & Instructions Modal */}
+      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
 
     </div>
   );

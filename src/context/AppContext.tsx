@@ -59,8 +59,8 @@ const DEMO_USERS: Record<UserRole, UserProfile> = {
   },
   hod: {
     id: "usr-hod-001",
-    email: "dramana.aids@cbit.ac.in",
-    full_name: "Dr. D. Ramana (HoD AI&DS)",
+    email: "kradhika.aids@cbit.ac.in",
+    full_name: "Dr. K. Radhika (HoD AI&DS)",
     role: "hod",
     department: "Artificial Intelligence and Data Science (AI&DS)",
     batch_year: "Head of Department",

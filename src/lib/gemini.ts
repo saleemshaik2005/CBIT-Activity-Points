@@ -45,6 +45,8 @@ Instructions:
    - Extract the issuing body/organization (NPTEL, Coursera, IEEE, CBIT, NSS, Sports Board, etc.).
    - Extract the completion/award date in YYYY-MM-DD format (if only month/year is shown, use e.g. 2024-04-15).
    - Extract duration if stated (e.g. "12 weeks", "8 weeks", "30 hours").
+   - Extract Credential ID / Certificate ID / Roll No / License No if printed on the certificate.
+   - Extract Verification Link URL / QR code link if printed or visible on the document.
 2. Match the activity to EXACTLY ONE of the 24 CBIT MAR categories (SNo 1 to 24).
 3. Determine the correct sub-type and the standard activity points according to the CBIT rubric above.
 4. Provide a 2-line concise factual summary of what the certificate validates.
@@ -57,6 +59,8 @@ Output STRICTLY valid JSON with no markdown formatting or surrounding backticks:
   "issuingOrganization": "string",
   "completionDate": "YYYY-MM-DD",
   "durationOrHours": "string",
+  "credentialId": "string or null",
+  "verificationUrl": "string or null",
   "matchedCategorySno": number (1 to 24),
   "matchedCategoryName": "string",
   "matchedSubType": "string",

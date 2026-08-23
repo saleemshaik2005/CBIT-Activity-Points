@@ -98,7 +98,9 @@ Extract real text from this certificate:
 2. Recipient student name
 3. Issuing organization
 4. Completion/award date in YYYY-MM-DD format
-5. Match with one of the 24 CBIT MAR categories:
+5. Credential ID / Certificate ID / Roll No if present
+6. QR verification link URL if printed or visible
+7. Match with one of the 24 CBIT MAR categories:
 ${MAR_PROMPT_REF}
 
 Return strictly a JSON object:
@@ -108,6 +110,8 @@ Return strictly a JSON object:
   "issuingOrganization": "string",
   "completionDate": "YYYY-MM-DD",
   "durationOrHours": "string",
+  "credentialId": "string or null",
+  "verificationUrl": "string or null",
   "matchedCategorySno": number (1-24),
   "matchedCategoryName": "string",
   "matchedSubType": "string",

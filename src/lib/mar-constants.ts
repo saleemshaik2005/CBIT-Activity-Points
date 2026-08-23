@@ -9,8 +9,8 @@ export const CBIT_DEPARTMENTS = [
     code: 'AIDS',
     name: 'Artificial Intelligence and Data Science (AI&DS)',
     degrees: ['B.Tech'],
-    hod: 'Dr. D. Ramana',
-    hodEmail: 'dramana.aids@cbit.ac.in',
+    hod: 'Dr. K. Radhika',
+    hodEmail: 'kradhika.aids@cbit.ac.in',
     intake: 180,
     sections: ['1', '2', '3']
   },

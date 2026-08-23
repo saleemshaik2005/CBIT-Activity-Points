@@ -46,6 +46,8 @@ export interface StudentSubmission {
   awarded_points: number;
   certificate_url: string;
   file_type?: string;
+  credential_id?: string;
+  verification_url?: string;
   ai_extracted_data?: AIExtractionResult;
   status: SubmissionStatus;
   mentor_remarks?: string;
@@ -62,6 +64,8 @@ export interface AIExtractionResult {
   issuingOrganization: string;
   completionDate: string;
   durationOrHours?: string;
+  credentialId?: string;
+  verificationUrl?: string;
   matchedCategorySno: number;
   matchedCategoryName: string;
   matchedSubType?: string;

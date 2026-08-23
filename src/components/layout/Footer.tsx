@@ -2,177 +2,104 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Award, Users, BookOpen, MapPin, Phone, Mail, ExternalLink, Heart, ShieldCheck, GraduationCap } from 'lucide-react';
-import { CBIT_DEPARTMENTS } from '@/lib/mar-constants';
+import {
+  Award,
+  BookOpen,
+  GraduationCap,
+  ShieldCheck,
+  ExternalLink,
+  Github,
+  Heart,
+} from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#1e3016] text-[#e2ebd9] border-t-4 border-[#a16b15] mt-16">
+    <footer className="bg-[#1c2718] text-[#e2ebd9] border-t-4 border-[#a16b15] mt-auto">
       
-      {/* Top Banner Accent */}
-      <div className="bg-[#2a441e] border-b border-[#385529] py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-          
-          <div className="flex items-center space-x-2 text-[#dfa94b] font-serif font-bold tracking-wide text-center md:text-left">
-            <Award className="w-4 h-4 text-[#dfa94b] flex-shrink-0" />
-            <span>CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)</span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-[#c5d8bc]">
-            <span>NAAC A++ Grade</span>
-            <span>•</span>
-            <span>NBA Accredited</span>
-            <span>•</span>
-            <span>Affiliated to Osmania University</span>
-            <span>•</span>
-            <span>NIRF Ranked</span>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Main Footer Body */}
+      {/* Top Footer Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center justify-between">
           
-          {/* Col 1: System Info */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 rounded-lg bg-[#385529] border border-[#a16b15] flex items-center justify-center text-[#dfa94b]">
-                <Award className="w-5 h-5" />
+          {/* Column 1: CBIT Institutional Brand */}
+          <div className="md:col-span-6 space-y-4">
+            <div className="flex items-center space-x-3">
+              <img
+                src="/images/cbit-crest.png"
+                alt="CBIT Emblem"
+                className="w-12 h-12 object-contain bg-white rounded-lg p-0.5"
+              />
+              <div>
+                <h3 className="font-serif font-bold text-base text-white tracking-wide">
+                  CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
+                </h3>
+                <p className="text-xs text-[#dfa94b] font-medium">
+                  Affiliated to Osmania University • UGC Autonomous • NAAC A++ Grade • NBA Accredited
+                </p>
               </div>
-              <h3 className="text-base font-serif font-bold text-white tracking-wide">
-                CBIT Activity Point System
-              </h3>
             </div>
-            
-            <p className="text-xs text-[#c5d8bc] leading-relaxed">
-              Automated AI document intelligence platform for student activity points tracking, mentor verification, and graduation certificate approvals across 8 semesters.
+
+            <p className="text-xs text-[#cad8c0] leading-relaxed max-w-lg">
+              Official student non-academic Activity Points management & AI document verification portal. Enabling seamless tracking of 60 target points (50 for Lateral Entry) across 24 approved activity categories for degree qualification.
             </p>
 
-            <div className="pt-2 text-[11px] text-[#dfa94b] space-y-1">
-              <p className="font-semibold flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#dfa94b]" />
-                <span>Gandipet, Hyderabad - 500075, Telangana</span>
-              </p>
-              <p className="flex items-center gap-1.5 text-[#c5d8bc]">
-                <Mail className="w-3.5 h-3.5 text-[#dfa94b]" />
-                <span>principal@cbit.ac.in | www.cbit.ac.in</span>
-              </p>
+            <div className="flex items-center space-x-3 pt-1">
+              <a
+                href="https://www.cbit.ac.in"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-bold text-[#dfa94b] hover:underline inline-flex items-center gap-1"
+              >
+                <span>Official CBIT Website</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <span className="text-white/40">•</span>
+              <a
+                href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-bold text-white hover:text-[#dfa94b] inline-flex items-center gap-1.5 bg-[#273e1c] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 transition-colors"
+              >
+                <Github className="w-4 h-4 text-[#dfa94b]" />
+                <span>GitHub Repository</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Official Academic Departments */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-serif font-bold uppercase tracking-wider text-[#dfa94b] border-b border-[#385529] pb-1.5 flex items-center gap-1.5">
-              <GraduationCap className="w-3.5 h-3.5 text-[#dfa94b]" />
-              <span>Academic Departments</span>
-            </h4>
-            
-            <ul className="text-xs space-y-1.5 text-[#c5d8bc]">
-              <li>• Artificial Intelligence & Data Science (AI&DS)</li>
-              <li>• Computer Science & Engineering (CSE)</li>
-              <li>• AI & Machine Learning (AI&ML / CSE-AIML)</li>
-              <li>• CSE (IoT, Cyber Security & Blockchain)</li>
-              <li>• Information Technology (IT)</li>
-              <li>• Electronics & Communication (ECE)</li>
-              <li>• Electrical & Electronics (EEE)</li>
-              <li>• Mechanical / Civil / Chemical / Biotech</li>
-            </ul>
-
-            <a
-              href="https://www.cbit.ac.in/admission_post/ug-pg-course-list/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center text-[11px] font-bold text-[#dfa94b] hover:underline pt-1"
-            >
-              <span>View Official UG/PG Course List</span>
-              <ExternalLink className="w-3 h-3 ml-1" />
-            </a>
-          </div>
-
-          {/* Col 3: Role Portals */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-serif font-bold uppercase tracking-wider text-[#dfa94b] border-b border-[#385529] pb-1.5 flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-[#dfa94b]" />
-              <span>Portals & Resources</span>
-            </h4>
-            <ul className="text-xs space-y-1.5 text-[#c5d8bc]">
-              <li>
-                <Link href="/student" className="hover:text-white transition-colors">
-                  &rarr; Student MAR Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/student/upload" className="hover:text-white transition-colors">
-                  &rarr; AI Certificate OCR Scanner
-                </Link>
-              </li>
-              <li>
-                <Link href="/mentor" className="hover:text-white transition-colors">
-                  &rarr; Faculty Mentor Verification
-                </Link>
-              </li>
-              <li>
-                <Link href="/teacher" className="hover:text-white transition-colors">
-                  &rarr; Class Coordinator Overview
-                </Link>
-              </li>
-              <li>
-                <Link href="/hod" className="hover:text-white transition-colors">
-                  &rarr; HoD Graduation Approval
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-white transition-colors">
-                  &rarr; Master Administration Hub
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 4: Project Credits & Mentorship */}
-          <div className="space-y-3 bg-[#243a1a] p-4 rounded-xl border border-[#385529]">
-            <h4 className="text-xs font-serif font-bold uppercase tracking-wider text-[#dfa94b] flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#dfa94b]" />
-              <span>Project Development Team</span>
+          {/* Column 2: Academic Attribution & Faculty Guidance */}
+          <div className="md:col-span-6 space-y-3 bg-[#273e1c]/80 p-5 rounded-2xl border border-[#a16b15]/40">
+            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b]">
+              Project Development & Mentorship
             </h4>
 
-            <div className="space-y-2 text-xs">
-              <div>
-                <p className="text-[11px] uppercase font-bold text-[#dfa94b]">Developed By:</p>
-                <p className="text-white font-bold leading-tight">
-                  Students of AI & Data Science
-                </p>
-                <p className="text-[11px] text-[#c5d8bc]">
-                  Department of AI & Data Science (AI&DS)<br />
-                  Section 2 • 5th Semester • Batch of 2026<br />
-                  <strong className="text-white">Team of 4 Members</strong> (Shaik Saleem & Team)
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-[#385529]">
-                <p className="text-[11px] uppercase font-bold text-[#dfa94b]">Project Guide & Mentor:</p>
-                <p className="text-white font-bold">Dr. D. Ramana Sir</p>
-                <p className="text-[11px] text-[#c5d8bc]">
-                  Department of Artificial Intelligence & Data Science<br />
-                  CBIT Autonomous, Hyderabad
-                </p>
-              </div>
+            <div className="space-y-2 text-xs text-[#cad8c0]">
+              <p>
+                <strong className="text-white">Developed By:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
+              </p>
+              <p>
+                <strong className="text-white">Project Guide & Mentor:</strong> Dr. D. Ramana Sir, Department of AI&DS, CBIT Hyderabad.
+              </p>
+              <p>
+                <strong className="text-white">Head of Department:</strong> Dr. K. Radhika Madam, Head of Department (AI&DS), CBIT Autonomous Hyderabad.
+              </p>
             </div>
           </div>
 
         </div>
       </div>
 
-      {/* Bottom Copyright Strip */}
-      <div className="bg-[#152310] border-t border-[#263e1c] py-4 px-4 text-center text-[11px] text-[#9eb793]">
-        <p>
-          © {new Date().getFullYear()} Chaitanya Bharathi Institute of Technology (Autonomous). All Rights Reserved.
-        </p>
-        <p className="mt-0.5 text-[10px] text-[#809b75]">
-          CBIT Activity Point System • Built for Autonomous MAR Requirements Tracking
-        </p>
+      {/* Bottom Bar */}
+      <div className="bg-[#121b0f] border-t border-[#385529]/60 px-4 py-4 text-xs text-[#8a9f7e]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+          <div>
+            © {new Date().getFullYear()} CBIT Activity Point System. Chaitanya Bharathi Institute of Technology (Autonomous), Gandipet, Hyderabad - 500075.
+          </div>
+          <div className="flex items-center space-x-1 text-[11px]">
+            <span>Developed by AI&DS Students with</span>
+            <Heart className="w-3 h-3 text-[#a71a1b] fill-current" />
+            <span>for CBIT Hyderabad</span>
+          </div>
+        </div>
       </div>
 
     </footer>
