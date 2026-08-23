@@ -6,12 +6,13 @@ const MAR_CATEGORIES_PROMPT_REFERENCE = CBIT_24_CATEGORIES.map(c =>
   `SNo ${c.sno}: ${c.name} [Sub-type: ${c.sub_type || 'General'}] -> Points: ${c.default_points} (Max Cap: ${c.max_points_allowed})`
 ).join('\n');
 
+// Google's active generative AI vision models (2026 update)
 const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.7-flash',
+  'gemini-flash-latest',
+  'gemini-3.1-flash-lite',
 ];
 
 export async function analyzeCertificateDocument(
@@ -42,26 +43,32 @@ CRITICAL RULES:
    - If it is a valid document, return "isDocument": true.
 
 2. ACCURATE FIELD EXTRACTION:
-   - Certificate / Activity Title: Exact name of event, course, competition, or activity printed on the certificate.
-   - Recipient Name: Exact student name printed on the document.
-   - Issuing Organization: Exact college / university / platform / organization name (e.g. CBIT Hyderabad, NPTEL IIT Madras, IEEE, Red Cross, Osmania University, Coursera).
-   - Completion / Event Date: Format YYYY-MM-DD. (If only month/year shown, use e.g. 2024-04-15).
+   - Certificate / Activity Title: Exact course title, competition name, or event title printed on the certificate (e.g. "Principles of Economics", "OpenSys's GitArcana", "Cloud Computing").
+   - Recipient Name: Exact student name printed on the document (e.g. "SHAIK SALEEM" or "Sk. Saleem").
+   - Issuing Organization: Exact college / university / platform / organizing body (e.g. "NPTEL & IIT Madras", "CBIT Open Source Community (COSC) & CBIT Hyderabad", "IEEE", "Coursera").
+   - Completion / Event Date: Format YYYY-MM-DD. (If range or month-year given like "17th - 18th February 2026", use "2026-02-18"; if "Jul-Oct 2025", use "2025-10-15").
    - Credential ID / Certificate Number:
-     * Scan the ENTIRE document (header, footer, borders, signature block, top-left/right, bottom-left/right) for any printed unique Certificate Number, Serial Number, Roll No, Reg No, Reference Code, Certificate ID, or alphanumeric string.
+     * Scan the ENTIRE document (header, footer, borders, signature block, top-left/right, bottom-left/right) for any printed unique Certificate Number, Roll No, Reg No, Reference Code, Certificate ID, or alphanumeric string (e.g. "NPTEL25EC159S60206170").
      * Even if it is NOT labeled with the words "Credential ID", if there is a unique code or number printed on the certificate, extract it.
-     * CRITICAL: If NO certificate number or code is visible anywhere on the document, return null. DO NOT invent or make up any dummy ID.
+     * If NO certificate number or code is visible anywhere on the document, return null. DO NOT invent or make up any dummy ID.
    - QR Code & Verification Link:
      * Scan the document for printed verification URLs, QR code destination links (e.g. https://nptel.ac.in/..., https://coursera.org/verify/..., http://cbit.ac.in/verify...).
-     * CRITICAL: If NO URL or link is printed on the document, return null. DO NOT invent or make up any dummy URL.
+     * If NO URL or link is printed on the document, return null. DO NOT invent or make up any dummy URL.
 
 3. PRECISE CATEGORY & SUB-TYPE CLASSIFICATION:
+   - For MOOCs / Online Courses (SNo 1):
+     * If NPTEL, SWAYAM, Coursera, edX, or online course:
+       - Set "matchedCategorySno": 1
+       - Set "matchedCategoryName": "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)"
+       - If duration is 12 weeks: set "matchedSubType": "12 weeks" and suggestedPoints: 20.
+       - If duration is 8 weeks: set "matchedSubType": "8 weeks" and suggestedPoints: 16.
+       - If duration is 4 weeks: set "matchedSubType": "4 weeks" and suggestedPoints: 10.
    - For Tech Fest / Workshop / Hackathons (SNo 2):
-     * If text says "Certificate of Participation", "has participated in", "attended", set "matchedSubType": "Participant" and suggestedPoints: 3.
-     * If text says "Organizer", "Coordinator", "Lead", "Organizing Committee", set "matchedSubType": "Organizer" and suggestedPoints: 5.
-   - For MOOCs (SNo 1):
-     * If 12 weeks duration, set "matchedSubType": "12 weeks" and suggestedPoints: 20.
-     * If 8 weeks duration, set "matchedSubType": "8 weeks" and suggestedPoints: 16.
-     * If 4 weeks duration, set "matchedSubType": "4 weeks" and suggestedPoints: 10.
+     * If Hackathon, GitArcana, Sudhee, Shruthi, workshop, conference, symposium:
+       - Set "matchedCategorySno": 2
+       - Set "matchedCategoryName": "Tech Fest / Workshop / Hackathon / Conference / Seminar"
+       - If text says "Participant", "has participated in", "attended", set "matchedSubType": "Participant" and suggestedPoints: 3.
+       - If text says "Organizer", "Coordinator", "Lead", "Organizing Committee", set "matchedSubType": "Organizer" and suggestedPoints: 5.
    - For Sports (SNo 13):
      * Check if College level (5 pts), University level (10 pts), Region level (12 pts), State level (15 pts), or National level (20 pts).
    - For Magazine / Publication (SNo 7):
@@ -122,14 +129,6 @@ Output STRICTLY valid JSON with no markdown formatting or backticks:
             result.documentRejectionReason ||
             'The uploaded file is not recognized as an official certificate or document proof. Please upload a clear document image or PDF.'
           );
-        }
-
-        // Ensure no fake strings were generated
-        if (result.credentialId && result.credentialId.toLowerCase().includes('dummy')) {
-          result.credentialId = undefined;
-        }
-        if (result.verificationUrl && result.verificationUrl.toLowerCase().includes('example.com')) {
-          result.verificationUrl = undefined;
         }
 
         return result;
@@ -202,7 +201,7 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
               }
             }
 
-            // Clean null fields to undefined
+            // Clean null strings to undefined
             if (!resultData.credentialId || resultData.credentialId === 'null' || resultData.credentialId === 'N/A') {
               resultData.credentialId = undefined;
             }
@@ -236,7 +235,6 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
 
 /**
  * Intelligent Document Analyzer Fallback
- * Only fills what is known; leaves credentialId and verificationUrl blank if not found.
  */
 function fallbackSemanticDocumentAnalyzer(
   fileBufferBase64: string,
@@ -245,7 +243,7 @@ function fallbackSemanticDocumentAnalyzer(
 ): AIExtractionResult {
   const name = (fileName || 'Certificate_Document').toLowerCase();
 
-  // Basic check for non-document extensions or small placeholder files
+  // Basic check for non-document extensions
   if (name.includes('selfie') || name.includes('meme') || name.includes('photo_of_') || name.includes('cat') || name.includes('dog')) {
     return {
       isDocument: false,
@@ -263,7 +261,6 @@ function fallbackSemanticDocumentAnalyzer(
     };
   }
 
-  // Determine likely category from filename heuristics or default to Tech Fest / MOOCs
   let catSno = 2;
   let catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
   let subType = 'Participant';
@@ -324,8 +321,8 @@ function fallbackSemanticDocumentAnalyzer(
     issuingOrganization: issuer,
     completionDate: todayStr,
     durationOrHours: subType.includes('weeks') ? subType : 'Completed',
-    credentialId: undefined, // Intentionally left blank if not found on document
-    verificationUrl: undefined, // Intentionally left blank if not found on document
+    credentialId: undefined,
+    verificationUrl: undefined,
     matchedCategorySno: catSno,
     matchedCategoryName: catName,
     matchedSubType: subType,
