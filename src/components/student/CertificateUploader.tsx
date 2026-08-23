@@ -23,6 +23,13 @@ const MAR_PROMPT_REF = CBIT_24_CATEGORIES.map(c =>
   `SNo ${c.sno}: ${c.name} [Sub-type: ${c.sub_type || 'General'}] -> Points: ${c.default_points} (Max Cap: ${c.max_points_allowed})`
 ).join('\n');
 
+const BROWSER_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+];
+
 export const CertificateUploader: React.FC = () => {
   const { categories, addSubmission } = useApp();
   const [isDragging, setIsDragging] = useState(false);
@@ -46,7 +53,6 @@ export const CertificateUploader: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved API Key from localStorage
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('cbit_mar_gemini_key');
@@ -68,13 +74,11 @@ export const CertificateUploader: React.FC = () => {
     } catch (e) {}
   };
 
-  // Convert File to Base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        // Remove "data:image/jpeg;base64," prefix
         const base64Data = result.split(',')[1];
         resolve(base64Data);
       };
@@ -83,7 +87,6 @@ export const CertificateUploader: React.FC = () => {
     });
   };
 
-  // Direct Browser-Side Gemini Call (Bypasses any server network/proxy issues)
   const callGeminiDirectlyFromBrowser = async (base64Data: string, mimeType: string, key: string): Promise<AIExtractionResult> => {
     let cleanMime = mimeType || 'image/jpeg';
     if (cleanMime.includes('heic') || cleanMime.includes('heif')) cleanMime = 'image/jpeg';
@@ -113,7 +116,6 @@ Return strictly a JSON object:
   "keySkillsOrTopics": ["string"]
 }`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key.trim()}`;
     const body = {
       contents: [
         {
@@ -136,21 +138,33 @@ Return strictly a JSON object:
       },
     };
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    let lastErr: any = null;
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Google API Error (${res.status}): ${errorText}`);
+    for (const model of BROWSER_MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key.trim()}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Google API Error (${res.status}): ${errorText}`);
+        }
+
+        const data = await res.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleaned) as AIExtractionResult;
+      } catch (e) {
+        lastErr = e;
+        continue;
+      }
     }
 
-    const data = await res.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleaned) as AIExtractionResult;
+    throw lastErr || new Error('Gemini API call failed across all candidate models.');
   };
 
   const handleFileProcess = async (file: File) => {
@@ -198,7 +212,7 @@ Return strictly a JSON object:
       } catch (serverErr) {
         console.warn('Server-side AI route returned error, falling back to direct browser Gemini call...', serverErr);
         
-        // Method 2: Direct browser-to-Gemini call (100% immune to Node.js proxy SSL errors)
+        // Method 2: Direct browser-to-Gemini call (handles model fallbacks directly)
         if (apiKey && apiKey.trim()) {
           extractedData = await callGeminiDirectlyFromBrowser(base64Data, mimeType, apiKey);
         } else {
@@ -263,7 +277,7 @@ Return strictly a JSON object:
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-serif font-bold text-[#1c2718]">Google Gemini 2.0 Flash AI Intelligence</span>
+              <span className="text-xs font-serif font-bold text-[#1c2718]">Google Gemini Multimodal AI Intelligence</span>
               {apiKey ? (
                 <span className="text-[10px] bg-[#eef5ec] text-[#385529] font-bold px-2 py-0.5 rounded-full border border-[#385529]/30 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Live OCR Ready
@@ -345,7 +359,7 @@ Return strictly a JSON object:
             </div>
             <div>
               <h4 className="text-base font-serif font-bold text-[#385529]">
-                Gemini 2.0 Flash AI is reading your certificate...
+                Gemini AI is reading your certificate...
               </h4>
               <p className="text-xs text-gray-500 mt-1">
                 Extracting certificate title, recipient name, issuer, dates, and mapping with CBIT 24 MAR categories.

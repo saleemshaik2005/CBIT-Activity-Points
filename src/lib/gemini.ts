@@ -6,6 +6,14 @@ const MAR_CATEGORIES_PROMPT_REFERENCE = CBIT_24_CATEGORIES.map(c =>
   `SNo ${c.sno}: ${c.name} [Sub-type: ${c.sub_type || 'General'}] -> Points: ${c.default_points} (Max Cap: ${c.max_points_allowed}) - Desc: ${c.description}`
 ).join('\n');
 
+const CANDIDATE_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-pro',
+];
+
 export async function analyzeCertificateDocument(
   fileBufferBase64: string,
   mimeType: string = 'image/jpeg',
@@ -80,17 +88,38 @@ Output STRICTLY valid JSON with no markdown formatting or surrounding backticks:
     },
   });
 
+  let lastError: Error | null = null;
+
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const result = await makeGeminiRequest(model, key.trim(), payload);
+      return result;
+    } catch (err: any) {
+      console.warn(`Model ${model} failed, trying next... Error:`, err?.message);
+      lastError = err;
+      // If 404 model not found, try next model immediately
+      if (err.message && err.message.includes('404')) {
+        continue;
+      }
+      // If other error, still try fallback model
+      continue;
+    }
+  }
+
+  throw lastError || new Error('All Gemini models failed to process the request.');
+}
+
+function makeGeminiRequest(model: string, key: string, payload: string): Promise<AIExtractionResult> {
   return new Promise((resolve, reject) => {
     const options: https.RequestOptions = {
       hostname: 'generativelanguage.googleapis.com',
       port: 443,
-      path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${key.trim()}`,
+      path: `/v1beta/models/${model}:generateContent?key=${key}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload),
       },
-      // Bypass SSL verification errors in local proxy / college network environments
       rejectUnauthorized: false,
       timeout: 30000,
     };
@@ -105,7 +134,7 @@ Output STRICTLY valid JSON with no markdown formatting or surrounding backticks:
       res.on('end', () => {
         try {
           if (res.statusCode && res.statusCode >= 400) {
-            return reject(new Error(`Google Gemini API error (${res.statusCode}): ${data}`));
+            return reject(new Error(`Google API Error (${res.statusCode}): ${data}`));
           }
 
           const parsedResponse = JSON.parse(data);
