@@ -13,33 +13,45 @@ export async function analyzeCertificateDocument(
 ): Promise<AIExtractionResult> {
   const key = apiKey || process.env.GEMINI_API_KEY;
 
-  // Fallback / Demo intelligent simulation if API key is not yet set
   if (!key || key.trim() === '' || key.startsWith('AIzaSy_placeholder')) {
-    console.warn("GEMINI_API_KEY not configured. Using intelligent demo certificate parser.");
-    return simulateCertificateAnalysis(fileBufferBase64, mimeType);
+    throw new Error(
+      'GEMINI_API_KEY is not configured. Please enter your free Gemini API Key in the top banner or in .env.local to enable live AI certificate intelligence.'
+    );
   }
 
-  try {
-    const ai = new GoogleGenAI({ apiKey: key });
+  // Normalize mime type for Gemini
+  let cleanMime = mimeType;
+  if (cleanMime.includes('heic') || cleanMime.includes('heif')) {
+    cleanMime = 'image/jpeg';
+  }
 
-    const systemInstruction = `You are an expert academic certificate analyzer for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
-Your job is to read student certificates/documents (images or PDFs) and extract key information according to the college's 24 Mandatory Additional Requirements (MAR) Activity Points categories.
+  const systemInstruction = `You are an elite academic document intelligence engine for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
+Your job is to perform Optical Character Recognition (OCR) and deep semantic analysis on student certificates/documents (images or PDFs).
 
-The official 24 CBIT MAR Categories are:
+The official 24 CBIT Mandatory Additional Requirements (MAR) Categories are:
 ${MAR_CATEGORIES_PROMPT_REFERENCE}
 
-Instructions:
-1. Examine the certificate carefully. Identify the certificate title/name, student recipient name, issuing body/organization, completion/issue date, and duration if mentioned.
-2. Match the activity to EXACTLY ONE of the 24 CBIT MAR categories (SNo 1 to 24).
-3. Determine the correct sub-type and the standard activity points according to the CBIT rubric above.
-4. Output STRICTLY a valid JSON object with NO markdown ticks or backticks around it. Format:
+Task Instructions:
+1. Perform thorough OCR on the uploaded certificate image/PDF:
+   - Identify the exact title of the course, competition, paper, event, or workshop.
+   - Identify the recipient student name printed on the document.
+   - Identify the issuing organization, university, club, company, platform, or authority (e.g. NPTEL, Coursera, IEEE, NSS, CBIT, Hackathon Organizers, Sports Board, etc.).
+   - Extract the exact date of completion, award, or issue. Convert it to standard ISO format (YYYY-MM-DD). If only month and year are given (e.g. "April 2024"), use "2024-04-15".
+   - Extract duration if stated (e.g. "12 weeks", "8 weeks", "4 weeks", "30 hours", "3 days").
+2. Match the activity to EXACTLY ONE of the 24 CBIT MAR categories (SNo 1 to 24) based on the criteria.
+3. Determine the correct sub-type (e.g. "12 weeks", "8 weeks", "Organizer", "Participant", "College level", "State level", "National level", "Editor", "Writer", etc.) and the corresponding default points from the CBIT rubric.
+4. Estimate student academic semester (1 to 8) if inferrable, or default to appropriate current semester.
+5. Provide a 2-line concise factual summary of what the certificate validates.
+6. Extract 3 to 6 key topic/skill tags.
+
+CRITICAL: Output STRICTLY valid JSON with no markdown tags or additional conversational text. Format:
 {
   "certificateTitle": "string",
   "recipientName": "string",
   "issuingOrganization": "string",
   "completionDate": "YYYY-MM-DD",
   "durationOrHours": "string",
-  "matchedCategorySno": number (1-24),
+  "matchedCategorySno": number (1 to 24),
   "matchedCategoryName": "string",
   "matchedSubType": "string",
   "suggestedPoints": number,
@@ -47,6 +59,10 @@ Instructions:
   "summary": "string",
   "keySkillsOrTopics": ["string"]
 }`;
+
+  // Method 1: Try official GoogleGenAI SDK
+  try {
+    const ai = new GoogleGenAI({ apiKey: key });
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
@@ -57,11 +73,11 @@ Instructions:
             {
               inlineData: {
                 data: fileBufferBase64,
-                mimeType: mimeType,
+                mimeType: cleanMime,
               },
             },
             {
-              text: "Please analyze this certificate document and return the structured JSON extraction matching CBIT MAR categories.",
+              text: "Analyze this certificate image/document thoroughly. Extract the real event title, recipient name, issuer, dates, match with CBIT 24 MAR categories, and output the structured JSON.",
             },
           ],
         },
@@ -74,37 +90,63 @@ Instructions:
     });
 
     const rawText = response.text || "{}";
-    const parsed = JSON.parse(rawText) as AIExtractionResult;
+    const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned) as AIExtractionResult;
 
-    // Sanitize and ensure category is within bounds
     if (!parsed.matchedCategorySno || parsed.matchedCategorySno < 1 || parsed.matchedCategorySno > 24) {
       parsed.matchedCategorySno = 1;
       parsed.matchedCategoryName = "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)";
     }
 
     return parsed;
-  } catch (error) {
-    console.error("Gemini AI Certificate extraction error:", error);
-    // Fallback gracefully to simulated analysis on network error
-    return simulateCertificateAnalysis(fileBufferBase64, mimeType);
-  }
-}
+  } catch (sdkError: any) {
+    console.warn("Google GenAI SDK call failed, attempting direct Gemini REST API fallback...", sdkError?.message);
 
-// Demo fallback extractor
-function simulateCertificateAnalysis(base64Data: string, mimeType: string): AIExtractionResult {
-  // Return realistic mock extraction matching typical student uploads
-  return {
-    certificateTitle: "NPTEL Online Certification: Cloud Computing and Distributed Systems",
-    recipientName: "Rahul Sharma",
-    issuingOrganization: "NPTEL & IIT Kharagpur (Ministry of Education, Govt. of India)",
-    completionDate: new Date().toISOString().split('T')[0],
-    durationOrHours: "12 weeks course",
-    matchedCategorySno: 1,
-    matchedCategoryName: "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)",
-    matchedSubType: "12 weeks",
-    suggestedPoints: 20,
-    confidenceScore: 0.96,
-    summary: "Successfully completed 12-week NPTEL MOOC course in Cloud Computing with Elite Silver certificate.",
-    keySkillsOrTopics: ["Cloud Computing", "Virtualization", "Distributed Systems", "AWS", "MapReduce"],
-  };
+    // Method 2: Direct REST API Fallback to Gemini 2.0 Flash / 1.5 Flash
+    try {
+      const restEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+      const restBody = {
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: cleanMime,
+                  data: fileBufferBase64,
+                },
+              },
+              {
+                text: `${systemInstruction}\n\nAnalyze this certificate image/document and return JSON only.`,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.1,
+        },
+      };
+
+      const res = await fetch(restEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(restBody),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Gemini REST API error (${res.status}): ${errorText}`);
+      }
+
+      const restData = await res.json();
+      const textOutput = restData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+      const cleaned = textOutput.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned) as AIExtractionResult;
+
+      return parsed;
+    } catch (fallbackError: any) {
+      console.error("Gemini direct REST fallback also failed:", fallbackError);
+      throw new Error(`Gemini AI analysis failed: ${fallbackError.message || 'Check API key or network'}`);
+    }
+  }
 }
