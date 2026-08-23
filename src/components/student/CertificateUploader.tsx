@@ -17,6 +17,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Check,
+  Settings2,
 } from 'lucide-react';
 
 const MAR_PROMPT_REF = CBIT_24_CATEGORIES.map(c => 
@@ -36,7 +37,7 @@ export const CertificateUploader: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // API Key Management
+  // Custom API Key Management (Optional for advanced users)
   const [apiKey, setApiKey] = useState<string>('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
@@ -164,7 +165,7 @@ Return strictly a JSON object:
       }
     }
 
-    throw lastErr || new Error('Gemini API call failed across all candidate models.');
+    throw lastErr || new Error('Gemini API call failed across candidate models.');
   };
 
   const handleFileProcess = async (file: File) => {
@@ -187,10 +188,9 @@ Return strictly a JSON object:
 
     try {
       const base64Data = await fileToBase64(file);
-
       let extractedData: AIExtractionResult | null = null;
 
-      // Method 1: Try Server API Route first
+      // Method 1: Use Server Route
       try {
         const formData = new FormData();
         formData.append('file', file);
@@ -207,16 +207,15 @@ Return strictly a JSON object:
         if (serverRes.ok && json.data) {
           extractedData = json.data;
         } else {
-          throw new Error(json.error || 'Server error');
+          throw new Error(json.error || 'Server processing error');
         }
-      } catch (serverErr) {
-        console.warn('Server-side AI route returned error, falling back to direct browser Gemini call...', serverErr);
+      } catch (serverErr: any) {
+        console.warn('Server route notice, trying browser direct method if key present:', serverErr?.message);
         
-        // Method 2: Direct browser-to-Gemini call (handles model fallbacks directly)
         if (apiKey && apiKey.trim()) {
           extractedData = await callGeminiDirectlyFromBrowser(base64Data, mimeType, apiKey);
         } else {
-          throw new Error('Please enter your free Gemini API key to analyze this document.');
+          throw new Error(serverErr?.message || 'AI document analysis is currently unavailable.');
         }
       }
 
@@ -231,7 +230,7 @@ Return strictly a JSON object:
       console.error('Extraction error:', err);
       setIsAnalyzing(false);
       setUploadError(
-        err.message || 'AI analysis failed. Please verify your Gemini API key or check your internet connection.'
+        err.message || 'AI analysis encountered an error. You can still fill the details manually in review.'
       );
     }
   };
@@ -269,29 +268,21 @@ Return strictly a JSON object:
   return (
     <div className="space-y-6">
       
-      {/* Gemini AI Key Status Banner */}
+      {/* Seamless AI Status Banner */}
       <div className="bg-[#faf9f5] border border-[#e8e3d8] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-xl border ${apiKey ? 'bg-[#eef5ec] text-[#385529] border-[#385529]/30' : 'bg-[#fbf5eb] text-[#a16b15] border-[#a16b15]/30'}`}>
-            <Sparkles className="w-5 h-5" />
+          <div className="p-2 rounded-xl bg-[#eef5ec] text-[#385529] border border-[#385529]/30">
+            <Sparkles className="w-5 h-5 text-[#385529]" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-serif font-bold text-[#1c2718]">Google Gemini Multimodal AI Intelligence</span>
-              {apiKey ? (
-                <span className="text-[10px] bg-[#eef5ec] text-[#385529] font-bold px-2 py-0.5 rounded-full border border-[#385529]/30 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Live OCR Ready
-                </span>
-              ) : (
-                <span className="text-[10px] bg-[#fdf2f2] text-[#a71a1b] font-bold px-2 py-0.5 rounded-full border border-[#a71a1b]/30">
-                  Key Required for Live OCR
-                </span>
-              )}
+              <span className="text-xs font-serif font-bold text-[#1c2718]">Google Gemini Multimodal AI Engine</span>
+              <span className="text-[10px] bg-[#eef5ec] text-[#385529] font-bold px-2 py-0.5 rounded-full border border-[#385529]/30 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-[#385529]" /> Ready to Scan
+              </span>
             </div>
             <p className="text-[11px] text-gray-500 mt-0.5">
-              {apiKey
-                ? 'Your Gemini API key is active. Real certificate text, dates, organizations, and points will be auto-detected.'
-                : 'Connect your free Google Gemini API key to automatically extract certificate dates and titles.'}
+              Upload any certificate image (JPG, PNG, HEIC) or PDF. Real event titles, dates, issuer, and MAR category points will be automatically detected.
             </p>
           </div>
         </div>
@@ -300,10 +291,11 @@ Return strictly a JSON object:
           <button
             type="button"
             onClick={() => setShowKeyModal(true)}
-            className="px-3.5 py-1.5 bg-white hover:bg-[#faf7f2] text-[#385529] font-bold text-xs rounded-xl border border-[#e8e3d8] shadow-2xs hover:shadow-xs transition-all flex items-center space-x-1.5"
+            className="px-3 py-1 bg-white hover:bg-[#faf7f2] text-gray-600 hover:text-[#385529] font-medium text-[11px] rounded-lg border border-[#e8e3d8] transition-all flex items-center space-x-1"
+            title="Custom API key configuration"
           >
-            <Key className="w-3.5 h-3.5 text-[#a16b15]" />
-            <span>{apiKey ? 'Change API Key' : 'Enter Gemini API Key'}</span>
+            <Settings2 className="w-3 h-3 text-[#a16b15]" />
+            <span>{apiKey ? 'API Key Configured' : 'AI Settings'}</span>
           </button>
         </div>
       </div>
@@ -315,7 +307,7 @@ Return strictly a JSON object:
           <div className="text-xs">
             <p className="font-bold">Certificate successfully submitted for Faculty Mentor Verification!</p>
             <p className="text-[#385529] mt-0.5">
-              Your mentor will inspect your document and award the activity points to your official MAR record.
+              Your mentor will inspect your document and award the activity points to your official record.
             </p>
           </div>
         </div>
@@ -327,15 +319,6 @@ Return strictly a JSON object:
           <AlertCircle className="w-5 h-5 text-[#a71a1b] flex-shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-bold">{uploadError}</p>
-            {!apiKey && (
-              <button
-                type="button"
-                onClick={() => setShowKeyModal(true)}
-                className="font-bold underline text-[#a71a1b] hover:text-red-900"
-              >
-                Click here to enter your free Gemini API key &rarr;
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -362,7 +345,7 @@ Return strictly a JSON object:
                 Gemini AI is reading your certificate...
               </h4>
               <p className="text-xs text-gray-500 mt-1">
-                Extracting certificate title, recipient name, issuer, dates, and mapping with CBIT 24 MAR categories.
+                Extracting certificate title, recipient name, issuer, dates, and mapping with CBIT 24 categories.
               </p>
             </div>
           </div>
@@ -402,13 +385,7 @@ Return strictly a JSON object:
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  if (!apiKey) {
-                    setShowKeyModal(true);
-                  } else {
-                    fileInputRef.current?.click();
-                  }
-                }}
+                onClick={() => fileInputRef.current?.click()}
                 className="px-5 py-2.5 rounded-xl bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15]"
               >
                 <FileText className="w-4 h-4 text-[#dfa94b]" />
@@ -417,13 +394,7 @@ Return strictly a JSON object:
 
               <button
                 type="button"
-                onClick={() => {
-                  if (!apiKey) {
-                    setShowKeyModal(true);
-                  } else {
-                    cameraInputRef.current?.click();
-                  }
-                }}
+                onClick={() => cameraInputRef.current?.click()}
                 className="px-5 py-2.5 rounded-xl bg-white hover:bg-[#faf7f2] text-[#385529] text-xs font-bold border border-[#e8e3d8] shadow-xs transition-all flex items-center space-x-2"
               >
                 <Camera className="w-4 h-4 text-[#a16b15]" />
@@ -453,7 +424,7 @@ Return strictly a JSON object:
         />
       )}
 
-      {/* Gemini API Key Modal */}
+      {/* Optional Custom Gemini API Key Modal */}
       {showKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white rounded-2xl shadow-2xl border border-[#e8e3d8] max-w-md w-full p-6 space-y-4">
@@ -464,10 +435,10 @@ Return strictly a JSON object:
               </div>
               <div>
                 <h3 className="text-base font-serif font-bold text-[#385529]">
-                  Set Google Gemini API Key
+                  Custom Gemini API Key
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Enables live OCR & certificate extraction on every upload.
+                  Optional: Override the server default API key for your browser session.
                 </p>
               </div>
             </div>
@@ -479,8 +450,7 @@ Return strictly a JSON object:
                 </label>
                 <input
                   type="password"
-                  required
-                  placeholder="AIzaSy..."
+                  placeholder="Leave blank to use server default"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#385529] font-mono"
@@ -488,12 +458,8 @@ Return strictly a JSON object:
               </div>
 
               <div className="p-3 rounded-xl bg-[#faf9f5] border border-[#e8e3d8] text-[11px] text-gray-600 space-y-1">
-                <div className="font-bold text-[#385529] flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#a16b15]" />
-                  <span>100% Free Forever</span>
-                </div>
                 <p>
-                  Get your free Gemini API key in 5 seconds from Google AI Studio:
+                  Get your free personal key anytime from Google AI Studio:
                 </p>
                 <a
                   href="https://aistudio.google.com/app/apikey"

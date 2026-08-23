@@ -17,6 +17,7 @@ import {
   BookOpen,
   FileCheck,
 } from 'lucide-react';
+import { CBIT_DEPARTMENTS } from '@/lib/mar-constants';
 
 export default function HomePage() {
   const { switchRole } = useApp();
@@ -41,16 +42,16 @@ export default function HomePage() {
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-[#385529] tracking-tight leading-tight">
-          Mandatory Additional Requirements <br className="hidden sm:inline" />
+          CBIT Activity Point System <br className="hidden sm:inline" />
           <span className="text-[#a16b15] font-sans font-bold">
-            (MAR) Activity Points System
+            Autonomous Points & Verification Engine
           </span>
         </h1>
 
         <div className="w-24 h-1 bg-[#a16b15] mx-auto rounded-full" />
 
         <p className="text-sm sm:text-base text-gray-700 leading-relaxed max-w-2xl mx-auto">
-          Automate student activity points verification, 24 activity categories tracking, and graduation certificate approvals powered by AI document intelligence.
+          Automated student activity points tracking, AI document intelligence for certificate recognition, and graduation approvals across 8 semesters.
         </p>
 
         {/* Primary Action Buttons */}
@@ -80,7 +81,7 @@ export default function HomePage() {
             Select Your Academic Portal
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Access role-specific workflows for Students, Mentors, Class Teachers, HoDs, and Administrators.
+            Access role-specific workflows for Students, Mentors, Class Coordinators, HoDs, and Administrators.
           </p>
         </div>
 
@@ -99,7 +100,7 @@ export default function HomePage() {
                 Student
               </h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Upload certificates with AI scanning, track 60/50 MAR points, and download official PDF sheet.
+                Upload certificates with AI scanning, track 60/50 activity points, and download official printable sheet.
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100 flex items-center text-xs font-bold text-[#385529] group-hover:text-[#a16b15]">
@@ -140,7 +141,7 @@ export default function HomePage() {
                 <Users className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-[#1c2718] group-hover:text-[#3b566e] transition-colors">
-                Class Teacher
+                Class Coordinator
               </h3>
               <p className="text-xs text-gray-600 leading-relaxed">
                 Class batch overview, identify at-risk students with low points, and generate section reports.
@@ -165,7 +166,7 @@ export default function HomePage() {
                 Head of Dept (HoD)
               </h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Department-level statistics, branch MAR completion rates, and final graduation signoff.
+                Department-level statistics, branch completion rates, and final graduation signoff.
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100 flex items-center text-xs font-bold text-[#a71a1b]">
@@ -187,7 +188,7 @@ export default function HomePage() {
                 Administrator
               </h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Configure 24 MAR categories, target points (60/50), manage user roles, and assign mentors.
+                Configure 24 activity categories, target points (60/50), manage user roles, and assign mentors.
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100 flex items-center text-xs font-bold text-[#385529]">
@@ -196,6 +197,54 @@ export default function HomePage() {
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* Official CBIT Departments Directory Section */}
+      <section className="bg-white rounded-2xl p-6 sm:p-8 border border-[#e8e3d8] shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e8e3d8] pb-4">
+          <div>
+            <h2 className="text-lg font-serif font-bold text-[#385529] uppercase tracking-wide flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-[#a16b15]" />
+              <span>Official Academic Departments & Courses (UG & PG)</span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Approved programs offering Mandatory Additional Requirements (MAR) Activity Points at CBIT Hyderabad.
+            </p>
+          </div>
+          <a
+            href="https://www.cbit.ac.in/admission_post/ug-pg-course-list/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold text-[#a16b15] hover:underline inline-flex items-center gap-1"
+          >
+            <span>cbit.ac.in Course Directory</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+          {CBIT_DEPARTMENTS.map((dept) => (
+            <div
+              key={dept.code}
+              className="p-3.5 rounded-xl bg-[#faf9f5] border border-[#e8e3d8] hover:border-[#a16b15]/50 transition-all space-y-1.5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-[#385529] bg-[#eef5ec] px-2 py-0.5 rounded border border-[#385529]/20 font-serif">
+                  {dept.code}
+                </span>
+                <span className="text-[10px] text-gray-500 font-semibold">
+                  Intake: {dept.intake} seats
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-[#1c2718] leading-tight">
+                {dept.name}
+              </h4>
+              <p className="text-[11px] text-gray-600">
+                Head of Dept: <strong className="text-[#385529]">{dept.hod}</strong>
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -226,7 +275,7 @@ export default function HomePage() {
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-[#dfa94b]">
               <FileCheck className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-white text-sm">Official CBIT MAR PDF</h4>
+              <h4 className="font-serif font-bold text-white text-sm">Official Printable Activity Sheet</h4>
             </div>
             <p className="text-xs text-[#e2ebd9] leading-relaxed">
               Generate 1-click printable PDF matching the exact 24-row physical CBIT Record of Activities sheet with Mentor and HoD signature blocks.

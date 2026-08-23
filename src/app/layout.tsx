@@ -3,20 +3,21 @@ import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { MobileNav } from '@/components/layout/MobileNav';
+import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
-  title: 'CBIT MAR - Student Activity Points Management System',
-  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous) Hyderabad - Mandatory Additional Requirements (MAR) Activity Points Automation & AI Document Intelligence System',
+  title: 'CBIT Activity Point System - Autonomous Activity Points Tracking',
+  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad - Automated Student Activity Point System with AI Document Intelligence, 24 Categories Tracking, and Graduation Approvals. Developed by Students of AI & Data Science (AI&DS, 5th Sem, 2026) under the guidance of Dr. D. Ramana Sir.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'CBIT MAR',
+    title: 'CBIT Activity Point System',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0066cc',
+  themeColor: '#385529',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -30,12 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+      <body className="min-h-screen bg-[#faf9f5] text-[#1c2718] flex flex-col antialiased selection:bg-[#385529] selection:text-white">
         <AppProvider>
           <Navbar />
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
             {children}
           </main>
+          <Footer />
           <MobileNav />
         </AppProvider>
       </body>

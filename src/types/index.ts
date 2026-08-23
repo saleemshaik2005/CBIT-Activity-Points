@@ -27,7 +27,7 @@ export interface ActivityCategory {
   default_points: number;
   max_points_allowed: number;
   description?: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 export interface StudentSubmission {
@@ -94,3 +94,18 @@ export interface MARCategoryProgress {
   pointsEarned: number;
   isCapped: boolean;
 }
+
+export interface MARCalculationResult {
+  totalApprovedPoints: number;
+  totalUncappedApprovedPoints: number;
+  totalPendingPoints: number;
+  targetPoints: number;
+  percentage: number;
+  isCompleted: boolean;
+  pointsRemaining: number;
+  semesterBreakdown: Record<number, number>;
+  categoryPointsMap: Record<number, number>;
+  approvedCount: number;
+  pendingCount: number;
+}
+

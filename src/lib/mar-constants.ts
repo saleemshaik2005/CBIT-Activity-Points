@@ -1,12 +1,141 @@
-import { ActivityCategory, UserProfile, StudentSubmission } from '@/types';
+import { ActivityCategory, StudentSubmission, UserProfile, MARCalculationResult } from '@/types';
 
-export const CBIT_COLLEGE_NAME = "CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)";
-export const CBIT_COLLEGE_CODE = "HYDERABAD-75";
-export const MAR_DOCUMENT_TITLE = "Record of Activities for Mandatory Additional Requirements";
+// ============================================================================
+// OFFICIAL CBIT DEPARTMENTS & COURSES LIST
+// Reference: https://www.cbit.ac.in/admission_post/ug-pg-course-list/
+// ============================================================================
+export const CBIT_DEPARTMENTS = [
+  {
+    code: 'AIDS',
+    name: 'Artificial Intelligence and Data Science (AI&DS)',
+    degrees: ['B.Tech'],
+    hod: 'Dr. D. Ramana',
+    hodEmail: 'dramana.aids@cbit.ac.in',
+    intake: 180,
+    sections: ['1', '2', '3']
+  },
+  {
+    code: 'CSE',
+    name: 'Computer Science and Engineering (CSE)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Prof. Y. Rama Devi',
+    hodEmail: 'hod_cse@cbit.ac.in',
+    intake: 180,
+    sections: ['1', '2', '3']
+  },
+  {
+    code: 'AIML',
+    name: 'Artificial Intelligence and Machine Learning (AI&ML)',
+    degrees: ['B.Tech'],
+    hod: 'Dr. M. Swamy Das',
+    hodEmail: 'hod_aiml@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  },
+  {
+    code: 'CSE-AIML',
+    name: 'CSE (Artificial Intelligence & Machine Learning)',
+    degrees: ['B.E.'],
+    hod: 'Prof. Y. Rama Devi',
+    hodEmail: 'hod_cse@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  },
+  {
+    code: 'CSE-IOT',
+    name: 'CSE (IoT & Cyber Security including Blockchain)',
+    degrees: ['B.E.'],
+    hod: 'Prof. Y. Rama Devi',
+    hodEmail: 'hod_cse@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  },
+  {
+    code: 'IT',
+    name: 'Information Technology (IT)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Dr. Suresh Pabboju',
+    hodEmail: 'hod_it@cbit.ac.in',
+    intake: 180,
+    sections: ['1', '2', '3']
+  },
+  {
+    code: 'ECE',
+    name: 'Electronics and Communication Engineering (ECE)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Dr. A. Suparshya Babu',
+    hodEmail: 'hod_ece@cbit.ac.in',
+    intake: 180,
+    sections: ['1', '2', '3']
+  },
+  {
+    code: 'EEE',
+    name: 'Electrical and Electronics Engineering (EEE)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Dr. G. Suresh Babu',
+    hodEmail: 'hod_eee@cbit.ac.in',
+    intake: 120,
+    sections: ['1', '2']
+  },
+  {
+    code: 'MECH',
+    name: 'Mechanical Engineering (ME)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Dr. P. Ravinder Reddy',
+    hodEmail: 'hod_mech@cbit.ac.in',
+    intake: 120,
+    sections: ['1', '2']
+  },
+  {
+    code: 'CIVIL',
+    name: 'Civil Engineering (CE)',
+    degrees: ['B.E.', 'M.Tech'],
+    hod: 'Dr. K. Jagannadha Rao',
+    hodEmail: 'hod_civil@cbit.ac.in',
+    intake: 120,
+    sections: ['1', '2']
+  },
+  {
+    code: 'CHEM',
+    name: 'Chemical Engineering (ChE)',
+    degrees: ['B.Tech'],
+    hod: 'Dr. P. V. Naga Prapurna',
+    hodEmail: 'hod_chem@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  },
+  {
+    code: 'BIOTECH',
+    name: 'Biotechnology (BioTech)',
+    degrees: ['B.Tech'],
+    hod: 'Dr. C. Obula Reddy',
+    hodEmail: 'hod_biotech@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  },
+  {
+    code: 'MBA',
+    name: 'School of Management Studies (MBA)',
+    degrees: ['MBA'],
+    hod: 'Dr. S. Saraswathi',
+    hodEmail: 'hod_mba@cbit.ac.in',
+    intake: 120,
+    sections: ['1', '2']
+  },
+  {
+    code: 'MCA',
+    name: 'Master of Computer Applications (MCA)',
+    degrees: ['MCA'],
+    hod: 'Dr. D. L. S. Reddy',
+    hodEmail: 'hod_mca@cbit.ac.in',
+    intake: 60,
+    sections: ['1']
+  }
+];
 
-export const DEFAULT_REGULAR_TARGET_POINTS = 60;
-export const DEFAULT_LATERAL_ENTRY_TARGET_POINTS = 50;
-
+// ============================================================================
+// THE 24 MANDATORY ADDITIONAL REQUIREMENTS (MAR) ACTIVITY CATEGORIES (CBIT AUTONOMOUS)
+// ============================================================================
 export const CBIT_24_CATEGORIES: ActivityCategory[] = [
   {
     id: 1,
@@ -15,8 +144,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "12 weeks",
     default_points: 20,
     max_points_allowed: 40,
-    description: "Online certification courses of 12-week duration from Swayam, NPTEL, Coursera, edX, etc.",
-    is_active: true,
+    description: "Online certification courses of 12-week duration from SWAYAM, NPTEL, Coursera, edX, etc."
   },
   {
     id: 2,
@@ -25,8 +153,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "8 weeks",
     default_points: 16,
     max_points_allowed: 40,
-    description: "Online certification courses of 8-week duration from Swayam, NPTEL, Coursera, etc.",
-    is_active: true,
+    description: "Online certification courses of 8-week duration from SWAYAM, NPTEL, Coursera, etc."
   },
   {
     id: 3,
@@ -35,8 +162,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "Organizer",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Organizing committee member for Technical Fest, R&D Day, Workshops, Hackathons, or Conferences.",
-    is_active: true,
+    description: "Lead/Organizer in college technical fests (e.g. SUDHEE), hackathons, national conferences, or workshops."
   },
   {
     id: 4,
@@ -45,8 +171,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "Participant",
     default_points: 3,
     max_points_allowed: 6,
-    description: "Participant in Technical Fest, Research Day, Hackathons, Competitions or Technical Workshops.",
-    is_active: true,
+    description: "Active participant in technical fests, hackathons, coding challenges, or technical workshops."
   },
   {
     id: 5,
@@ -55,8 +180,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Conducting surveys, village impact assessment, and submitting rural field reporting documentation.",
-    is_active: true,
+    description: "Rural community reporting, village social development surveys, and field research initiatives."
   },
   {
     id: 6,
@@ -65,8 +189,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 1,
     max_points_allowed: 5,
-    description: "Active participation in Harithaharam plantation drives and environmental greening initiatives.",
-    is_active: true,
+    description: "Participation in Telangana Harithaharam tree plantation drives and campus green initiatives."
   },
   {
     id: 7,
@@ -75,8 +198,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 20,
     max_points_allowed: 40,
-    description: "Volunteering in disaster relief operations, flood relief, emergency assistance camps.",
-    is_active: true,
+    description: "Active volunteering and service in disaster relief camps or emergency community rehabilitation."
   },
   {
     id: 8,
@@ -85,8 +207,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Participating in formal Debate, Group Discussion (GD), or Technical Quiz tournaments.",
-    is_active: true,
+    description: "Participation in inter-college/intra-college debates, GDs, technical quizzes, and elocution competitions."
   },
   {
     id: 9,
@@ -95,8 +216,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "Editor",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Chief/Section Editor of official college magazine, newsletter, or departmental technical journal.",
-    is_active: true,
+    description: "Editor or Chief Editor of college/department newsletters, technical magazines (e.g. Transcending, CBIT Gazette)."
   },
   {
     id: 10,
@@ -105,8 +225,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "Writer",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Article writer or contributor to institutional publications, newsletters, or online portals.",
-    is_active: true,
+    description: "Author/Contributor of technical or literary articles in institutional magazines or college portals."
   },
   {
     id: 11,
@@ -115,8 +234,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "External articles published in reputable national/regional newspapers, magazines, or tech blogs.",
-    is_active: true,
+    description: "Articles published in external mainstream newspapers, recognized technology magazines, or verified blogs."
   },
   {
     id: 12,
@@ -125,8 +243,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Published research paper in IEEE, Scopus, UGC-CARE indexed journals or peer-reviewed conferences.",
-    is_active: true,
+    description: "Authoring and publishing peer-reviewed research papers in Scopus/UGC CARE/IEEE indexed journals or conferences."
   },
   {
     id: 13,
@@ -135,8 +252,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 20,
     max_points_allowed: 40,
-    description: "Patents, working prototypes, smart hardware/software solutions developed outside curriculum.",
-    is_active: true,
+    description: "Developing innovative hardware/software prototypes, patent filings, or startup MVP projects outside academic curriculum."
   },
   {
     id: 14,
@@ -145,8 +261,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Voluntary blood donation or verified participation in National Service Scheme (NSS) / NCC camps.",
-    is_active: true,
+    description: "Voluntary blood donation certified by Red Cross/Lions Club or active participation in regular NSS/NCC activities."
   },
   {
     id: 15,
@@ -155,8 +270,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Leading the coordination, logistics, and organizing of on-campus blood donation or social camps.",
-    is_active: true,
+    description: "Organizing and coordinating voluntary blood donation camps or residential NSS social service camps."
   },
   {
     id: 16,
@@ -165,8 +279,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "College level",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Representing class or branch in inter-departmental CBIT annual sports meet.",
-    is_active: true,
+    description: "Participation in inter-departmental college sports tournaments and annual athletic meets."
   },
   {
     id: 17,
@@ -175,8 +288,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "University level",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Representing the college in inter-university sports competitions or tournaments.",
-    is_active: true,
+    description: "Representing CBIT in Osmania University inter-college sports tournaments or inter-university meets."
   },
   {
     id: 18,
@@ -185,8 +297,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "Region level",
     default_points: 12,
     max_points_allowed: 24,
-    description: "Regional zonal sports events and state-level preliminary tournaments.",
-    is_active: true,
+    description: "Participation in regional/zonal sports competitions representing college or district."
   },
   {
     id: 19,
@@ -195,8 +306,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "State level",
     default_points: 15,
     max_points_allowed: 30,
-    description: "State-level championship representation in athletics, team sports, or indoor games.",
-    is_active: true,
+    description: "Participation in Telangana state-level sports championships and games."
   },
   {
     id: 20,
@@ -205,8 +315,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "National level",
     default_points: 20,
     max_points_allowed: 20,
-    description: "National championship or Khelo India university games representation with official certificate.",
-    is_active: true,
+    description: "Representing Telangana state or university at national-level sports events and Khelo India games."
   },
   {
     id: 21,
@@ -215,8 +324,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Performance in dance, drama, theatre, elocution, music, or cultural fest competitions.",
-    is_active: true,
+    description: "Participation or performance in dance, classical/western music, theatre drama, or annual fest (e.g. SHRUTHI)."
   },
   {
     id: 22,
@@ -225,8 +333,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Active membership in IEEE, CSI, IETE, ACM, ASME, SAE, ISTE, or equivalent professional bodies.",
-    is_active: true,
+    description: "Active annual student membership in professional bodies like IEEE, CSI, ACM, IETE, ASME, SAE, etc."
   },
   {
     id: 23,
@@ -235,8 +342,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Active executive or core team member in recognized campus student chapters and technical clubs.",
-    is_active: true,
+    description: "Active membership and contributions to recognized campus clubs (e.g. Robotics Club, Coding Club, Toastmasters)."
   },
   {
     id: 24,
@@ -245,8 +351,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Authorized industrial tour visit with documented technical observation report submitted to department.",
-    is_active: true,
+    description: "Attending department-approved industrial visits and submitting verified technical observation report."
   },
   {
     id: 25,
@@ -255,8 +360,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Official coverage for institutional events, photography competitions, or film club exhibits.",
-    is_active: true,
+    description: "Creative photography, short-filmmaking, and digital media coverage for college events."
   },
   {
     id: 26,
@@ -265,8 +369,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Attending verified Yoga, meditation, or wellness camps with issued completion certificate.",
-    is_active: true,
+    description: "Participation in certified yoga camps, mindfulness training, and International Yoga Day celebrations."
   },
   {
     id: 27,
@@ -275,8 +378,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 20,
     max_points_allowed: 20,
-    description: "Incubated startup, MSME registration, angel pitch participation, or self-venture launch.",
-    is_active: true,
+    description: "Incubating a startup, founding an enterprise, or graduating from recognized entrepreneurship accelerators."
   },
   {
     id: 28,
@@ -285,8 +387,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Certified trekking, mountaineering, scuba diving, paragliding, or state youth adventure programs.",
-    is_active: true,
+    description: "Certified participation in mountaineering, trekking expeditions, parasailing, or adventure sports camps."
   },
   {
     id: 29,
@@ -295,8 +396,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "Dedicated teaching or skill development training for underprivileged children or disabled individuals.",
-    is_active: true,
+    description: "Voluntary community tutoring, technical skill training, or assistance for differently-abled/underprivileged children."
   },
   {
     id: 30,
@@ -305,8 +405,7 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 10,
     max_points_allowed: 20,
-    description: "NGO volunteering, environmental cleanliness drives, civic awareness, or community development.",
-    is_active: true,
+    description: "Sustained community service, environmental campaigns, or village empowerment initiatives."
   },
   {
     id: 31,
@@ -315,64 +414,75 @@ export const CBIT_24_CATEGORIES: ActivityCategory[] = [
     sub_type: "General",
     default_points: 5,
     max_points_allowed: 10,
-    description: "Formally elected/nominated Class Representative (CR) discharging responsibilities for academic year.",
-    is_active: true,
+    description: "Elected or nominated Class Representative (CR) discharging responsibilities for an entire academic year."
   }
 ];
 
-// Helper to calculate total verified points considering category caps
+export const CBIT_COLLEGE_NAME = "CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)";
+export const CBIT_COLLEGE_CODE = "HYDERABAD - 500075";
+export const MAR_DOCUMENT_TITLE = "RECORD OF ACTIVITIES FOR ACTIVITY POINTS";
+
+export const DEFAULT_REGULAR_TARGET_POINTS = 60;
+export const DEFAULT_LATERAL_ENTRY_TARGET_POINTS = 50;
+
+// Target Activity Points for Graduation (CBIT Autonomous)
+export const DEFAULT_SETTINGS = {
+  regular_target_points: DEFAULT_REGULAR_TARGET_POINTS,
+  lateral_entry_target_points: DEFAULT_LATERAL_ENTRY_TARGET_POINTS,
+  college_name: CBIT_COLLEGE_NAME,
+  college_code: CBIT_COLLEGE_CODE,
+  academic_year: "2025-2026"
+};
+
+// Calculate Student Progress with Category Caps applied
 export function calculateStudentMARProgress(
   submissions: StudentSubmission[],
   categories: ActivityCategory[] = CBIT_24_CATEGORIES,
-  targetPoints: number = DEFAULT_REGULAR_TARGET_POINTS
-) {
+  targetPoints: number = 60
+): MARCalculationResult {
   const approvedSubmissions = submissions.filter(s => s.status === 'approved');
   const pendingSubmissions = submissions.filter(s => s.status === 'pending_mentor');
 
-  // Group by category SNo to enforce max_points_allowed per category
-  const categoryPointsMap = new Map<number, number>();
-  const categoryMaxMap = new Map<number, number>();
+  // Group approved submissions by Category SNo (1 to 24)
+  const categoryPointsMap: Record<number, number> = {};
+  const semesterMap: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
 
-  categories.forEach(cat => {
-    categoryMaxMap.set(cat.sno, Math.max(categoryMaxMap.get(cat.sno) || 0, cat.max_points_allowed));
-  });
-
-  approvedSubmissions.forEach(sub => {
-    const cat = categories.find(c => c.id === sub.category_id);
-    const sno = cat ? cat.sno : 1;
-    const current = categoryPointsMap.get(sno) || 0;
-    categoryPointsMap.set(sno, current + (sub.awarded_points || sub.claimed_points || 0));
-  });
-
-  // Calculate capped total
-  let totalApprovedPoints = 0;
   let totalUncappedApprovedPoints = 0;
-
-  categoryPointsMap.forEach((pts, sno) => {
-    totalUncappedApprovedPoints += pts;
-    const maxAllowed = categoryMaxMap.get(sno) || 40;
-    totalApprovedPoints += Math.min(pts, maxAllowed);
-  });
-
   let totalPendingPoints = 0;
+
   pendingSubmissions.forEach(sub => {
     totalPendingPoints += (sub.claimed_points || 0);
   });
 
-  const percentage = Math.min(100, Math.round((totalApprovedPoints / targetPoints) * 100));
-  const isCompleted = totalApprovedPoints >= targetPoints;
-  const pointsRemaining = Math.max(0, targetPoints - totalApprovedPoints);
-
-  // Semester breakdown (I to VIII)
-  const semesterMap: { [sem: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
   approvedSubmissions.forEach(sub => {
-    if (sub.semester >= 1 && sub.semester <= 8) {
-      semesterMap[sub.semester] = (semesterMap[sub.semester] || 0) + (sub.awarded_points || sub.claimed_points || 0);
-    }
+    const pts = sub.awarded_points ?? sub.claimed_points ?? 0;
+    totalUncappedApprovedPoints += pts;
+
+    // Attribute to category
+    const cat = categories.find(c => c.id === sub.category_id);
+    const sno = cat ? cat.sno : 1;
+    categoryPointsMap[sno] = (categoryPointsMap[sno] || 0) + pts;
+
+    // Attribute to semester
+    const sem = sub.semester || 1;
+    semesterMap[sem] = (semesterMap[sem] || 0) + pts;
   });
 
+  // Apply maximum allowable cap per category SNo
+  let totalCappedApprovedPoints = 0;
+  Object.entries(categoryPointsMap).forEach(([snoStr, earned]) => {
+    const sno = Number(snoStr);
+    const matchingCats = categories.filter(c => c.sno === sno);
+    const maxCap = matchingCats.length > 0 ? matchingCats[0].max_points_allowed : 40;
+    totalCappedApprovedPoints += Math.min(earned, maxCap);
+  });
+
+  const percentage = Math.min(100, Math.round((totalCappedApprovedPoints / targetPoints) * 100));
+  const isCompleted = totalCappedApprovedPoints >= targetPoints;
+  const pointsRemaining = Math.max(0, targetPoints - totalCappedApprovedPoints);
+
   return {
-    totalApprovedPoints,
+    totalApprovedPoints: totalCappedApprovedPoints,
     totalUncappedApprovedPoints,
     totalPendingPoints,
     targetPoints,
@@ -386,42 +496,44 @@ export function calculateStudentMARProgress(
   };
 }
 
-// Mock initial data for testing right away before Supabase connect
+// Student User: Shaik Saleem (AI&DS, Section 2, 5th Sem, Batch of 2026)
 export const MOCK_CURRENT_USER: UserProfile = {
   id: "usr-student-001",
-  email: "rahul.sharma@cbit.ac.in",
-  full_name: "Rahul Sharma",
+  email: "saleemshaik2005@cbit.ac.in",
+  full_name: "Shaik Saleem",
   role: "student",
-  roll_number: "160122733045",
-  department: "Computer Science & Engineering",
-  section: "CSE-1",
-  batch_year: "2022-2026",
+  roll_number: "160122771045",
+  department: "Artificial Intelligence and Data Science (AI&DS)",
+  section: "2",
+  batch_year: "2022-2026 (5th Semester)",
   is_lateral_entry: false,
   mentor_id: "usr-mentor-001",
-  mentor_name: "Dr. K. Radhika (Assoc. Prof)",
+  mentor_name: "Dr. D. Ramana (Assoc. Prof & Head, AI&DS)",
   phone_number: "+91 98765 43210"
 };
 
+// Faculty Mentor: Dr. D. Ramana (Head, Department of AI&DS)
 export const MOCK_MENTOR_USER: UserProfile = {
   id: "usr-mentor-001",
-  email: "kradhika.cse@cbit.ac.in",
-  full_name: "Dr. K. Radhika",
+  email: "dramana.aids@cbit.ac.in",
+  full_name: "Dr. D. Ramana",
   role: "mentor",
-  department: "Computer Science & Engineering",
-  batch_year: "Faculty",
+  department: "Artificial Intelligence and Data Science (AI&DS)",
+  batch_year: "Faculty / Project Guide",
   is_lateral_entry: false,
 };
 
+// Mock initial approved and pending submissions for Shaik Saleem
 export const MOCK_SUBMISSIONS: StudentSubmission[] = [
   {
     id: "sub-001",
     student_id: "usr-student-001",
-    student_name: "Rahul Sharma",
-    student_roll_no: "160122733045",
+    student_name: "Shaik Saleem",
+    student_roll_no: "160122771045",
     category_id: 1, // MOOCs 12 weeks
     category: CBIT_24_CATEGORIES[0],
-    activity_title: "NPTEL Cloud Computing 12-Week Certification",
-    issuing_organization: "NPTEL / IIT Kharagpur",
+    activity_title: "NPTEL Deep Learning & AI Foundations 12-Week Certification",
+    issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
     event_date: "2024-04-28",
     semester: 4,
     academic_year: "2023-2024",
@@ -432,18 +544,18 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Verified with NPTEL score sheet. Excellent performance with Elite+Silver medal.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Dr. D. Ramana",
     approved_at: "2024-05-02T10:30:00Z",
     created_at: "2024-05-01T08:15:00Z"
   },
   {
     id: "sub-002",
     student_id: "usr-student-001",
-    student_name: "Rahul Sharma",
-    student_roll_no: "160122733045",
+    student_name: "Shaik Saleem",
+    student_roll_no: "160122771045",
     category_id: 3, // Tech Fest Organizer
     category: CBIT_24_CATEGORIES[2],
-    activity_title: "SUDHEE 2024 Technical Fest - Core Web Team Lead",
+    activity_title: "SUDHEE 2024 National Technical Fest - Core AI Team Lead",
     issuing_organization: "CBIT Hyderabad",
     event_date: "2024-03-15",
     semester: 4,
@@ -453,52 +565,56 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     certificate_url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=60",
     file_type: "image/jpeg",
     status: "approved",
-    mentor_remarks: "Confirmed by Sudhee 2024 Staff Convener.",
+    mentor_remarks: "Confirmed by Sudhee 2024 Faculty Convener.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Dr. D. Ramana",
     approved_at: "2024-03-20T14:20:00Z",
     created_at: "2024-03-18T11:00:00Z"
   },
   {
     id: "sub-003",
     student_id: "usr-student-001",
-    student_name: "Rahul Sharma",
-    student_roll_no: "160122733045",
-    category_id: 14, // Blood donation NSS
+    student_name: "Shaik Saleem",
+    student_roll_no: "160122771045",
+    category_id: 14, // Blood donation / NSS
     category: CBIT_24_CATEGORIES[13],
-    activity_title: "Annual Mega Blood Donation Camp at CBIT Open Air Theatre",
-    issuing_organization: "Red Cross Society & NSS CBIT",
-    event_date: "2024-08-15",
-    semester: 5,
-    academic_year: "2024-2025",
+    activity_title: "Voluntary Blood Donation Camp - Youth Red Cross Unit",
+    issuing_organization: "Indian Red Cross Society & NSS CBIT",
+    event_date: "2023-11-10",
+    semester: 3,
+    academic_year: "2023-2024",
     claimed_points: 5,
-    awarded_points: 0,
-    certificate_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=60",
+    awarded_points: 5,
+    certificate_url: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=800&auto=format&fit=crop&q=60",
     file_type: "image/jpeg",
-    status: "pending_mentor",
-    created_at: "2024-08-16T09:45:00Z"
+    status: "approved",
+    mentor_remarks: "Blood donor certificate verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Dr. D. Ramana",
+    approved_at: "2023-11-15T09:00:00Z",
+    created_at: "2023-11-12T16:00:00Z"
   },
   {
     id: "sub-004",
     student_id: "usr-student-001",
-    student_name: "Rahul Sharma",
-    student_roll_no: "160122733045",
-    category_id: 22, // Member of Professional Society
+    student_name: "Shaik Saleem",
+    student_roll_no: "160122771045",
+    category_id: 22, // IEEE Student Chapter Member
     category: CBIT_24_CATEGORIES[21],
-    activity_title: "IEEE Computer Society Student Member 2024-2025",
+    activity_title: "IEEE Computer Society Student Branch Membership (2024-25)",
     issuing_organization: "IEEE Hyderabad Section",
-    event_date: "2024-01-10",
-    semester: 4,
+    event_date: "2024-01-20",
+    semester: 3,
     academic_year: "2023-2024",
     claimed_points: 5,
     awarded_points: 5,
-    certificate_url: "https://images.unsplash.com/photo-1544531586-fde5298cdd40?w=800&auto=format&fit=crop&q=60",
+    certificate_url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60",
     file_type: "image/jpeg",
     status: "approved",
-    mentor_remarks: "Membership card verified.",
+    mentor_remarks: "Active IEEE membership verified with membership number.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
-    approved_at: "2024-01-15T16:00:00Z",
-    created_at: "2024-01-12T12:00:00Z"
+    approver_name: "Dr. D. Ramana",
+    approved_at: "2024-01-25T11:00:00Z",
+    created_at: "2024-01-22T10:00:00Z"
   }
 ];

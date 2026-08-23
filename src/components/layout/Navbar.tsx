@@ -16,7 +16,6 @@ import {
   Sparkles,
   Users,
   Settings,
-  ChevronRight,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -25,15 +24,15 @@ export const Navbar: React.FC = () => {
 
   const roleNavItems: Record<UserRole, { label: string; href: string; icon: React.ElementType }[]> = {
     student: [
-      { label: 'MAR Dashboard', href: '/student', icon: LayoutDashboard },
+      { label: 'Activity Dashboard', href: '/student', icon: LayoutDashboard },
       { label: 'AI Upload', href: '/student/upload', icon: Sparkles },
       { label: 'My Submissions', href: '/student/history', icon: FileCheck },
-      { label: 'MAR Guidelines', href: '/student/guidelines', icon: BookOpen },
+      { label: 'Activity Guidelines', href: '/student/guidelines', icon: BookOpen },
     ],
     mentor: [
       { label: 'Verification Queue', href: '/mentor', icon: CheckCircle },
       { label: 'Assigned Mentees', href: '/mentor/mentees', icon: Users },
-      { label: 'MAR Rulebook', href: '/mentor/rules', icon: BookOpen },
+      { label: 'Activity Rulebook', href: '/mentor/rules', icon: BookOpen },
     ],
     class_teacher: [
       { label: 'Class Overview', href: '/teacher', icon: LayoutDashboard },
@@ -65,12 +64,12 @@ export const Navbar: React.FC = () => {
             </span>
             <span className="text-[#dfa94b] font-bold">•</span>
             <span className="text-[#dfa94b] font-semibold">Hyderabad-75</span>
-            <span className="hidden md:inline text-white/80">| Affiliated to Osmania University</span>
+            <span className="hidden md:inline text-white/80">| Affiliated to Osmania University | NAAC A++</span>
           </div>
 
           {/* Interactive Role Switcher */}
           <div className="flex items-center space-x-1 text-[11px]">
-            <span className="text-[#f5e9d3] font-medium hidden md:inline">Role View:</span>
+            <span className="text-[#f5e9d3] font-medium hidden md:inline">Portal View:</span>
             <div className="flex items-center bg-[#273e1c] rounded-md p-0.5 border border-[#a16b15]/60">
               {(['student', 'mentor', 'class_teacher', 'hod', 'admin'] as UserRole[]).map((r) => (
                 <button
@@ -96,7 +95,7 @@ export const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             
-            {/* CBIT Official Brand & MAR Identity */}
+            {/* CBIT Official Brand & Activity Point System Identity */}
             <Link href="/" className="flex items-center space-x-3.5 group">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#385529] to-[#273e1c] p-0.5 shadow-md flex items-center justify-center border-2 border-[#a16b15]">
                 <div className="w-full h-full rounded-lg bg-[#385529] flex items-center justify-center text-[#dfa94b]">
@@ -107,14 +106,14 @@ export const Navbar: React.FC = () => {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-serif font-extrabold text-[#385529] text-xl tracking-tight leading-none group-hover:text-[#a71a1b] transition-colors">
-                    CBIT MAR
+                    CBIT Activity Point System
                   </span>
                   <span className="text-[10px] bg-[#fbf5eb] text-[#a16b15] border border-[#a16b15]/40 font-bold px-2 py-0.5 rounded-full uppercase">
                     Autonomous
                   </span>
                 </div>
                 <p className="text-[11px] text-[#3b566e] font-medium tracking-tight mt-0.5">
-                  Mandatory Additional Requirements Automation System
+                  Automated Student Activity Points & Verification Platform
                 </p>
               </div>
             </Link>

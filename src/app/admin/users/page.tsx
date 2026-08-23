@@ -9,15 +9,15 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
 
   const [userList, setUserList] = useState([
-    { id: '1', name: 'Rahul Sharma', email: 'rahul.sharma@cbit.ac.in', roll: '160122733045', role: 'student' as UserRole, mentor: 'Dr. K. Radhika' },
-    { id: '2', name: 'Sneha Reddy', email: 'sneha.reddy@cbit.ac.in', roll: '160122733046', role: 'student' as UserRole, mentor: 'Dr. K. Radhika' },
-    { id: '3', name: 'Mohammed Farhan', email: 'farhan.le@cbit.ac.in', roll: '160122733301', role: 'student' as UserRole, mentor: 'Prof. M. Srinivasa Rao' },
-    { id: '4', name: 'Dr. K. Radhika', email: 'kradhika.cse@cbit.ac.in', roll: 'FAC-014', role: 'mentor' as UserRole, mentor: '-' },
+    { id: '1', name: 'Shaik Saleem', email: 'saleemshaik2005@cbit.ac.in', roll: '160122771045', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
+    { id: '2', name: 'Sneha Reddy', email: 'sneha.reddy@cbit.ac.in', roll: '160122771046', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
+    { id: '3', name: 'Mohammed Farhan', email: 'farhan.le@cbit.ac.in', roll: '160122771301', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
+    { id: '4', name: 'Dr. D. Ramana', email: 'dramana.aids@cbit.ac.in', roll: 'FAC-AIDS-01', role: 'mentor' as UserRole, mentor: '-' },
     { id: '5', name: 'Prof. M. Srinivasa Rao', email: 'srinivasa.cse@cbit.ac.in', roll: 'FAC-008', role: 'class_teacher' as UserRole, mentor: '-' },
-    { id: '6', name: 'Dr. Y. Rama Devi', email: 'hod_cse@cbit.ac.in', roll: 'FAC-001', role: 'hod' as UserRole, mentor: '-' },
+    { id: '6', name: 'Prof. Y. Rama Devi', email: 'hod_cse@cbit.ac.in', roll: 'FAC-001', role: 'hod' as UserRole, mentor: '-' },
   ]);
 
-  const mentors = ['Dr. K. Radhika', 'Prof. M. Srinivasa Rao', 'Dr. T. Sridevi', 'Dr. B. Indira'];
+  const mentors = ['Dr. D. Ramana', 'Dr. K. Radhika', 'Prof. M. Srinivasa Rao', 'Dr. T. Sridevi', 'Dr. B. Indira'];
 
   const handleRoleChange = (id: string, newRole: UserRole) => {
     setUserList(userList.map(u => u.id === id ? { ...u, role: newRole } : u));
@@ -37,18 +37,18 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border-t-4 border-[#385529] border-x border-b border-[#e8e3d8] shadow-xs">
         <div className="space-y-1">
           <Link
             href="/admin"
-            className="inline-flex items-center space-x-1.5 text-xs font-bold text-gray-600 hover:text-blue-600 transition-colors mb-1"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#385529] hover:text-[#a71a1b] transition-colors mb-1"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Admin Hub</span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-gray-900">User Management & Mentor Allocation</h1>
+          <h1 className="text-2xl font-serif font-extrabold text-[#385529]">User Management & Mentor Allocation</h1>
           <p className="text-xs text-gray-500">
-            Assign user roles and map students to their designated faculty counselors.
+            Assign user roles and map students to their designated faculty counselors across departments.
           </p>
         </div>
       </div>
@@ -61,15 +61,15 @@ export default function AdminUsersPage() {
           placeholder="Search by student name, roll number, or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs"
+          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#e8e3d8] focus:outline-none focus:ring-2 focus:ring-[#385529] bg-white shadow-2xs"
         />
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#e8e3d8] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider">
+            <thead className="bg-[#faf9f5] border-b border-[#e8e3d8] text-[#385529] font-serif font-bold uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">Name & Email</th>
                 <th className="py-3 px-3">Roll / ID</th>
@@ -79,9 +79,9 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50/70 transition-colors">
+                <tr key={user.id} className="hover:bg-[#faf9f5] transition-colors">
                   <td className="py-3.5 px-4">
-                    <div className="font-bold text-gray-900">{user.name}</div>
+                    <div className="font-bold text-[#1c2718]">{user.name}</div>
                     <div className="text-[11px] text-gray-500">{user.email}</div>
                   </td>
                   <td className="py-3.5 px-3 font-semibold text-gray-700">{user.roll}</td>
@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
                     <select
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                      className="text-xs p-1.5 rounded-lg border border-gray-300 font-medium bg-white capitalize"
+                      className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] font-medium bg-white capitalize"
                     >
                       <option value="student">Student</option>
                       <option value="mentor">Mentor</option>
@@ -103,7 +103,7 @@ export default function AdminUsersPage() {
                       <select
                         value={user.mentor}
                         onChange={(e) => handleMentorChange(user.id, e.target.value)}
-                        className="text-xs p-1.5 rounded-lg border border-gray-300 font-medium bg-white"
+                        className="text-xs p-1.5 rounded-lg border border-[#e8e3d8] font-medium bg-white"
                       >
                         {mentors.map((m) => (
                           <option key={m} value={m}>
