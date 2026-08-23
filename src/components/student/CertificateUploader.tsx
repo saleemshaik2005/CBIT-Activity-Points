@@ -12,7 +12,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
+  Award,
 } from 'lucide-react';
 
 export const CertificateUploader: React.FC = () => {
@@ -37,7 +37,6 @@ export const CertificateUploader: React.FC = () => {
     setUploadError(null);
     setSubmissionSuccess(false);
 
-    // Validate size (max 15MB)
     if (file.size > 15 * 1024 * 1024) {
       setUploadError('File size exceeds 15MB. Please upload a smaller image or compressed PDF.');
       return;
@@ -46,11 +45,9 @@ export const CertificateUploader: React.FC = () => {
     setFileName(file.name);
     setFileType(file.type || 'image/jpeg');
 
-    // Create local object URL for preview
     const previewUrl = URL.createObjectURL(file);
     setFilePreviewUrl(previewUrl);
 
-    // Start AI analysis
     setIsAnalyzing(true);
 
     try {
@@ -73,19 +70,18 @@ export const CertificateUploader: React.FC = () => {
       setIsModalOpen(true);
     } catch (err: any) {
       console.error('Extraction error:', err);
-      // Fallback extraction so student is NEVER blocked
       const fallbackData: AIExtractionResult = {
         certificateTitle: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' '),
         recipientName: "Student",
-        issuingOrganization: "Certification Organization",
+        issuingOrganization: "Certification Body",
         completionDate: new Date().toISOString().split('T')[0],
         matchedCategorySno: 1,
         matchedCategoryName: "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)",
         matchedSubType: "12 weeks",
         suggestedPoints: 20,
-        confidenceScore: 0.85,
-        summary: "Certificate submitted by student. Please review and confirm the details.",
-        keySkillsOrTopics: ["Certification", "Academic Requirement"],
+        confidenceScore: 0.88,
+        summary: "Certificate uploaded by student. Please review and confirm details.",
+        keySkillsOrTopics: ["Certification", "CBIT MAR Activity"],
       };
       setAiData(fallbackData);
       setIsAnalyzing(false);
@@ -127,20 +123,20 @@ export const CertificateUploader: React.FC = () => {
     <div className="space-y-6">
       
       {submissionSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center space-x-3 animate-in fade-in duration-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-[#eef5ec] border border-[#385529]/30 text-[#273e1c] flex items-center space-x-3 animate-in fade-in duration-300">
+          <CheckCircle2 className="w-5 h-5 text-[#385529] flex-shrink-0" />
           <div className="text-xs">
-            <p className="font-bold">Certificate successfully submitted for Mentor Verification!</p>
-            <p className="text-emerald-700 mt-0.5">
-              Your mentor will review your document and award the activity points.
+            <p className="font-bold">Certificate successfully submitted for Faculty Mentor Verification!</p>
+            <p className="text-[#385529] mt-0.5">
+              Your mentor will inspect your document and award the activity points to your official MAR record.
             </p>
           </div>
         </div>
       )}
 
       {uploadError && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center space-x-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-[#fdf2f2] border border-[#a71a1b]/30 text-[#a71a1b] flex items-center space-x-3">
+          <AlertCircle className="w-5 h-5 text-[#a71a1b] flex-shrink-0" />
           <p className="text-xs font-semibold">{uploadError}</p>
         </div>
       )}
@@ -150,20 +146,20 @@ export const CertificateUploader: React.FC = () => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-3xl p-8 text-center transition-all bg-gradient-to-b from-white to-gray-50/50 ${
+        className={`relative border-2 border-dashed rounded-3xl p-8 text-center transition-all bg-white ${
           isDragging
-            ? 'border-blue-500 bg-blue-50/50 scale-[1.01]'
-            : 'border-gray-300 hover:border-blue-400'
+            ? 'border-[#385529] bg-[#eef5ec]/50 scale-[1.01]'
+            : 'border-[#e8e3d8] hover:border-[#a16b15]'
         }`}
       >
         {isAnalyzing ? (
           <div className="py-8 space-y-4">
             <div className="relative w-16 h-16 mx-auto">
-              <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
-              <Sparkles className="w-6 h-6 text-amber-500 absolute inset-0 m-auto animate-pulse" />
+              <Loader2 className="w-16 h-16 text-[#385529] animate-spin" />
+              <Sparkles className="w-6 h-6 text-[#a16b15] absolute inset-0 m-auto animate-pulse" />
             </div>
             <div>
-              <h4 className="text-base font-bold text-gray-900">
+              <h4 className="text-base font-serif font-bold text-[#385529]">
                 Gemini 2.0 Flash AI is analyzing your certificate...
               </h4>
               <p className="text-xs text-gray-500 mt-1">
@@ -173,16 +169,16 @@ export const CertificateUploader: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <div className="w-16 h-16 bg-[#eef5ec] text-[#385529] rounded-2xl flex items-center justify-center mx-auto border border-[#385529]/20 shadow-xs">
               <UploadCloud className="w-8 h-8" />
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-lg font-serif font-bold text-[#385529]">
                 Upload Certificate or Event Proof
               </h3>
               <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
-                Drag and drop your certificate here, or snap a photo directly from your mobile camera.
+                Drag and drop your certificate here, or snap a photo directly from your smartphone camera.
               </p>
             </div>
 
@@ -208,25 +204,25 @@ export const CertificateUploader: React.FC = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-2"
+                className="px-5 py-2.5 rounded-xl bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15]"
               >
-                <FileText className="w-4 h-4" />
+                <FileText className="w-4 h-4 text-[#dfa94b]" />
                 <span>Browse Files (PDF, JPG, PNG)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-gray-800 text-xs font-bold border border-gray-300 shadow-sm transition-all flex items-center space-x-2"
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-[#faf7f2] text-[#385529] text-xs font-bold border border-[#e8e3d8] shadow-xs transition-all flex items-center space-x-2"
               >
-                <Camera className="w-4 h-4 text-blue-600" />
+                <Camera className="w-4 h-4 text-[#a16b15]" />
                 <span>Take Photo with Mobile Camera</span>
               </button>
             </div>
 
-            <div className="pt-2 text-[11px] text-gray-400 flex items-center justify-center space-x-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>AI will auto-fill all form fields with 1-click student editability</span>
+            <div className="pt-2 text-[11px] text-[#a16b15] font-medium flex items-center justify-center space-x-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#a16b15]" />
+              <span>AI auto-fills all fields with 1-click student review & edit control</span>
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@
 import React from 'react';
 import { calculateStudentMARProgress } from '@/lib/mar-constants';
 import { ActivityCategory, StudentSubmission } from '@/types';
-import { Award, CheckCircle2, Clock, AlertTriangle, Sparkles } from 'lucide-react';
+import { Award, CheckCircle2, Clock, AlertTriangle, Download } from 'lucide-react';
 
 interface Props {
   submissions: StudentSubmission[];
@@ -23,37 +23,35 @@ export const MARProgressBar: React.FC<Props> = ({
   const progress = calculateStudentMARProgress(submissions, categories, targetPoints);
 
   return (
-    <div className="bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-sm border border-blue-100 relative overflow-hidden">
-      {/* Background soft glow */}
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="bg-white rounded-2xl p-6 shadow-xs border-t-4 border-[#385529] border-x border-b border-[#e8e3d8] relative overflow-hidden">
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         
         {/* Left: Overall Progress Details */}
         <div className="space-y-3 flex-1">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full flex items-center gap-1">
-              <Award className="w-3.5 h-3.5" />
-              {isLateralEntry ? 'Lateral Entry (Diploma)' : '4-Year B.Tech'} MAR Goal
+            <span className="text-xs font-bold uppercase tracking-wider text-[#385529] bg-[#eef5ec] px-3 py-1 rounded-full border border-[#385529]/20 flex items-center gap-1.5 font-serif">
+              <Award className="w-3.5 h-3.5 text-[#a16b15]" />
+              {isLateralEntry ? 'Lateral Entry' : '4-Year B.Tech'} MAR Requirement
             </span>
             {progress.isCompleted ? (
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Requirement Satisfied
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Requirement Satisfied
               </span>
             ) : (
-              <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" /> {progress.pointsRemaining} Points Needed
+              <span className="text-xs font-semibold text-[#a16b15] bg-[#fbf5eb] px-2.5 py-1 rounded-full border border-[#a16b15]/30 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> {progress.pointsRemaining} Points Remaining
               </span>
             )}
           </div>
 
           <div className="flex items-baseline space-x-3">
-            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            <h2 className="text-4xl font-serif font-extrabold text-[#385529] tracking-tight">
               {progress.totalApprovedPoints}
-              <span className="text-xl font-normal text-gray-500"> / {targetPoints} pts</span>
+              <span className="text-xl font-normal text-gray-500 font-sans"> / {targetPoints} pts</span>
             </h2>
-            <span className="text-base font-bold text-blue-600">
-              ({progress.percentage}% Complete)
+            <span className="text-base font-bold text-[#a16b15]">
+              ({progress.percentage}% Completed)
             </span>
           </div>
 
@@ -64,31 +62,31 @@ export const MARProgressBar: React.FC<Props> = ({
           </p>
 
           {/* Points Status Badges */}
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <div className="flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <div className="flex items-center space-x-1.5 text-xs text-[#385529] bg-[#eef5ec] px-2.5 py-1 rounded-md border border-[#385529]/20 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#385529]" />
               <span><strong>{progress.totalApprovedPoints}</strong> Approved</span>
             </div>
             {progress.totalPendingPoints > 0 && (
-              <div className="flex items-center space-x-1.5 text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
-                <Clock className="w-3.5 h-3.5" />
+              <div className="flex items-center space-x-1.5 text-xs text-[#a16b15] bg-[#fbf5eb] px-2.5 py-1 rounded-md border border-[#a16b15]/30 font-medium">
+                <Clock className="w-3.5 h-3.5 text-[#a16b15]" />
                 <span><strong>{progress.totalPendingPoints}</strong> Pending Mentor</span>
               </div>
             )}
             {progress.totalUncappedApprovedPoints > progress.totalApprovedPoints && (
-              <div className="flex items-center space-x-1.5 text-xs text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200" title="Points beyond category maximum allowed are automatically capped according to CBIT rules">
-                <AlertTriangle className="w-3.5 h-3.5" />
+              <div className="flex items-center space-x-1.5 text-xs text-[#3b566e] bg-[#f0f4f8] px-2.5 py-1 rounded-md border border-[#3b566e]/20" title="Points beyond category maximum allowed are automatically capped according to CBIT rules">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#3b566e]" />
                 <span>{progress.totalUncappedApprovedPoints - progress.totalApprovedPoints} pts capped</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: Progress Meter & Official PDF Download */}
+        {/* Right: Progress Bar & PDF Download */}
         <div className="flex flex-col items-center md:items-end justify-center space-y-3">
-          <div className="w-full md:w-56 bg-gray-200 h-4 rounded-full overflow-hidden p-0.5 shadow-inner">
+          <div className="w-full md:w-56 bg-[#e8e3d8] h-4 rounded-full overflow-hidden p-0.5 shadow-inner">
             <div
-              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full rounded-full transition-all duration-700 ease-out"
+              className="bg-gradient-to-r from-[#385529] via-[#4d7237] to-[#a16b15] h-full rounded-full transition-all duration-700 ease-out"
               style={{ width: `${Math.min(100, progress.percentage)}%` }}
             />
           </div>
@@ -96,8 +94,9 @@ export const MARProgressBar: React.FC<Props> = ({
           {onDownloadPDF && (
             <button
               onClick={onDownloadPDF}
-              className="w-full md:w-auto inline-flex items-center justify-center space-x-2 bg-white hover:bg-gray-50 text-blue-700 font-semibold px-4 py-2.5 rounded-xl border border-blue-200 shadow-sm hover:shadow transition-all text-xs"
+              className="w-full md:w-auto inline-flex items-center justify-center space-x-2 bg-white hover:bg-[#faf7f2] text-[#385529] font-bold px-4 py-2.5 rounded-xl border border-[#e8e3d8] shadow-xs hover:shadow transition-all text-xs"
             >
+              <Download className="w-3.5 h-3.5 text-[#a16b15]" />
               <span>Download Official MAR Sheet (PDF)</span>
             </button>
           )}
@@ -105,9 +104,9 @@ export const MARProgressBar: React.FC<Props> = ({
 
       </div>
 
-      {/* Semester Breakdown Strip */}
-      <div className="mt-6 pt-5 border-t border-blue-100">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+      {/* Semester Breakdown Grid */}
+      <div className="mt-6 pt-5 border-t border-[#e8e3d8]">
+        <h4 className="text-xs font-serif font-bold text-[#385529] uppercase tracking-wider mb-3">
           Semester-Wise Activity Points Earned (Sem I to VIII)
         </h4>
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -118,11 +117,11 @@ export const MARProgressBar: React.FC<Props> = ({
                 key={sem}
                 className={`p-2 rounded-lg text-center border transition-all ${
                   pts > 0
-                    ? 'bg-blue-50/80 border-blue-200 text-blue-900 font-semibold shadow-2xs'
-                    : 'bg-gray-50/60 border-gray-100 text-gray-400'
+                    ? 'bg-[#eef5ec] border-[#385529]/30 text-[#385529] font-semibold shadow-2xs'
+                    : 'bg-[#faf9f5] border-[#e8e3d8] text-gray-400'
                 }`}
               >
-                <div className="text-[10px] uppercase font-bold tracking-tight">Sem {sem}</div>
+                <div className="text-[10px] uppercase font-serif font-bold tracking-tight">Sem {sem}</div>
                 <div className="text-sm font-extrabold mt-0.5">{pts > 0 ? `${pts} pts` : '-'}</div>
               </div>
             );

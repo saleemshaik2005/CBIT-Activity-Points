@@ -3,12 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #0066cc;
-  --primary-hover: #0052a3;
-  --card-bg: #ffffff;
-  --border-color: #e2e8f0;
+  --background: #fbfbf9;
+  --foreground: #1c2718;
+  --cbit-green: #385529;
+  --cbit-gold: #a16b15;
+  --cbit-maroon: #a71a1b;
 }
 
 body {
@@ -19,60 +18,55 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars matching CBIT theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f3f0e8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c5b69f;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a16b15;
 }
 
-/* Glassmorphism effects */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* CBIT Institutional Cards & Panels */
+.cbit-card {
+  background: #ffffff;
+  border: 1px solid #e8e3d8;
+  box-shadow: 0 2px 6px rgba(56, 85, 41, 0.05);
 }
 
-.glass-header {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+.cbit-card-gold {
+  background: #ffffff;
+  border-top: 4px solid #a16b15;
+  border-left: 1px solid #e8e3d8;
+  border-right: 1px solid #e8e3d8;
+  border-bottom: 1px solid #e8e3d8;
 }
 
-/* Animation utilities */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.92; transform: scale(1.02); }
+.cbit-card-green {
+  background: #ffffff;
+  border-top: 4px solid #385529;
+  border-left: 1px solid #e8e3d8;
+  border-right: 1px solid #e8e3d8;
+  border-bottom: 1px solid #e8e3d8;
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s ease-in-out infinite;
+/* Gold border dividers */
+.gold-divider {
+  height: 3px;
+  background: linear-gradient(90deg, #a16b15 0%, #dfa94b 50%, #a16b15 100%);
 }
 
-/* Print styles for official CBIT MAR document */
-@media print {
-  body {
-    background: #fff;
-    color: #000;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
+.green-divider {
+  height: 4px;
+  background: #385529;
 }

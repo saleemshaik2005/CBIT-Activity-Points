@@ -49,7 +49,7 @@ export const MobileNav: React.FC = () => {
   const items = roleNavItems[currentUser.role] || roleNavItems.student;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg px-2 py-1.5 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t-2 border-[#a16b15] shadow-xl px-2 py-1.5 pb-safe">
       <div className="flex items-center justify-around">
         {items.map((item) => {
           const Icon = item.icon;
@@ -60,12 +60,12 @@ export const MobileNav: React.FC = () => {
               href={item.href}
               className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
                 isActive
-                  ? 'text-blue-600 font-semibold'
-                  : 'text-gray-500 hover:text-gray-900 font-normal'
+                  ? 'text-[#385529] font-bold'
+                  : 'text-gray-500 hover:text-[#a71a1b]'
               }`}
             >
-              <div className={`p-1 rounded-lg ${isActive ? 'bg-blue-50' : ''}`}>
-                <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600 stroke-[2.5]' : 'text-gray-400'}`} />
+              <div className={`p-1 rounded-lg ${isActive ? 'bg-[#eef5ec]' : ''}`}>
+                <Icon className={`w-5 h-5 ${isActive ? 'text-[#385529] stroke-[2.5]' : 'text-[#a16b15]'}`} />
               </div>
               <span className="text-[10px] mt-0.5">{item.label}</span>
             </Link>

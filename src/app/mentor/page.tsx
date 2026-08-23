@@ -3,7 +3,7 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { VerificationCard } from '@/components/mentor/VerificationCard';
-import { CheckCircle, Clock, Users, ShieldCheck, Sparkles, Award } from 'lucide-react';
+import { CheckCircle, ShieldCheck } from 'lucide-react';
 
 export default function MentorQueuePage() {
   const { currentUser, submissions, categories, updateSubmissionStatus } = useApp();
@@ -23,15 +23,15 @@ export default function MentorQueuePage() {
     <div className="space-y-6">
       
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-6 border-t-4 border-[#a16b15] border-x border-b border-[#e8e3d8] shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
-            <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+            <span className="text-xs bg-[#fbf5eb] text-[#a16b15] font-bold px-2.5 py-0.5 rounded-full border border-[#a16b15]/30">
               Faculty Mentor Portal
             </span>
             <span className="text-xs text-gray-500">{currentUser.department}</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-900">
+          <h1 className="text-2xl font-serif font-extrabold text-[#385529]">
             Certificate Verification Queue
           </h1>
           <p className="text-xs text-gray-500">
@@ -41,24 +41,24 @@ export default function MentorQueuePage() {
 
         {/* Quick Stats Pill */}
         <div className="flex items-center gap-3">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-center">
-            <span className="text-xl font-extrabold text-amber-800">{pendingSubmissions.length}</span>
-            <p className="text-[10px] font-bold text-amber-700 uppercase">Pending Review</p>
+          <div className="bg-[#fbf5eb] border border-[#a16b15]/30 rounded-xl px-4 py-2 text-center">
+            <span className="text-xl font-extrabold text-[#a16b15]">{pendingSubmissions.length}</span>
+            <p className="text-[10px] font-bold text-[#a16b15] uppercase">Pending Review</p>
           </div>
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 text-center">
-            <span className="text-xl font-extrabold text-emerald-800">{approvedSubmissions.length}</span>
-            <p className="text-[10px] font-bold text-emerald-700 uppercase">Approved</p>
+          <div className="bg-[#eef5ec] border border-[#385529]/30 rounded-xl px-4 py-2 text-center">
+            <span className="text-xl font-extrabold text-[#385529]">{approvedSubmissions.length}</span>
+            <p className="text-[10px] font-bold text-[#385529] uppercase">Approved</p>
           </div>
         </div>
       </div>
 
       {/* Queue Items */}
       {pendingSubmissions.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 shadow-sm space-y-3">
-          <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+        <div className="bg-white rounded-2xl p-12 text-center border border-[#e8e3d8] shadow-xs space-y-3">
+          <div className="w-12 h-12 bg-[#eef5ec] text-[#385529] rounded-full flex items-center justify-center mx-auto border border-[#385529]/20">
             <CheckCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-gray-800">All caught up!</h3>
+          <h3 className="text-base font-serif font-bold text-[#385529]">All caught up!</h3>
           <p className="text-xs text-gray-500 max-w-sm mx-auto">
             There are currently no pending certificate submissions awaiting mentor verification.
           </p>
@@ -66,10 +66,10 @@ export default function MentorQueuePage() {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">
+            <h2 className="text-sm font-serif font-bold text-[#385529] uppercase tracking-wider">
               Pending Submissions ({pendingSubmissions.length})
             </h2>
-            <span className="text-xs text-gray-400">Powered by Gemini AI Document Verification</span>
+            <span className="text-xs text-[#a16b15] font-medium">Powered by Gemini AI Document Intelligence</span>
           </div>
 
           <div className="space-y-4">
