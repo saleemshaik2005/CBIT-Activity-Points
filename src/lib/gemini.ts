@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import https from 'https';
 import { AIExtractionResult } from '@/types';
 import { CBIT_24_CATEGORIES } from './mar-constants';
 
@@ -19,32 +19,30 @@ export async function analyzeCertificateDocument(
     );
   }
 
-  // Normalize mime type for Gemini
   let cleanMime = mimeType;
   if (cleanMime.includes('heic') || cleanMime.includes('heif')) {
     cleanMime = 'image/jpeg';
   }
 
-  const systemInstruction = `You are an elite academic document intelligence engine for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
-Your job is to perform Optical Character Recognition (OCR) and deep semantic analysis on student certificates/documents (images or PDFs).
+  const systemInstruction = `You are an expert academic certificate analyzer for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
+Your job is to read student certificates/documents (images or PDFs) and extract key information according to the college's 24 Mandatory Additional Requirements (MAR) Activity Points categories.
 
-The official 24 CBIT Mandatory Additional Requirements (MAR) Categories are:
+The official 24 CBIT MAR Categories are:
 ${MAR_CATEGORIES_PROMPT_REFERENCE}
 
-Task Instructions:
-1. Perform thorough OCR on the uploaded certificate image/PDF:
-   - Identify the exact title of the course, competition, paper, event, or workshop.
-   - Identify the recipient student name printed on the document.
-   - Identify the issuing organization, university, club, company, platform, or authority (e.g. NPTEL, Coursera, IEEE, NSS, CBIT, Hackathon Organizers, Sports Board, etc.).
-   - Extract the exact date of completion, award, or issue. Convert it to standard ISO format (YYYY-MM-DD). If only month and year are given (e.g. "April 2024"), use "2024-04-15".
-   - Extract duration if stated (e.g. "12 weeks", "8 weeks", "4 weeks", "30 hours", "3 days").
-2. Match the activity to EXACTLY ONE of the 24 CBIT MAR categories (SNo 1 to 24) based on the criteria.
-3. Determine the correct sub-type (e.g. "12 weeks", "8 weeks", "Organizer", "Participant", "College level", "State level", "National level", "Editor", "Writer", etc.) and the corresponding default points from the CBIT rubric.
-4. Estimate student academic semester (1 to 8) if inferrable, or default to appropriate current semester.
-5. Provide a 2-line concise factual summary of what the certificate validates.
-6. Extract 3 to 6 key topic/skill tags.
+Instructions:
+1. Examine the certificate thoroughly:
+   - Extract the real certificate/activity title (course name, hackathon, workshop, sport, NSS, publication title).
+   - Extract the recipient student name.
+   - Extract the issuing body/organization (NPTEL, Coursera, IEEE, CBIT, NSS, Sports Board, etc.).
+   - Extract the completion/award date in YYYY-MM-DD format (if only month/year is shown, use e.g. 2024-04-15).
+   - Extract duration if stated (e.g. "12 weeks", "8 weeks", "30 hours").
+2. Match the activity to EXACTLY ONE of the 24 CBIT MAR categories (SNo 1 to 24).
+3. Determine the correct sub-type and the standard activity points according to the CBIT rubric above.
+4. Provide a 2-line concise factual summary of what the certificate validates.
+5. Extract 3 to 6 key skill/topic tags.
 
-CRITICAL: Output STRICTLY valid JSON with no markdown tags or additional conversational text. Format:
+Output STRICTLY valid JSON with no markdown formatting or surrounding backticks:
 {
   "certificateTitle": "string",
   "recipientName": "string",
@@ -60,93 +58,83 @@ CRITICAL: Output STRICTLY valid JSON with no markdown tags or additional convers
   "keySkillsOrTopics": ["string"]
 }`;
 
-  // Method 1: Try official GoogleGenAI SDK
-  try {
-    const ai = new GoogleGenAI({ apiKey: key });
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                data: fileBufferBase64,
-                mimeType: cleanMime,
-              },
-            },
-            {
-              text: "Analyze this certificate image/document thoroughly. Extract the real event title, recipient name, issuer, dates, match with CBIT 24 MAR categories, and output the structured JSON.",
-            },
-          ],
-        },
-      ],
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: 'application/json',
-        temperature: 0.1,
-      },
-    });
-
-    const rawText = response.text || "{}";
-    const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned) as AIExtractionResult;
-
-    if (!parsed.matchedCategorySno || parsed.matchedCategorySno < 1 || parsed.matchedCategorySno > 24) {
-      parsed.matchedCategorySno = 1;
-      parsed.matchedCategoryName = "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)";
-    }
-
-    return parsed;
-  } catch (sdkError: any) {
-    console.warn("Google GenAI SDK call failed, attempting direct Gemini REST API fallback...", sdkError?.message);
-
-    // Method 2: Direct REST API Fallback to Gemini 2.0 Flash / 1.5 Flash
-    try {
-      const restEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-      const restBody = {
-        contents: [
+  const payload = JSON.stringify({
+    contents: [
+      {
+        parts: [
           {
-            parts: [
-              {
-                inline_data: {
-                  mime_type: cleanMime,
-                  data: fileBufferBase64,
-                },
-              },
-              {
-                text: `${systemInstruction}\n\nAnalyze this certificate image/document and return JSON only.`,
-              },
-            ],
+            inline_data: {
+              mime_type: cleanMime,
+              data: fileBufferBase64,
+            },
+          },
+          {
+            text: `${systemInstruction}\n\nAnalyze this certificate image/document and return JSON only.`,
           },
         ],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.1,
-        },
-      };
+      },
+    ],
+    generationConfig: {
+      response_mime_type: "application/json",
+      temperature: 0.1,
+    },
+  });
 
-      const res = await fetch(restEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(restBody),
+  return new Promise((resolve, reject) => {
+    const options: https.RequestOptions = {
+      hostname: 'generativelanguage.googleapis.com',
+      port: 443,
+      path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${key.trim()}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+      },
+      // Bypass SSL verification errors in local proxy / college network environments
+      rejectUnauthorized: false,
+      timeout: 30000,
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Gemini REST API error (${res.status}): ${errorText}`);
-      }
+      res.on('end', () => {
+        try {
+          if (res.statusCode && res.statusCode >= 400) {
+            return reject(new Error(`Google Gemini API error (${res.statusCode}): ${data}`));
+          }
 
-      const restData = await res.json();
-      const textOutput = restData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      const cleaned = textOutput.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleaned) as AIExtractionResult;
+          const parsedResponse = JSON.parse(data);
+          const rawText = parsedResponse.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+          const extraction = JSON.parse(cleanJson) as AIExtractionResult;
 
-      return parsed;
-    } catch (fallbackError: any) {
-      console.error("Gemini direct REST fallback also failed:", fallbackError);
-      throw new Error(`Gemini AI analysis failed: ${fallbackError.message || 'Check API key or network'}`);
-    }
-  }
+          if (!extraction.matchedCategorySno || extraction.matchedCategorySno < 1 || extraction.matchedCategorySno > 24) {
+            extraction.matchedCategorySno = 1;
+            extraction.matchedCategoryName = "MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)";
+          }
+
+          resolve(extraction);
+        } catch (err: any) {
+          reject(new Error(`Failed to parse Gemini response: ${err.message}. Raw output: ${data.slice(0, 200)}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(new Error(`Network connection error calling Google Gemini: ${e.message}`));
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request to Google Gemini timed out after 30 seconds.'));
+    });
+
+    req.write(payload);
+    req.end();
+  });
 }

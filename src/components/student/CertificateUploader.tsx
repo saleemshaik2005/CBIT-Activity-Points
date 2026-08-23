@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { AIReviewModal } from './AIReviewModal';
 import { AIExtractionResult } from '@/types';
+import { CBIT_24_CATEGORIES } from '@/lib/mar-constants';
 import {
   UploadCloud,
   Camera,
@@ -17,6 +18,10 @@ import {
   ShieldCheck,
   Check,
 } from 'lucide-react';
+
+const MAR_PROMPT_REF = CBIT_24_CATEGORIES.map(c => 
+  `SNo ${c.sno}: ${c.name} [Sub-type: ${c.sub_type || 'General'}] -> Points: ${c.default_points} (Max Cap: ${c.max_points_allowed})`
+).join('\n');
 
 export const CertificateUploader: React.FC = () => {
   const { categories, addSubmission } = useApp();
@@ -41,7 +46,7 @@ export const CertificateUploader: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved API Key from localStorage if present
+  // Load saved API Key from localStorage
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('cbit_mar_gemini_key');
@@ -63,6 +68,91 @@ export const CertificateUploader: React.FC = () => {
     } catch (e) {}
   };
 
+  // Convert File to Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove "data:image/jpeg;base64," prefix
+        const base64Data = result.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Direct Browser-Side Gemini Call (Bypasses any server network/proxy issues)
+  const callGeminiDirectlyFromBrowser = async (base64Data: string, mimeType: string, key: string): Promise<AIExtractionResult> => {
+    let cleanMime = mimeType || 'image/jpeg';
+    if (cleanMime.includes('heic') || cleanMime.includes('heif')) cleanMime = 'image/jpeg';
+
+    const systemInstruction = `You are an expert academic certificate analyzer for Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad.
+Extract real text from this certificate:
+1. Exact certificate/activity title
+2. Recipient student name
+3. Issuing organization
+4. Completion/award date in YYYY-MM-DD format
+5. Match with one of the 24 CBIT MAR categories:
+${MAR_PROMPT_REF}
+
+Return strictly a JSON object:
+{
+  "certificateTitle": "string",
+  "recipientName": "string",
+  "issuingOrganization": "string",
+  "completionDate": "YYYY-MM-DD",
+  "durationOrHours": "string",
+  "matchedCategorySno": number (1-24),
+  "matchedCategoryName": "string",
+  "matchedSubType": "string",
+  "suggestedPoints": number,
+  "confidenceScore": number (0.0 to 1.0),
+  "summary": "string",
+  "keySkillsOrTopics": ["string"]
+}`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key.trim()}`;
+    const body = {
+      contents: [
+        {
+          parts: [
+            {
+              inline_data: {
+                mime_type: cleanMime,
+                data: base64Data,
+              },
+            },
+            {
+              text: `${systemInstruction}\n\nAnalyze this certificate image/document and return JSON only.`,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        response_mime_type: "application/json",
+        temperature: 0.1,
+      },
+    };
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Google API Error (${res.status}): ${errorText}`);
+    }
+
+    const data = await res.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleaned) as AIExtractionResult;
+  };
+
   const handleFileProcess = async (file: File) => {
     setUploadError(null);
     setSubmissionSuccess(false);
@@ -73,7 +163,8 @@ export const CertificateUploader: React.FC = () => {
     }
 
     setFileName(file.name);
-    setFileType(file.type || 'image/jpeg');
+    const mimeType = file.type || 'image/jpeg';
+    setFileType(mimeType);
 
     const previewUrl = URL.createObjectURL(file);
     setFilePreviewUrl(previewUrl);
@@ -81,31 +172,52 @@ export const CertificateUploader: React.FC = () => {
     setIsAnalyzing(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      if (apiKey && apiKey.trim()) {
-        formData.append('apiKey', apiKey.trim());
+      const base64Data = await fileToBase64(file);
+
+      let extractedData: AIExtractionResult | null = null;
+
+      // Method 1: Try Server API Route first
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (apiKey && apiKey.trim()) {
+          formData.append('apiKey', apiKey.trim());
+        }
+
+        const serverRes = await fetch('/api/ai/analyze', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const json = await serverRes.json();
+        if (serverRes.ok && json.data) {
+          extractedData = json.data;
+        } else {
+          throw new Error(json.error || 'Server error');
+        }
+      } catch (serverErr) {
+        console.warn('Server-side AI route returned error, falling back to direct browser Gemini call...', serverErr);
+        
+        // Method 2: Direct browser-to-Gemini call (100% immune to Node.js proxy SSL errors)
+        if (apiKey && apiKey.trim()) {
+          extractedData = await callGeminiDirectlyFromBrowser(base64Data, mimeType, apiKey);
+        } else {
+          throw new Error('Please enter your free Gemini API key to analyze this document.');
+        }
       }
 
-      const response = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const json = await response.json();
-
-      if (!response.ok || !json.data) {
-        throw new Error(json.error || 'Gemini AI was unable to analyze this certificate.');
+      if (!extractedData) {
+        throw new Error('Could not parse certificate data.');
       }
 
-      setAiData(json.data);
+      setAiData(extractedData);
       setIsAnalyzing(false);
       setIsModalOpen(true);
     } catch (err: any) {
       console.error('Extraction error:', err);
       setIsAnalyzing(false);
       setUploadError(
-        err.message || 'AI extraction failed. Please check your Gemini API key and try again.'
+        err.message || 'AI analysis failed. Please verify your Gemini API key or check your internet connection.'
       );
     }
   };
