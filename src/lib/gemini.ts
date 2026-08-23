@@ -7,11 +7,10 @@ const MAR_CATEGORIES_PROMPT_REFERENCE = CBIT_24_CATEGORIES.map(c =>
 ).join('\n');
 
 const CANDIDATE_MODELS = [
-  'gemini-3.6-flash',
-  'gemini-2.5-flash',
   'gemini-1.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-pro',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-pro-latest',
 ];
 
 export async function analyzeCertificateDocument(
@@ -23,7 +22,7 @@ export async function analyzeCertificateDocument(
   
   if (!key || !key.trim()) {
     throw new Error(
-      'AI Document Intelligence is temporarily unavailable. Server API key is missing.'
+      'AI Document Intelligence is temporarily unavailable. Server API key is not configured.'
     );
   }
 
@@ -124,8 +123,11 @@ Output STRICTLY valid JSON with no markdown formatting or backticks:
 
       return result;
     } catch (err: any) {
-      // If it's our document rejection error, rethrow immediately without trying other models
-      if (err.message && err.message.includes('not recognized as an official certificate') || err.message.includes('not appear to be an official certificate')) {
+      if (
+        err.message &&
+        (err.message.includes('not recognized as an official certificate') ||
+         err.message.includes('not appear to be an official certificate'))
+      ) {
         throw err;
       }
       lastError = err;
@@ -133,7 +135,11 @@ Output STRICTLY valid JSON with no markdown formatting or backticks:
     }
   }
 
-  throw lastError || new Error('Institutional AI Engine failed to process the document.');
+  throw new Error(
+    lastError?.message?.includes('not recognized') || lastError?.message?.includes('not appear')
+      ? lastError.message
+      : 'Document analysis was unable to parse this file. Please verify the document is clearly legible.'
+  );
 }
 
 function makeAIRequest(model: string, key: string, payload: string): Promise<AIExtractionResult> {
@@ -150,7 +156,7 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData),
       },
-      rejectUnauthorized: false, // Prevents TLS proxy rejection in enterprise/campus networks
+      rejectUnauthorized: false,
       timeout: 35000,
     };
 
@@ -174,21 +180,21 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
             const resultData = JSON.parse(cleanJson) as AIExtractionResult;
             resolve(resultData);
           } catch (err: any) {
-            reject(new Error(`Failed to parse AI response: ${err.message}`));
+            reject(new Error('Failed to process AI output format.'));
           }
         } else {
-          reject(new Error(`AI Service returned HTTP ${res.statusCode}: ${data.slice(0, 200)}`));
+          reject(new Error(`Service error (${res.statusCode})`));
         }
       });
     });
 
-    req.on('error', (e) => {
-      reject(new Error(`Network connection error calling AI Service: ${e.message}`));
+    req.on('error', () => {
+      reject(new Error('Network connection issue communicating with AI service.'));
     });
 
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error('Request to AI Service timed out after 35 seconds.'));
+      reject(new Error('AI service request timed out after 35 seconds.'));
     });
 
     req.write(postData);
