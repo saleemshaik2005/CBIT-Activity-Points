@@ -19,11 +19,12 @@ export async function POST(req: NextRequest) {
     const base64Data = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
 
-    // Call Gemini 2.0 Flash AI extraction
+    // Call AI document intelligence extraction
     const extraction = await analyzeCertificateDocument(
       base64Data,
       mimeType,
-      manualApiKey || undefined
+      manualApiKey || undefined,
+      file.name
     );
 
     return NextResponse.json({
