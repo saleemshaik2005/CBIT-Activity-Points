@@ -115,3 +115,19 @@ export interface MARCalculationResult {
   pendingCount: number;
 }
 
+export type ThemeMode = 'light' | 'dark';
+
+export interface NotificationItem {
+  id: string;
+  recipient_id?: string; // target user ID or 'all' or role
+  recipient_role?: UserRole | 'all';
+  type: 'approval' | 'rejection' | 'submission' | 'announcement' | 'system';
+  title: string;
+  message: string;
+  link?: string;
+  is_read: boolean;
+  sender_name?: string;
+  created_at: string;
+}
+
+

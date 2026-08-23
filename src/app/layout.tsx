@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[#faf9f5] text-[#1c2718] flex flex-col antialiased selection:bg-[#385529] selection:text-white">
+      <body className="min-h-screen bg-[#faf9f5] dark:bg-[#0d140b] text-[#1c2718] dark:text-[#f1f5f9] flex flex-col antialiased selection:bg-[#385529] selection:text-white transition-colors">
         <AppProvider>
           <Navbar />
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
