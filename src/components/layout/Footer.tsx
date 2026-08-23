@@ -1,86 +1,69 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import {
-  Award,
-  BookOpen,
-  GraduationCap,
-  ShieldCheck,
   ExternalLink,
   Github,
   Heart,
+  Award,
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#1c2718] text-[#e2ebd9] border-t-4 border-[#a16b15] mt-auto">
+    <footer className="bg-[#1c2718] dark:bg-[#080d14] text-[#e2ebd9] dark:text-gray-400 border-t-4 border-[#a16b15] dark:border-emerald-600/40 mt-auto transition-colors">
       
-      {/* Top Footer Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center justify-between">
+      {/* Main Footer Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center justify-between">
           
-          {/* Column 1: CBIT Institutional Brand */}
-          <div className="md:col-span-6 space-y-4">
+          {/* Column 1: CBIT Brand & System Mission */}
+          <div className="md:col-span-7 space-y-3">
             <div className="flex items-center space-x-3">
               <img
                 src="/images/cbit-crest.png"
                 alt="CBIT Emblem"
-                className="w-12 h-12 object-contain bg-white rounded-lg p-0.5"
+                className="w-10 h-10 object-contain bg-white rounded-lg p-0.5"
               />
               <div>
-                <h3 className="font-serif font-bold text-base text-white tracking-wide">
+                <h3 className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
                   CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
                 </h3>
-                <p className="text-xs text-[#dfa94b] font-medium">
-                  Affiliated to Osmania University • UGC Autonomous • NAAC A++ Grade • NBA Accredited
+                <p className="text-xs text-[#dfa94b] dark:text-emerald-400 font-medium">
+                  Autonomous Activity Points & AI Document Verification Platform • Hyderabad-75
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-[#cad8c0] leading-relaxed max-w-lg">
-              Official student non-academic Activity Points management & AI document verification portal. Enabling seamless tracking of 60 target points (50 for Lateral Entry) across 24 approved activity categories for degree qualification.
+            <p className="text-xs text-[#cad8c0] dark:text-gray-400 leading-relaxed max-w-xl">
+              Automated tracking of mandatory 60 activity points (50 for Lateral Entry) across 24 approved activity categories for B.E. / B.Tech degree qualification.
             </p>
 
-            <div className="flex items-center space-x-3 pt-1">
-              <a
-                href="https://www.cbit.ac.in"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-bold text-[#dfa94b] hover:underline inline-flex items-center gap-1"
-              >
-                <span>Official CBIT Website</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-              <span className="text-white/40">•</span>
+            <div className="pt-1">
               <a
                 href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-bold text-white hover:text-[#dfa94b] inline-flex items-center gap-1.5 bg-[#273e1c] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 transition-colors"
+                className="text-xs font-bold text-white hover:text-[#dfa94b] dark:hover:text-emerald-300 inline-flex items-center gap-1.5 bg-[#273e1c] dark:bg-[#111827] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 dark:border-gray-700 transition-colors"
               >
-                <Github className="w-4 h-4 text-[#dfa94b]" />
-                <span>GitHub Repository</span>
-                <ExternalLink className="w-3 h-3" />
+                <Github className="w-4 h-4 text-[#dfa94b] dark:text-emerald-400" />
+                <span>GitHub Repository & Source Code</span>
+                <ExternalLink className="w-3 h-3 ml-0.5" />
               </a>
             </div>
           </div>
 
-          {/* Column 2: Academic Attribution & Faculty Guidance */}
-          <div className="md:col-span-6 space-y-3 bg-[#273e1c]/80 p-5 rounded-2xl border border-[#a16b15]/40">
-            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b]">
+          {/* Column 2: Project Development Attribution */}
+          <div className="md:col-span-5 space-y-2.5 bg-[#273e1c]/80 dark:bg-[#111827]/80 p-4 sm:p-5 rounded-2xl border border-[#a16b15]/40 dark:border-gray-800">
+            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b] dark:text-emerald-400">
               Project Development & Mentorship
             </h4>
 
-            <div className="space-y-2 text-xs text-[#cad8c0]">
+            <div className="space-y-2 text-xs text-[#cad8c0] dark:text-gray-300">
               <p>
                 <strong className="text-white">Developed By:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
               </p>
               <p>
-                <strong className="text-white">Project Guide & Mentor:</strong> Dr. D. Ramana Sir, Department of AI&DS, CBIT Hyderabad.
-              </p>
-              <p>
-                <strong className="text-white">Head of Department:</strong> Dr. K. Radhika Madam, Head of Department (AI&DS), CBIT Autonomous Hyderabad.
+                <strong className="text-white">Project Guide & Mentor:</strong> Dr. D. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
               </p>
             </div>
           </div>
@@ -88,15 +71,15 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="bg-[#121b0f] border-t border-[#385529]/60 px-4 py-4 text-xs text-[#8a9f7e]">
+      {/* Bottom Copyright Bar */}
+      <div className="bg-[#121b0f] dark:bg-[#05080c] border-t border-[#385529]/60 dark:border-gray-800/80 px-4 py-3 text-xs text-[#8a9f7e] dark:text-gray-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div>
-            © {new Date().getFullYear()} CBIT Activity Point System. Chaitanya Bharathi Institute of Technology (Autonomous), Gandipet, Hyderabad - 500075.
+            © {new Date().getFullYear()} CBIT Activity Point System • CBIT (Autonomous), Gandipet, Hyderabad - 500075.
           </div>
           <div className="flex items-center space-x-1 text-[11px]">
             <span>Developed by AI&DS Students with</span>
-            <Heart className="w-3 h-3 text-[#a71a1b] fill-current" />
+            <Heart className="w-3 h-3 text-[#a71a1b] dark:text-red-400 fill-current" />
             <span>for CBIT Hyderabad</span>
           </div>
         </div>

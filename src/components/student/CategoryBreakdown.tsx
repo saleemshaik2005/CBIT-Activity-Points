@@ -55,16 +55,16 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
   const displayedList = isExpanded ? filteredCategories : filteredCategories.slice(0, 6);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-[#e8e3d8] shadow-xs space-y-4">
+    <div className="bg-white dark:bg-[#161e2e] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#293548] shadow-xs space-y-4 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center space-x-2">
-            <Layers className="w-5 h-5 text-[#385529]" />
-            <h3 className="text-base font-serif font-bold text-[#385529] uppercase tracking-wide">
+            <Layers className="w-5 h-5 text-[#385529] dark:text-emerald-400" />
+            <h3 className="text-base font-serif font-bold text-[#385529] dark:text-emerald-400 uppercase tracking-wide">
               CBIT MAR 24 Activities & Cap Limits
             </h3>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             Monitor points earned per category against the official maximum allowed caps.
           </p>
         </div>
@@ -74,7 +74,7 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
           placeholder="Filter categories (e.g. MOOCs, Sports)..."
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="text-xs px-3 py-1.5 rounded-lg border border-[#e8e3d8] bg-[#faf9f5] focus:outline-none focus:ring-2 focus:ring-[#385529] w-full sm:w-64"
+          className="text-xs px-3 py-1.5 rounded-xl border border-[#e8e3d8] dark:border-[#334155] bg-[#faf9f5] dark:bg-[#0f172a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500 w-full sm:w-64"
         />
       </div>
 
@@ -85,22 +85,22 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
             className={`p-3.5 rounded-xl border transition-all ${
               cat.earned > 0
                 ? cat.isCapped
-                  ? 'bg-[#eef5ec] border-[#385529]/40 shadow-2xs'
-                  : 'bg-[#fbf5eb] border-[#a16b15]/40 shadow-2xs'
-                : 'bg-[#faf9f5] border-[#e8e3d8] hover:border-[#a16b15]/50'
+                  ? 'bg-[#eef5ec] dark:bg-emerald-950/40 border-[#385529]/40 dark:border-emerald-700 shadow-2xs'
+                  : 'bg-[#fbf5eb] dark:bg-amber-950/30 border-[#a16b15]/40 dark:border-amber-700 shadow-2xs'
+                : 'bg-[#faf9f5] dark:bg-[#0f172a] border-[#e8e3d8] dark:border-[#293548] hover:border-[#a16b15]/50 dark:hover:border-emerald-500/50'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
-              <span className="text-[11px] font-bold text-[#385529] bg-white px-2 py-0.5 rounded-md border border-[#e8e3d8]">
+              <span className="text-[11px] font-bold text-[#385529] dark:text-emerald-300 bg-white dark:bg-[#161e2e] px-2 py-0.5 rounded-md border border-[#e8e3d8] dark:border-[#334155]">
                 #{cat.sno}
               </span>
               <div className="text-right">
-                <span className="text-xs font-extrabold text-[#1c2718]">{cat.earned}</span>
-                <span className="text-[11px] text-gray-500"> / {cat.maxCap} max</span>
+                <span className="text-xs font-extrabold text-[#1c2718] dark:text-white">{cat.earned}</span>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400"> / {cat.maxCap} max</span>
               </div>
             </div>
 
-            <h4 className="text-xs font-bold text-[#1c2718] line-clamp-2 mt-2 leading-snug">
+            <h4 className="text-xs font-bold text-[#1c2718] dark:text-gray-100 line-clamp-2 mt-2 leading-snug">
               {cat.name}
             </h4>
 
@@ -109,23 +109,23 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
               {cat.subTypes.map((st, idx) => (
                 <span
                   key={idx}
-                  className="text-[9px] bg-white text-gray-700 px-1.5 py-0.5 rounded border border-[#e8e3d8]"
+                  className="text-[9px] bg-white dark:bg-[#161e2e] text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded border border-[#e8e3d8] dark:border-[#334155]"
                 >
                   {st.sub_type && st.sub_type !== 'General' ? `${st.sub_type}: ` : ''}
-                  <strong className="text-[#385529]">{st.default_points} pts</strong>
+                  <strong className="text-[#385529] dark:text-emerald-400">{st.default_points} pts</strong>
                 </span>
               ))}
             </div>
 
             {/* Mini Progress Bar */}
             <div className="mt-3">
-              <div className="w-full bg-gray-200/80 h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-gray-200/80 dark:bg-gray-750 h-1.5 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
                     cat.isCapped
-                      ? 'bg-[#385529]'
+                      ? 'bg-[#385529] dark:bg-emerald-500'
                       : cat.earned > 0
-                      ? 'bg-[#a16b15]'
+                      ? 'bg-[#a16b15] dark:bg-amber-400'
                       : 'bg-transparent'
                   }`}
                   style={{ width: `${cat.percent}%` }}
@@ -134,8 +134,8 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
             </div>
 
             {cat.isCapped && (
-              <div className="flex items-center space-x-1 text-[10px] font-bold text-[#385529] mt-2">
-                <CheckCircle2 className="w-3 h-3 text-[#385529]" />
+              <div className="flex items-center space-x-1 text-[10px] font-bold text-[#385529] dark:text-emerald-400 mt-2">
+                <CheckCircle2 className="w-3 h-3" />
                 <span>Category Cap Reached</span>
               </div>
             )}
@@ -146,7 +146,7 @@ export const CategoryBreakdown: React.FC<Props> = ({ categories, submissions }) 
       <div className="text-center pt-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="inline-flex items-center space-x-1 text-xs font-bold text-[#385529] hover:text-[#a71a1b] transition-colors"
+          className="inline-flex items-center space-x-1 text-xs font-bold text-[#385529] dark:text-emerald-400 hover:text-[#a71a1b] dark:hover:text-emerald-300 transition-colors cursor-pointer"
         >
           <span>{isExpanded ? 'Show Fewer Categories' : `View All ${uniqueSnos.length} Categories`}</span>
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
