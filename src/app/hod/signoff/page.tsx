@@ -9,9 +9,9 @@ export default function HODSignoffPage() {
   const [signedBatches, setSignedBatches] = useState<string[]>([]);
 
   const eligibleBatches = [
-    { id: 'b-aids1-2026', batchName: 'B.Tech AI&DS - Section 1 (2022-2026)', eligibleCount: 58, total: 66, status: 'Ready for Signoff' },
-    { id: 'b-aids2-2026', batchName: 'B.Tech AI&DS - Section 2 (2022-2026)', eligibleCount: 54, total: 64, status: 'Ready for Signoff' },
-    { id: 'b-aids3-2026', batchName: 'B.Tech AI&DS - Section 3 (2022-2026)', eligibleCount: 52, total: 65, status: 'Ready for Signoff' },
+    { id: 'b-aids1-2028', batchName: 'B.Tech AI&DS - Section 1 (2024-2028)', eligibleCount: 58, total: 66, status: 'Ready for Signoff' },
+    { id: 'b-aids2-2028', batchName: 'B.Tech AI&DS - Section 2 (2024-2028)', eligibleCount: 54, total: 64, status: 'Ready for Signoff' },
+    { id: 'b-aids3-2028', batchName: 'B.Tech AI&DS - Section 3 (2024-2028)', eligibleCount: 52, total: 65, status: 'Ready for Signoff' },
   ];
 
   const handleSignoff = (id: string, name: string) => {

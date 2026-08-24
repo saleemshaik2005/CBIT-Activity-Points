@@ -45,7 +45,7 @@ export function generateOfficialCBITMARPDF(
   doc.setFont('helvetica', 'bold');
   doc.text(`Batch:`, pageWidth / 2 + 10, 38);
   doc.setFont('helvetica', 'normal');
-  doc.text(student.batch_year || '2022-2026', pageWidth / 2 + 35, 38);
+  doc.text(student.batch_year || '2024-2028', pageWidth / 2 + 35, 38);
 
   // Group approved submissions by Category SNo and Semester
   const semPointsMatrix: { [sno: number]: { [sem: number]: number } } = {};

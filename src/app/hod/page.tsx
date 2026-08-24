@@ -70,7 +70,7 @@ export default function HODDashboardPage() {
       {/* Sections Table */}
       <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
         <h3 className="text-base font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wide">
-          Section-Wise MAR Progress (B.Tech 2022-2026 Batch)
+          Section-Wise MAR Progress (B.Tech 2024-2028 Batch)
         </h3>
 
         <div className="overflow-x-auto">

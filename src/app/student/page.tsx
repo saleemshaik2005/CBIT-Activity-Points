@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { MARProgressBar } from '@/components/student/MARProgressBar';
 import { CategoryBreakdown } from '@/components/student/CategoryBreakdown';
 import { generateOfficialCBITMARPDF } from '@/lib/pdf-generator';
+import { StudentSubmission } from '@/types';
 import {
   Sparkles,
   ArrowRight,
@@ -17,10 +18,17 @@ import {
   Calendar,
   Building,
   Award,
+  Eye,
+  BookOpen,
+  FileText,
+  X,
+  Maximize2,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function StudentDashboardPage() {
   const { currentUser, submissions, categories, settings } = useApp();
+  const [selectedPreviewDoc, setSelectedPreviewDoc] = useState<StudentSubmission | null>(null);
 
   const mySubmissions = submissions.filter((s) => s.student_id === currentUser.id);
 
@@ -52,7 +60,7 @@ export default function StudentDashboardPage() {
             Welcome, {currentUser.full_name}!
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Faculty Counselor: <strong>{currentUser.mentor_name || 'Dr. K. Radhika (AI&DS)'}</strong> • Section: {currentUser.section || '2'} • Batch: {currentUser.batch_year}
+            Faculty Counselor: <strong>{currentUser.mentor_name || 'Faculty Mentor (AI&DS)'}</strong> • Section: {currentUser.section || '2'} • Batch: {currentUser.batch_year || '2024-2028 (5th Semester)'}
           </p>
         </div>
 
@@ -121,25 +129,67 @@ export default function StudentDashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-[#2c2d36]">
               {recentSubmissions.map((sub) => {
                 const cat = categories.find((c) => c.id === sub.category_id);
+                const isPdf = sub.file_type?.includes('pdf') || sub.certificate_url?.endsWith('.pdf');
+
                 return (
-                  <div key={sub.id} className="py-3.5 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[10px] bg-[#faf9f5] dark:bg-[#121214] text-gray-700 dark:text-gray-300 font-semibold px-2 py-0.5 rounded border border-[#e8e3d8] dark:border-[#2e3039]">
-                          Sem {sub.semester}
-                        </span>
-                        <span className="text-[10px] bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-gray-300 font-bold px-2 py-0.5 rounded border border-transparent dark:border-[#2e3039]">
-                          Cat #{cat?.sno || 1}
-                        </span>
+                  <div key={sub.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 group">
+                    
+                    {/* Left: Thumbnail Preview & Meta */}
+                    <div className="flex items-center space-x-3.5 flex-1 min-w-0">
+                      
+                      {/* Document Preview Thumbnail */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPreviewDoc(sub)}
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2e3039] flex-shrink-0 flex items-center justify-center cursor-pointer relative shadow-2xs hover:border-[#385529] dark:hover:border-emerald-500 transition-all group/thumb"
+                        title="Click to preview certificate"
+                      >
+                        {isPdf ? (
+                          <div className="text-center p-1">
+                            <BookOpen className="w-6 h-6 text-[#a71a1b] dark:text-rose-400 mx-auto" />
+                            <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400 block uppercase mt-0.5">PDF</span>
+                          </div>
+                        ) : sub.certificate_url ? (
+                          <img
+                            src={sub.certificate_url}
+                            alt={sub.activity_title}
+                            className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        )}
+                        <div className="absolute inset-0 bg-black/35 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                          <Eye className="w-4 h-4 text-white" />
+                        </div>
+                      </button>
+
+                      {/* Details */}
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                          <span className="text-[10px] bg-[#faf9f5] dark:bg-[#121214] text-gray-700 dark:text-gray-300 font-semibold px-2 py-0.5 rounded border border-[#e8e3d8] dark:border-[#2e3039]">
+                            Sem {sub.semester}
+                          </span>
+                          <span className="text-[10px] bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 font-bold px-2 py-0.5 rounded border border-transparent dark:border-[#2e3039]">
+                            Cat #{cat?.sno || 1}
+                          </span>
+                          {sub.credential_id && (
+                            <span className="text-[10px] bg-[#f0f4f8] dark:bg-[#121214] text-[#3b566e] dark:text-gray-400 font-mono px-1.5 py-0.5 rounded border border-[#3b566e]/20 dark:border-[#2e3039] hidden sm:inline-block truncate max-w-[130px]">
+                              ID: {sub.credential_id}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs font-bold text-[#1c2718] dark:text-gray-100 line-clamp-1">
+                          {sub.activity_title}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                          {sub.issuing_organization} • {sub.event_date}
+                        </p>
                       </div>
-                      <h4 className="text-xs font-bold text-[#1c2718] dark:text-gray-100 line-clamp-1">{sub.activity_title}</h4>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        {sub.issuing_organization} • {sub.event_date}
-                      </p>
                     </div>
 
+                    {/* Right: Points & Status */}
                     <div className="text-right space-y-1 flex-shrink-0">
-                      <span className="text-xs font-extrabold text-[#385529] dark:text-emerald-400">
+                      <span className="text-xs font-extrabold text-[#385529] dark:text-emerald-400 block">
                         {sub.status === 'approved' ? `+${sub.awarded_points || sub.claimed_points} pts` : `${sub.claimed_points} pts`}
                       </span>
                       <div>
@@ -160,6 +210,7 @@ export default function StudentDashboardPage() {
                         )}
                       </div>
                     </div>
+
                   </div>
                 );
               })}
@@ -192,6 +243,87 @@ export default function StudentDashboardPage() {
 
       {/* 24 Activity Categories & Cap Tracker */}
       <CategoryBreakdown categories={categories} submissions={mySubmissions} />
+
+      {/* Interactive Quick Certificate Lightbox Modal */}
+      {selectedPreviewDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1a1b20] rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-[#e8e3d8] dark:border-[#2c2d36] shadow-2xl">
+            
+            {/* Header */}
+            <div className="p-4 bg-[#385529] dark:bg-[#22232a] text-white flex items-center justify-between flex-shrink-0">
+              <div className="space-y-0.5">
+                <h3 className="font-serif font-bold text-sm text-white line-clamp-1">
+                  {selectedPreviewDoc.activity_title}
+                </h3>
+                <p className="text-[11px] text-[#e2ebd9] dark:text-gray-400">
+                  {selectedPreviewDoc.issuing_organization} • {selectedPreviewDoc.event_date}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <a
+                  href={selectedPreviewDoc.certificate_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 rounded-lg bg-[#273e1c] dark:bg-[#2c2d36] text-gray-200 hover:text-white transition-colors"
+                  title="Open in new tab"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewDoc(null)}
+                  className="p-1.5 rounded-lg bg-[#273e1c] dark:bg-[#2c2d36] text-gray-200 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Document Image / PDF Area */}
+            <div className="flex-1 p-4 bg-[#faf9f5] dark:bg-[#121214] overflow-auto flex items-center justify-center min-h-[300px]">
+              {selectedPreviewDoc.file_type?.includes('pdf') || selectedPreviewDoc.certificate_url?.endsWith('.pdf') ? (
+                <div className="text-center p-8 space-y-3">
+                  <BookOpen className="w-16 h-16 text-[#a71a1b] dark:text-rose-400 mx-auto" />
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedPreviewDoc.activity_title}</h4>
+                  <a
+                    href={selectedPreviewDoc.certificate_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#385529] text-white text-xs font-bold rounded-xl shadow-xs"
+                  >
+                    <span>Open PDF Document</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              ) : (
+                <img
+                  src={selectedPreviewDoc.certificate_url}
+                  alt={selectedPreviewDoc.activity_title}
+                  className="max-h-[60vh] max-w-full object-contain rounded-xl shadow-md"
+                />
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-white dark:bg-[#1a1b20] border-t border-[#e8e3d8] dark:border-[#2c2d36] flex items-center justify-between text-xs">
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Awarded Points: </span>
+                <span className="font-extrabold text-[#385529] dark:text-emerald-400">
+                  {selectedPreviewDoc.status === 'approved' ? `+${selectedPreviewDoc.awarded_points || selectedPreviewDoc.claimed_points} pts` : `${selectedPreviewDoc.claimed_points} pts (Pending)`}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPreviewDoc(null)}
+                className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-gray-700 dark:text-gray-200 font-bold rounded-xl cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

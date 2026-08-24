@@ -152,7 +152,7 @@ export default function LoginPage() {
             >
               <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
               <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Faculty Mentor</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. K. Radhika</span>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">Faculty Counselor</span>
             </button>
 
             <button
@@ -161,8 +161,8 @@ export default function LoginPage() {
               className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fdf2f2] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
             >
               <Award className="w-4 h-4 text-[#a71a1b] dark:text-rose-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">HoD AI&DS</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Prof. M. Srinivasa Rao</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Head of Dept</span>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">HoD AI&DS</span>
             </button>
 
             <button

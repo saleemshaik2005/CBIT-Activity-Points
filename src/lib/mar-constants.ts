@@ -9,8 +9,8 @@ export const CBIT_DEPARTMENTS = [
     code: 'AIDS',
     name: 'Artificial Intelligence and Data Science (AI&DS)',
     degrees: ['B.Tech'],
-    hod: 'Dr. K. Radhika',
-    hodEmail: 'kradhika.aids@cbit.ac.in',
+    hod: 'Head of Department (AI&DS)',
+    hodEmail: 'hod.aids@cbit.ac.in',
     intake: 180,
     sections: ['1', '2', '3']
   },
@@ -505,7 +505,7 @@ export function calculateStudentMARProgress(
   };
 }
 
-// Student User: Shaik Saleem (AI&DS, Section 2, 5th Sem, Batch of 2026)
+// Student User: Shaik Saleem (AI&DS, Section 2, 5th Sem, Batch of 2024-2028)
 export const MOCK_CURRENT_USER: UserProfile = {
   id: "usr-student-001",
   email: "saleemshaik2005@cbit.ac.in",
@@ -514,18 +514,18 @@ export const MOCK_CURRENT_USER: UserProfile = {
   roll_number: "160122771045",
   department: "Artificial Intelligence and Data Science (AI&DS)",
   section: "2",
-  batch_year: "2022-2026 (5th Semester)",
+  batch_year: "2024-2028 (5th Semester)",
   is_lateral_entry: false,
   mentor_id: "usr-mentor-001",
-  mentor_name: "Dr. K. Radhika (Assoc. Prof, AI&DS)",
+  mentor_name: "Faculty Mentor (AI&DS)",
   phone_number: "+91 98765 43210"
 };
 
-// Faculty Mentor: Dr. K. Radhika (Department of AI&DS)
+// Faculty Mentor
 export const MOCK_MENTOR_USER: UserProfile = {
   id: "usr-mentor-001",
-  email: "kradhika.aids@cbit.ac.in",
-  full_name: "Dr. K. Radhika",
+  email: "mentor.aids@cbit.ac.in",
+  full_name: "Faculty Mentor",
   role: "mentor",
   department: "Artificial Intelligence and Data Science (AI&DS)",
   batch_year: "Faculty Counselor",
@@ -545,7 +545,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
     event_date: "2024-04-28",
     semester: 4,
-    academic_year: "2023-2024",
+    academic_year: "2024-2025",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=60",
@@ -553,7 +553,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Verified with NPTEL score sheet. Excellent performance with Elite+Silver medal.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Faculty Mentor",
     approved_at: "2024-05-02T10:30:00Z",
     created_at: "2024-05-01T08:15:00Z"
   },
@@ -568,7 +568,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     issuing_organization: "CBIT Hyderabad",
     event_date: "2024-03-15",
     semester: 4,
-    academic_year: "2023-2024",
+    academic_year: "2024-2025",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=60",
@@ -576,7 +576,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Confirmed by Sudhee 2024 Faculty Convener.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Faculty Mentor",
     approved_at: "2024-03-20T14:20:00Z",
     created_at: "2024-03-18T11:00:00Z"
   },
@@ -591,7 +591,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     issuing_organization: "Indian Red Cross Society & NSS CBIT",
     event_date: "2023-11-10",
     semester: 3,
-    academic_year: "2023-2024",
+    academic_year: "2024-2025",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=800&auto=format&fit=crop&q=60",
@@ -599,7 +599,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Blood donor certificate verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Faculty Mentor",
     approved_at: "2023-11-15T09:00:00Z",
     created_at: "2023-11-12T16:00:00Z"
   },
@@ -614,7 +614,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     issuing_organization: "IEEE Hyderabad Section",
     event_date: "2024-01-20",
     semester: 3,
-    academic_year: "2023-2024",
+    academic_year: "2024-2025",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60",
@@ -622,7 +622,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Active IEEE membership verified with membership number.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. K. Radhika",
+    approver_name: "Faculty Mentor",
     approved_at: "2024-01-25T11:00:00Z",
     created_at: "2024-01-22T10:00:00Z"
   }

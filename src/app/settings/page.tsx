@@ -113,7 +113,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Faculty Counselor</span>
                     <span className="font-semibold text-[#385529] dark:text-emerald-400">
-                      {currentUser.mentor_name || 'Dr. K. Radhika'}
+                      {currentUser.mentor_name || 'Faculty Mentor (AI&DS)'}
                     </span>
                   </div>
 

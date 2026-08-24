@@ -8,7 +8,7 @@ export default function ClassTeacherPage() {
   const { currentUser } = useApp();
 
   const classStats = {
-    section: 'AI&DS-2 (2022-2026 Batch)',
+    section: 'AI&DS-2 (2024-2028 Batch)',
     totalStudents: 66,
     completedMAR: 48,
     onTrack: 12,
@@ -16,9 +16,9 @@ export default function ClassTeacherPage() {
   };
 
   const atRiskStudents = [
-    { roll: '160122771012', name: 'Ananya Verma', points: 22, needed: 38, mentor: 'Dr. K. Radhika' },
-    { roll: '160122771028', name: 'Karthik Rao', points: 25, needed: 35, mentor: 'Dr. K. Radhika' },
-    { roll: '160122771055', name: 'Vamshi Krishna', points: 28, needed: 32, mentor: 'Dr. K. Radhika' },
+    { roll: '160122771012', name: 'Ananya Verma', points: 22, needed: 38, mentor: 'Faculty Mentor' },
+    { roll: '160122771028', name: 'Karthik Rao', points: 25, needed: 35, mentor: 'Faculty Mentor' },
+    { roll: '160122771055', name: 'Vamshi Krishna', points: 28, needed: 32, mentor: 'Faculty Mentor' },
   ];
 
   return (

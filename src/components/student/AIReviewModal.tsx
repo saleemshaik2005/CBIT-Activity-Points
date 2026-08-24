@@ -194,18 +194,19 @@ export const AIReviewModal: React.FC<Props> = ({
               <span className="bg-[#eef5ec] dark:bg-[#1a1b20] text-[#385529] dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full text-[10px] border border-[#385529]/20 dark:border-[#2c2d36]">
                 {Math.round((aiData.confidenceScore || 0.95) * 100)}% Verified
               </span>
-              {credentialId && (
+              {credentialId && credentialId.length > 2 && !credentialId.toLowerCase().includes('dummy') && !credentialId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i) && (
                 <span className="bg-[#f0f4f8] dark:bg-[#1a1b20] text-[#3b566e] dark:text-gray-300 font-bold px-2 py-0.5 rounded text-[10px] border border-[#3b566e]/30 dark:border-[#2c2d36] flex items-center gap-1 font-mono">
-                  <Hash className="w-3 h-3" /> ID: {credentialId}
+                  <Hash className="w-3 h-3 text-gray-400" /> ID: {credentialId}
                 </span>
               )}
             </div>
-            {verificationUrl && (
+            {verificationUrl && (verificationUrl.startsWith('http://') || verificationUrl.startsWith('https://')) && (
               <a
                 href={verificationUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] bg-white dark:bg-[#1a1b20] text-[#385529] dark:text-emerald-400 px-2 py-0.5 rounded border border-[#e8e3d8] dark:border-[#2c2d36] font-bold hover:underline flex items-center gap-1"
+                className="text-[11px] bg-white dark:bg-[#1a1b20] text-[#385529] dark:text-emerald-400 px-2.5 py-1 rounded-md border border-[#e8e3d8] dark:border-[#2c2d36] font-bold hover:underline flex items-center gap-1.5 shadow-2xs"
+                title={`Open official verification link: ${verificationUrl}`}
               >
                 <QrCode className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
                 <span>Verify Link</span>
@@ -440,11 +441,11 @@ export const AIReviewModal: React.FC<Props> = ({
                       Summary / Remarks
                     </label>
                     <textarea
-                      rows={2}
+                      rows={4}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] bg-white dark:bg-[#121214] text-gray-900 dark:text-gray-100"
-                      placeholder="Additional details for the faculty mentor..."
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] bg-white dark:bg-[#121214] text-gray-900 dark:text-gray-100 min-h-[90px] leading-relaxed resize-y"
+                      placeholder="Additional details, course remarks, or notes for the faculty mentor..."
                     />
                   </div>
 
