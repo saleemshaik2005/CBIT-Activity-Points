@@ -63,7 +63,7 @@ export const Footer: React.FC = () => {
                 <strong className="text-white">Developed By:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
               </p>
               <p>
-                <strong className="text-white">Project Guide & Mentor:</strong> Dr. D. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
+                <strong className="text-white">Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
               </p>
             </div>
           </div>

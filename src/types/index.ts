@@ -82,8 +82,10 @@ export interface SystemSettings {
   id: number;
   college_name: string;
   college_code: string;
-  regular_target_points: number;
-  lateral_entry_target_points: number;
+  regular_target_points: number; // Default 60
+  regular_max_points: number; // Max Cap 100
+  lateral_entry_target_points: number; // Default 45
+  lateral_entry_max_points: number; // Max Cap 75
   academic_year: string;
 }
 
@@ -106,6 +108,7 @@ export interface MARCalculationResult {
   totalUncappedApprovedPoints: number;
   totalPendingPoints: number;
   targetPoints: number;
+  maxPointsAllowed: number;
   percentage: number;
   isCompleted: boolean;
   pointsRemaining: number;
@@ -129,5 +132,3 @@ export interface NotificationItem {
   sender_name?: string;
   created_at: string;
 }
-
-

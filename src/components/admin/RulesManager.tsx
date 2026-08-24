@@ -3,27 +3,53 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ActivityCategory } from '@/types';
-import { Settings, Save, RotateCcw, Check, X, ShieldAlert } from 'lucide-react';
+import { Settings, Save, RotateCcw, Check, X, ShieldAlert, Award, Shield } from 'lucide-react';
 
 export const RulesManager: React.FC = () => {
   const { categories, settings, updateSettings, updateCategory, resetToDefaults } = useApp();
 
-  const [regularPoints, setRegularPoints] = useState<string | number>(settings.regular_target_points);
-  const [lePoints, setLePoints] = useState<string | number>(settings.lateral_entry_target_points);
+  const [regularPoints, setRegularPoints] = useState<string>(String(settings.regular_target_points || 60));
+  const [regularMaxPoints, setRegularMaxPoints] = useState<string>(String(settings.regular_max_points || 100));
+  const [lePoints, setLePoints] = useState<string>(String(settings.lateral_entry_target_points || 45));
+  const [leMaxPoints, setLeMaxPoints] = useState<string>(String(settings.lateral_entry_max_points || 75));
+
   const [editingCategory, setEditingCategory] = useState<ActivityCategory | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  // Helper to handle numeric inputs without leading zero glitches
+  const handleNumericInput = (
+    val: string,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    if (val === '') {
+      setter('');
+      return;
+    }
+    // Remove leading zeros when user types next digit
+    const cleaned = val.replace(/^0+(?=\d)/, '');
+    setter(cleaned);
+  };
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     const regNum = Number(regularPoints) || 60;
-    const leNum = Number(lePoints) || 50;
+    const regMaxNum = Number(regularMaxPoints) || 100;
+    const leNum = Number(lePoints) || 45;
+    const leMaxNum = Number(leMaxPoints) || 75;
+
     updateSettings({
       regular_target_points: regNum,
+      regular_max_points: regMaxNum,
       lateral_entry_target_points: leNum,
+      lateral_entry_max_points: leMaxNum,
     });
-    setRegularPoints(regNum);
-    setLePoints(leNum);
-    setSaveMessage('Target graduation activity requirements updated successfully.');
+
+    setRegularPoints(String(regNum));
+    setRegularMaxPoints(String(regMaxNum));
+    setLePoints(String(leNum));
+    setLeMaxPoints(String(leMaxNum));
+
+    setSaveMessage('Graduation activity targets and maximum caps updated successfully.');
     setTimeout(() => setSaveMessage(null), 4000);
   };
 
@@ -52,68 +78,100 @@ export const RulesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Target Points Settings Card */}
+      {/* Target Points & Maximum Caps Settings Card */}
       <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border-t-4 border-[#385529] dark:border-emerald-600 border-x border-b border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
         <div className="flex items-center space-x-2">
           <Settings className="w-5 h-5 text-[#385529] dark:text-gray-300" />
           <h3 className="text-base font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wide">
-            Graduation Target Points Configuration
+            CBIT MAR Degree Award Requirements & Maximum Limits
           </h3>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Modify the mandatory activity points required for degree award. Changes take effect across all student dashboards immediately.
+          Configure the mandatory threshold points required for graduation, and the absolute maximum activity points cap that a student can earn in total.
         </p>
 
-        <form onSubmit={handleSaveSettings} className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-              4-Year Regular B.Tech Target (Points)
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={500}
-              value={regularPoints}
-              onChange={(e) => {
-                const val = e.target.value;
-                setRegularPoints(val === '' ? '' : Number(val));
-              }}
-              className="w-full px-3 py-2 text-sm font-bold text-[#385529] dark:text-gray-100 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 focus:outline-none"
-            />
+        <form onSubmit={handleSaveSettings} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Regular Student Target */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                4-Year Regular Target (Points)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={regularPoints}
+                onChange={(e) => handleNumericInput(e.target.value, setRegularPoints)}
+                className="w-full px-3 py-2 text-sm font-bold text-[#385529] dark:text-gray-100 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 focus:outline-none"
+              />
+              <span className="text-[10px] text-gray-400 mt-0.5 block">Default: 60 Points</span>
+            </div>
+
+            {/* Regular Student Max Cap */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                4-Year Regular Max Cap (Points)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={regularMaxPoints}
+                onChange={(e) => handleNumericInput(e.target.value, setRegularMaxPoints)}
+                className="w-full px-3 py-2 text-sm font-bold text-[#385529] dark:text-gray-100 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400 focus:outline-none"
+              />
+              <span className="text-[10px] text-gray-400 mt-0.5 block">Absolute maximum: 100 Points</span>
+            </div>
+
+            {/* Lateral Entry Target */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                Lateral Entry Target (Points)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={lePoints}
+                onChange={(e) => handleNumericInput(e.target.value, setLePoints)}
+                className="w-full px-3 py-2 text-sm font-bold text-[#a16b15] dark:text-amber-400 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#a16b15] dark:focus:ring-gray-400 focus:outline-none"
+              />
+              <span className="text-[10px] text-gray-400 mt-0.5 block">Default: 45 Points</span>
+            </div>
+
+            {/* Lateral Entry Max Cap */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                Lateral Entry Max Cap (Points)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={leMaxPoints}
+                onChange={(e) => handleNumericInput(e.target.value, setLeMaxPoints)}
+                className="w-full px-3 py-2 text-sm font-bold text-[#a16b15] dark:text-amber-400 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#a16b15] dark:focus:ring-gray-400 focus:outline-none"
+              />
+              <span className="text-[10px] text-gray-400 mt-0.5 block">Absolute maximum: 75 Points</span>
+            </div>
+
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-              Lateral Entry (Diploma) Target (Points)
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={500}
-              value={lePoints}
-              onChange={(e) => {
-                const val = e.target.value;
-                setLePoints(val === '' ? '' : Number(val));
-              }}
-              className="w-full px-3 py-2 text-sm font-bold text-[#a16b15] dark:text-amber-400 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] focus:ring-2 focus:ring-[#a16b15] dark:focus:ring-gray-400 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex items-end space-x-2">
-            <button
-              type="submit"
-              className="w-full px-4 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
-            >
-              <Save className="w-4 h-4" />
-              <span>Update Targets</span>
-            </button>
+          <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100 dark:border-[#2a2b33]">
             <button
               type="button"
               onClick={resetToDefaults}
               title="Reset to CBIT Default Rubrics"
-              className="p-2.5 border border-[#e8e3d8] dark:border-[#2e3039] hover:bg-gray-50 dark:hover:bg-[#22232a] text-gray-600 dark:text-gray-300 rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 border border-[#e8e3d8] dark:border-[#2e3039] hover:bg-gray-50 dark:hover:bg-[#22232a] text-gray-600 dark:text-gray-300 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Defaults (60/100, 45/75)</span>
+            </button>
+
+            <button
+              type="submit"
+              className="px-6 py-2 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save Requirements & Caps</span>
             </button>
           </div>
         </form>
@@ -172,10 +230,11 @@ export const RulesManager: React.FC = () => {
                       </td>
                       <td className="py-3 px-3 text-center">
                         <input
-                          type="number"
-                          value={editingCategory.default_points}
+                          type="text"
+                          inputMode="numeric"
+                          value={String(editingCategory.default_points ?? '')}
                           onChange={(e) => {
-                            const val = e.target.value;
+                            const val = e.target.value.replace(/^0+(?=\d)/, '');
                             setEditingCategory({
                               ...editingCategory,
                               default_points: val === '' ? ('' as any) : Number(val),
@@ -186,10 +245,11 @@ export const RulesManager: React.FC = () => {
                       </td>
                       <td className="py-3 px-3 text-center">
                         <input
-                          type="number"
-                          value={editingCategory.max_points_allowed}
+                          type="text"
+                          inputMode="numeric"
+                          value={String(editingCategory.max_points_allowed ?? '')}
                           onChange={(e) => {
-                            const val = e.target.value;
+                            const val = e.target.value.replace(/^0+(?=\d)/, '');
                             setEditingCategory({
                               ...editingCategory,
                               max_points_allowed: val === '' ? ('' as any) : Number(val),

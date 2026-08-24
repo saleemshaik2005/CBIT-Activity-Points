@@ -374,7 +374,7 @@ export const CertificateUploader: React.FC = () => {
               </p>
             </div>
 
-            {/* Hidden Inputs */}
+            {/* Hidden Input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -382,33 +382,16 @@ export const CertificateUploader: React.FC = () => {
               onChange={handleInputChange}
               className="hidden"
             />
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleInputChange}
-              className="hidden"
-            />
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {/* Action Button */}
+            <div className="flex items-center justify-center pt-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-2.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
               >
                 <FileText className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
-                <span>Browse Files (PDF, JPG, PNG)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 text-xs font-bold border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs transition-all flex items-center space-x-2 cursor-pointer"
-              >
-                <Camera className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-                <span>Take Photo with Mobile Camera</span>
+                <span>Choose Certificate (PDF, JPG, PNG)</span>
               </button>
             </div>
 

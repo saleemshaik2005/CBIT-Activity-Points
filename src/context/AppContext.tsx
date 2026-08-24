@@ -16,7 +16,9 @@ import {
   MOCK_CURRENT_USER,
   MOCK_SUBMISSIONS,
   DEFAULT_REGULAR_TARGET_POINTS,
+  DEFAULT_REGULAR_MAX_POINTS,
   DEFAULT_LATERAL_ENTRY_TARGET_POINTS,
+  DEFAULT_LATERAL_ENTRY_MAX_POINTS,
   CBIT_COLLEGE_NAME,
   CBIT_COLLEGE_CODE,
 } from '@/lib/mar-constants';
@@ -59,11 +61,11 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
   student: MOCK_CURRENT_USER,
   mentor: {
     id: "usr-mentor-001",
-    email: "dramana.aids@cbit.ac.in",
-    full_name: "Dr. D. Ramana",
+    email: "kradhika.aids@cbit.ac.in",
+    full_name: "Dr. K. Radhika",
     role: "mentor",
     department: "Artificial Intelligence and Data Science (AI&DS)",
-    batch_year: "Faculty / Project Guide",
+    batch_year: "Faculty Counselor",
     is_lateral_entry: false,
   },
   class_teacher: {
@@ -78,8 +80,8 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
   },
   hod: {
     id: "usr-hod-001",
-    email: "kradhika.aids@cbit.ac.in",
-    full_name: "Dr. K. Radhika (HoD AI&DS)",
+    email: "hod.aids@cbit.ac.in",
+    full_name: "Prof. M. Srinivasa Rao (HoD AI&DS)",
     role: "hod",
     department: "Artificial Intelligence and Data Science (AI&DS)",
     batch_year: "Head of Department",
@@ -103,10 +105,10 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     recipient_id: "usr-student-001",
     type: "approval",
     title: "Certificate Approved (+20 Points)",
-    message: "Dr. D. Ramana approved your NPTEL Deep Learning 12-Week Certificate.",
+    message: "Dr. K. Radhika approved your NPTEL Deep Learning 12-Week Certificate.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Dr. D. Ramana",
+    sender_name: "Dr. K. Radhika",
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
@@ -118,7 +120,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     message: "Your SUDHEE 2024 Fest Core AI Team Lead submission was verified.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Dr. D. Ramana",
+    sender_name: "Dr. K. Radhika",
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
   {
@@ -158,7 +160,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     college_name: CBIT_COLLEGE_NAME,
     college_code: CBIT_COLLEGE_CODE,
     regular_target_points: DEFAULT_REGULAR_TARGET_POINTS,
+    regular_max_points: DEFAULT_REGULAR_MAX_POINTS,
     lateral_entry_target_points: DEFAULT_LATERAL_ENTRY_TARGET_POINTS,
+    lateral_entry_max_points: DEFAULT_LATERAL_ENTRY_MAX_POINTS,
     academic_year: "2025-2026",
   });
 
@@ -245,7 +249,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       section: userData.section || '2',
       batch_year: userData.batch_year || '2022-2026',
       is_lateral_entry: !!userData.is_lateral_entry,
-      mentor_name: 'Dr. D. Ramana',
+      mentor_name: 'Dr. K. Radhika',
       mentor_id: 'usr-mentor-001',
     };
 
@@ -407,7 +411,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       college_name: CBIT_COLLEGE_NAME,
       college_code: CBIT_COLLEGE_CODE,
       regular_target_points: DEFAULT_REGULAR_TARGET_POINTS,
+      regular_max_points: DEFAULT_REGULAR_MAX_POINTS,
       lateral_entry_target_points: DEFAULT_LATERAL_ENTRY_TARGET_POINTS,
+      lateral_entry_max_points: DEFAULT_LATERAL_ENTRY_MAX_POINTS,
       academic_year: "2025-2026",
     });
     localStorage.removeItem('cbit_mar_submissions');

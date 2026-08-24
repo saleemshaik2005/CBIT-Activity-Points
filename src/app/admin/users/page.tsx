@@ -9,15 +9,15 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
 
   const [userList, setUserList] = useState([
-    { id: '1', name: 'Shaik Saleem', email: 'saleemshaik2005@cbit.ac.in', roll: '160122771045', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
-    { id: '2', name: 'Sneha Reddy', email: 'sneha.reddy@cbit.ac.in', roll: '160122771046', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
-    { id: '3', name: 'Mohammed Farhan', email: 'farhan.le@cbit.ac.in', roll: '160122771301', role: 'student' as UserRole, mentor: 'Dr. D. Ramana' },
-    { id: '4', name: 'Dr. D. Ramana', email: 'dramana.aids@cbit.ac.in', roll: 'FAC-AIDS-01', role: 'mentor' as UserRole, mentor: '-' },
-    { id: '5', name: 'Prof. M. Srinivasa Rao', email: 'srinivasa.cse@cbit.ac.in', roll: 'FAC-008', role: 'class_teacher' as UserRole, mentor: '-' },
-    { id: '6', name: 'Dr. K. Radhika', email: 'hod_aids@cbit.ac.in', roll: 'FAC-001', role: 'hod' as UserRole, mentor: '-' },
+    { id: '1', name: 'Shaik Saleem', email: 'saleemshaik2005@cbit.ac.in', roll: '160122771045', role: 'student' as UserRole, mentor: 'Dr. K. Radhika' },
+    { id: '2', name: 'Sneha Reddy', email: 'sneha.reddy@cbit.ac.in', roll: '160122771046', role: 'student' as UserRole, mentor: 'Dr. K. Radhika' },
+    { id: '3', name: 'Mohammed Farhan', email: 'farhan.le@cbit.ac.in', roll: '160122771301', role: 'student' as UserRole, mentor: 'Dr. K. Radhika' },
+    { id: '4', name: 'Dr. K. Radhika', email: 'kradhika.aids@cbit.ac.in', roll: 'FAC-AIDS-01', role: 'mentor' as UserRole, mentor: '-' },
+    { id: '5', name: 'Prof. M. Srinivasa Rao', email: 'srinivasa.cse@cbit.ac.in', roll: 'FAC-008', role: 'hod' as UserRole, mentor: '-' },
+    { id: '6', name: 'Dr. T. Sridevi', email: 'tsridevi.aids@cbit.ac.in', roll: 'FAC-002', role: 'mentor' as UserRole, mentor: '-' },
   ]);
 
-  const mentors = ['Dr. D. Ramana', 'Dr. K. Radhika', 'Prof. M. Srinivasa Rao', 'Dr. T. Sridevi', 'Dr. B. Indira'];
+  const mentors = ['Dr. K. Radhika', 'Dr. T. Sridevi', 'Prof. M. Srinivasa Rao', 'Dr. B. Indira', 'Dr. Pragati Priyadarshinee'];
 
   const handleRoleChange = (id: string, newRole: UserRole) => {
     setUserList(userList.map(u => u.id === id ? { ...u, role: newRole } : u));

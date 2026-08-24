@@ -16,9 +16,9 @@ export default function ClassTeacherPage() {
   };
 
   const atRiskStudents = [
-    { roll: '160122771012', name: 'Ananya Verma', points: 22, needed: 38, mentor: 'Dr. D. Ramana' },
-    { roll: '160122771028', name: 'Karthik Rao', points: 25, needed: 35, mentor: 'Dr. D. Ramana' },
-    { roll: '160122771055', name: 'Vamshi Krishna', points: 28, needed: 32, mentor: 'Dr. D. Ramana' },
+    { roll: '160122771012', name: 'Ananya Verma', points: 22, needed: 38, mentor: 'Dr. K. Radhika' },
+    { roll: '160122771028', name: 'Karthik Rao', points: 25, needed: 35, mentor: 'Dr. K. Radhika' },
+    { roll: '160122771055', name: 'Vamshi Krishna', points: 28, needed: 32, mentor: 'Dr. K. Radhika' },
   ];
 
   return (

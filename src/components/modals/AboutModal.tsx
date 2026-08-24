@@ -143,7 +143,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <strong>Developed by:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
             </p>
             <p className="text-[11px] text-[#273e1c] dark:text-gray-300">
-              <strong>Project Guide & Mentor:</strong> Dr. D. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
+              <strong>Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
             </p>
           </div>
 

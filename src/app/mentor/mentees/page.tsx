@@ -39,7 +39,7 @@ export default function MentorMenteesPage() {
       department: "Artificial Intelligence and Data Science (AI&DS)",
       section: "1",
       batch_year: "2023-2026",
-      is_lateral_entry: true, // Lateral Entry (50 pts target)
+      is_lateral_entry: true, // Lateral Entry (45 pts target, 75 max cap)
       email: "farhan.le@cbit.ac.in",
     },
     {
@@ -114,7 +114,10 @@ export default function MentorMenteesPage() {
                 const target = mentee.is_lateral_entry
                   ? settings.lateral_entry_target_points
                   : settings.regular_target_points;
-                const progress = calculateStudentMARProgress(menteeSubmissions, categories, target);
+                const maxCap = mentee.is_lateral_entry
+                  ? (settings.lateral_entry_max_points || 75)
+                  : (settings.regular_max_points || 100);
+                const progress = calculateStudentMARProgress(menteeSubmissions, categories, target, maxCap);
 
                 return (
                   <tr key={mentee.id} className="hover:bg-[#faf9f5] dark:hover:bg-[#22232a] transition-colors">

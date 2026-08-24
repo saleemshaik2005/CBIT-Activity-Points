@@ -7,7 +7,7 @@ import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'CBIT Activity Point System - Autonomous Activity Points Tracking',
-  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad - Automated Student Activity Point System with AI Document Intelligence, 24 Categories Tracking, and Graduation Approvals. Developed by Students of AI & Data Science (AI&DS, 5th Sem, 2026) under the guidance of Dr. D. Ramana Sir.',
+  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad - Automated Student Activity Point System with AI Document Intelligence, 24 Categories Tracking, and Graduation Approvals. Developed by Students of AI & Data Science (AI&DS, 5th Sem, 2026) under the guidance of Dr. K. Ramana Sir (Project Guide).',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

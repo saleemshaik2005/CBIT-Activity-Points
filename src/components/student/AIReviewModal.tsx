@@ -416,18 +416,22 @@ export const AIReviewModal: React.FC<Props> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#1c2718] dark:text-gray-200 mb-1">
-                        Claimed Activity Points <span className="text-red-500">*</span>
+                      <label className="block text-xs font-bold text-[#1c2718] dark:text-gray-200 mb-1 flex items-center justify-between">
+                        <span>Claimed Activity Points</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal">Auto-assigned by AI</span>
                       </label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={40}
-                        required
-                        value={claimedPoints}
-                        onChange={(e) => setClaimedPoints(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] focus:outline-none focus:ring-2 focus:ring-[#385529] bg-white dark:bg-[#121214] font-extrabold text-[#385529] dark:text-emerald-400"
-                      />
+                      <div className="relative">
+                        <input
+                          type="number"
+                          disabled
+                          readOnly
+                          value={claimedPoints}
+                          className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg border border-[#e8e3d8] dark:border-[#2e3039] bg-gray-100/90 dark:bg-[#1a1b20] font-extrabold text-[#385529] dark:text-emerald-400 cursor-not-allowed select-none opacity-95"
+                        />
+                        <span className="absolute right-3 top-2.5 text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                          Verified & adjusted by Mentor
+                        </span>
+                      </div>
                     </div>
                   </div>
 

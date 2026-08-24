@@ -88,7 +88,7 @@ export default function HODDashboardPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-[#2c2d36]">
               {[
                 { section: 'AI&DS-1', coordinator: 'Prof. M. Srinivasa Rao', count: 66, satisfied: 58, rate: '87.8%' },
-                { section: 'AI&DS-2', coordinator: 'Dr. D. Ramana', count: 64, satisfied: 54, rate: '84.3%' },
+                { section: 'AI&DS-2', coordinator: 'Dr. T. Sridevi', count: 64, satisfied: 54, rate: '84.3%' },
                 { section: 'AI&DS-3 (Cognitive)', coordinator: 'Dr. B. Indira', count: 65, satisfied: 52, rate: '80.0%' },
               ].map((row, idx) => (
                 <tr key={idx} className="hover:bg-[#faf9f5] dark:hover:bg-[#22232a] transition-colors">

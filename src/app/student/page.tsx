@@ -52,7 +52,7 @@ export default function StudentDashboardPage() {
             Welcome, {currentUser.full_name}!
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Faculty Counselor: <strong>{currentUser.mentor_name || 'Dr. D. Ramana (AI&DS)'}</strong> • Section: {currentUser.section || '2'} • Batch: {currentUser.batch_year}
+            Faculty Counselor: <strong>{currentUser.mentor_name || 'Dr. K. Radhika (AI&DS)'}</strong> • Section: {currentUser.section || '2'} • Batch: {currentUser.batch_year}
           </p>
         </div>
 

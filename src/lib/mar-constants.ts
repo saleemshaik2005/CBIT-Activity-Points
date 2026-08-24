@@ -423,22 +423,27 @@ export const CBIT_COLLEGE_CODE = "HYDERABAD - 500075";
 export const MAR_DOCUMENT_TITLE = "RECORD OF ACTIVITIES FOR ACTIVITY POINTS";
 
 export const DEFAULT_REGULAR_TARGET_POINTS = 60;
-export const DEFAULT_LATERAL_ENTRY_TARGET_POINTS = 50;
+export const DEFAULT_REGULAR_MAX_POINTS = 100;
+export const DEFAULT_LATERAL_ENTRY_TARGET_POINTS = 45;
+export const DEFAULT_LATERAL_ENTRY_MAX_POINTS = 75;
 
 // Target Activity Points for Graduation (CBIT Autonomous)
 export const DEFAULT_SETTINGS = {
   regular_target_points: DEFAULT_REGULAR_TARGET_POINTS,
+  regular_max_points: DEFAULT_REGULAR_MAX_POINTS,
   lateral_entry_target_points: DEFAULT_LATERAL_ENTRY_TARGET_POINTS,
+  lateral_entry_max_points: DEFAULT_LATERAL_ENTRY_MAX_POINTS,
   college_name: CBIT_COLLEGE_NAME,
   college_code: CBIT_COLLEGE_CODE,
   academic_year: "2025-2026"
 };
 
-// Calculate Student Progress with Category Caps applied
+// Calculate Student Progress with Category Caps and Maximum Program Caps applied
 export function calculateStudentMARProgress(
   submissions: StudentSubmission[],
   categories: ActivityCategory[] = CBIT_24_CATEGORIES,
-  targetPoints: number = 60
+  targetPoints: number = 60,
+  maxPointsAllowed: number = 100
 ): MARCalculationResult {
   const approvedSubmissions = submissions.filter(s => s.status === 'approved');
   const pendingSubmissions = submissions.filter(s => s.status === 'pending_mentor');
@@ -477,15 +482,19 @@ export function calculateStudentMARProgress(
     totalCappedApprovedPoints += Math.min(earned, maxCap);
   });
 
-  const percentage = Math.min(100, Math.round((totalCappedApprovedPoints / targetPoints) * 100));
-  const isCompleted = totalCappedApprovedPoints >= targetPoints;
-  const pointsRemaining = Math.max(0, targetPoints - totalCappedApprovedPoints);
+  // Apply program-level max cap (100 pts for Regular, 75 pts for Lateral Entry)
+  const finalApprovedPoints = Math.min(totalCappedApprovedPoints, maxPointsAllowed);
+
+  const percentage = Math.min(100, Math.round((finalApprovedPoints / targetPoints) * 100));
+  const isCompleted = finalApprovedPoints >= targetPoints;
+  const pointsRemaining = Math.max(0, targetPoints - finalApprovedPoints);
 
   return {
-    totalApprovedPoints: totalCappedApprovedPoints,
+    totalApprovedPoints: finalApprovedPoints,
     totalUncappedApprovedPoints,
     totalPendingPoints,
     targetPoints,
+    maxPointsAllowed,
     percentage,
     isCompleted,
     pointsRemaining,
@@ -508,18 +517,18 @@ export const MOCK_CURRENT_USER: UserProfile = {
   batch_year: "2022-2026 (5th Semester)",
   is_lateral_entry: false,
   mentor_id: "usr-mentor-001",
-  mentor_name: "Dr. D. Ramana (Assoc. Prof & Head, AI&DS)",
+  mentor_name: "Dr. K. Radhika (Assoc. Prof, AI&DS)",
   phone_number: "+91 98765 43210"
 };
 
-// Faculty Mentor: Dr. D. Ramana (Head, Department of AI&DS)
+// Faculty Mentor: Dr. K. Radhika (Department of AI&DS)
 export const MOCK_MENTOR_USER: UserProfile = {
   id: "usr-mentor-001",
-  email: "dramana.aids@cbit.ac.in",
-  full_name: "Dr. D. Ramana",
+  email: "kradhika.aids@cbit.ac.in",
+  full_name: "Dr. K. Radhika",
   role: "mentor",
   department: "Artificial Intelligence and Data Science (AI&DS)",
-  batch_year: "Faculty / Project Guide",
+  batch_year: "Faculty Counselor",
   is_lateral_entry: false,
 };
 
@@ -544,7 +553,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Verified with NPTEL score sheet. Excellent performance with Elite+Silver medal.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. D. Ramana",
+    approver_name: "Dr. K. Radhika",
     approved_at: "2024-05-02T10:30:00Z",
     created_at: "2024-05-01T08:15:00Z"
   },
@@ -567,7 +576,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Confirmed by Sudhee 2024 Faculty Convener.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. D. Ramana",
+    approver_name: "Dr. K. Radhika",
     approved_at: "2024-03-20T14:20:00Z",
     created_at: "2024-03-18T11:00:00Z"
   },
@@ -590,7 +599,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Blood donor certificate verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. D. Ramana",
+    approver_name: "Dr. K. Radhika",
     approved_at: "2023-11-15T09:00:00Z",
     created_at: "2023-11-12T16:00:00Z"
   },
@@ -613,7 +622,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Active IEEE membership verified with membership number.",
     approved_by: "usr-mentor-001",
-    approver_name: "Dr. D. Ramana",
+    approver_name: "Dr. K. Radhika",
     approved_at: "2024-01-25T11:00:00Z",
     created_at: "2024-01-22T10:00:00Z"
   }
