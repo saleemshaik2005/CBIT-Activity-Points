@@ -69,7 +69,21 @@ export const Navbar: React.FC = () => {
     ],
   };
 
+  const roleDefaultRoutes: Record<UserRole, string> = {
+    student: '/student',
+    mentor: '/mentor',
+    class_teacher: '/teacher',
+    hod: '/hod',
+    admin: '/admin',
+  };
+
   const currentNav = isAuthenticated ? roleNavItems[currentUser.role] || roleNavItems.student : [];
+
+  const handleRoleSwitch = (r: UserRole) => {
+    switchRole(r);
+    setIsUserMenuOpen(false);
+    router.push(roleDefaultRoutes[r] || '/');
+  };
 
   const handleLogout = () => {
     logout();
@@ -91,19 +105,19 @@ export const Navbar: React.FC = () => {
                 className="w-9 h-9 sm:w-11 sm:h-11 object-contain group-hover:scale-105 transition-transform"
               />
 
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="font-serif font-extrabold text-[#385529] dark:text-gray-100 text-sm sm:text-lg tracking-tight leading-none group-hover:text-[#a71a1b] dark:group-hover:text-white transition-colors">
-                    CBIT Activity Points
-                  </span>
-                  <span className="hidden sm:inline text-[9px] bg-[#fbf5eb] dark:bg-[#22232a] text-[#a16b15] dark:text-gray-300 border border-[#a16b15]/30 dark:border-[#2e3039] font-bold px-1.5 py-0.5 rounded-full uppercase">
-                    Autonomous
-                  </span>
+                <div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="font-serif font-extrabold text-[#385529] dark:text-gray-100 text-sm sm:text-lg tracking-tight leading-none group-hover:text-[#a71a1b] dark:group-hover:text-white transition-colors">
+                      CBIT Student Portfolio
+                    </span>
+                    <span className="hidden sm:inline text-[9px] bg-[#fbf5eb] dark:bg-[#22232a] text-[#a16b15] dark:text-gray-300 border border-[#a16b15]/30 dark:border-[#2e3039] font-bold px-1.5 py-0.5 rounded-full uppercase">
+                      Autonomous
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[#3b566e] dark:text-gray-400 font-medium tracking-tight mt-0.5 hidden xs:block">
+                    CBIT Hyderabad-75 • Student Portfolio Management System
+                  </p>
                 </div>
-                <p className="text-[10px] text-[#3b566e] dark:text-gray-400 font-medium tracking-tight mt-0.5 hidden xs:block">
-                  CBIT Hyderabad-75 • Activity Points System
-                </p>
-              </div>
             </Link>
 
             {/* Center: Desktop Role Navigation */}
@@ -221,10 +235,7 @@ export const Navbar: React.FC = () => {
                           {(['student', 'mentor', 'class_teacher', 'hod', 'admin'] as UserRole[]).map((r) => (
                             <button
                               key={r}
-                              onClick={() => {
-                                switchRole(r);
-                                setIsUserMenuOpen(false);
-                              }}
+                              onClick={() => handleRoleSwitch(r)}
                               className={`w-full text-left px-3.5 py-1.5 text-xs font-medium capitalize flex items-center justify-between hover:bg-[#faf7f2] dark:hover:bg-[#22232a] transition-colors cursor-pointer ${
                                 currentUser.role === r ? 'text-[#385529] dark:text-white font-bold bg-[#eef5ec] dark:bg-[#22232a]' : 'text-gray-700 dark:text-gray-300'
                               }`}

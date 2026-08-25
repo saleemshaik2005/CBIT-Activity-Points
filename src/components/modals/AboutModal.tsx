@@ -39,10 +39,10 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
             />
             <div>
               <h3 className="font-serif font-bold text-base sm:text-lg leading-tight uppercase tracking-wide text-white">
-                About CBIT Activity Point System
+                About CBIT Student Portfolio Management System
               </h3>
               <p className="text-xs text-[#dfa94b] dark:text-gray-400 font-semibold">
-                Autonomous Student Activity Tracking & Verification Guide
+                Autonomous Student Portfolio, Activity Tracking & Verification Guide
               </p>
             </div>
           </div>
@@ -58,13 +58,13 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-6 space-y-6 flex-1 overflow-y-auto text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
           
           {/* Overview Banner */}
-          <div className="bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] rounded-2xl p-4 space-y-2">
+          <div className="bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2c2d36] rounded-2xl p-4 space-y-2">
             <h4 className="font-serif font-bold text-sm text-[#385529] dark:text-gray-100 flex items-center gap-1.5">
               <Award className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-              <span>What is the CBIT Activity Point System?</span>
+              <span>What is the CBIT Student Portfolio Management System?</span>
             </h4>
             <p>
-              As per Chaitanya Bharathi Institute of Technology (Autonomous) academic regulations, every undergraduate student is required to earn mandatory non-academic Activity Points across 8 semesters to qualify for their degree:
+              As per Chaitanya Bharathi Institute of Technology (Autonomous) academic regulations, every undergraduate student maintains a comprehensive academic and co-curricular portfolio and is required to earn mandatory non-academic Activity Points across 8 semesters to qualify for degree award:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <div className="p-3 bg-white dark:bg-[#1a1b20] rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-2xs">
@@ -72,7 +72,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   4-Year Regular B.E. / B.Tech
                 </span>
                 <span className="text-lg font-serif font-black text-[#385529] dark:text-white">
-                  60 Points Target
+                  60 Points Target (Max 100 Pts)
                 </span>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Across Semesters I to VIII</p>
               </div>
@@ -81,7 +81,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   Diploma Lateral Entry (LE)
                 </span>
                 <span className="text-lg font-serif font-black text-[#a16b15] dark:text-white">
-                  50 Points Target
+                  45 Points Target (Max 75 Pts)
                 </span>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Across Semesters III to VIII</p>
               </div>
@@ -92,7 +92,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <div className="space-y-3">
             <h4 className="font-serif font-bold text-sm text-[#385529] dark:text-gray-100 flex items-center gap-1.5 border-b border-[#e8e3d8] dark:border-[#2e3039] pb-2">
               <Sparkles className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-              <span>How to Upload & Track Activity Points (3-Step Guide)</span>
+              <span>How to Upload & Track Portfolio Points (3-Step Guide)</span>
             </h4>
 
             <div className="space-y-2.5">
@@ -115,7 +115,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div>
                   <h5 className="font-bold text-gray-900 dark:text-white">AI Instant OCR & Category Mapping</h5>
                   <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5">
-                    Automated AI Document Intelligence extracts the certificate title, organization, dates, credential ID, QR links, and maps to the correct <strong>CBIT Category (1 to 24)</strong> with suggested points. You can edit any field before submitting.
+                    Automated AI Document Intelligence extracts the certificate title, organization, dates, credential ID, QR links, and maps to the correct <strong>CBIT Category (1 to 24)</strong> with suggested points.
                   </p>
                 </div>
               </div>
@@ -125,7 +125,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   3
                 </div>
                 <div>
-                  <h5 className="font-bold text-gray-900 dark:text-white">Mentor Approval & 1-Click PDF Sheet</h5>
+                  <h5 className="font-bold text-gray-900 dark:text-white">Mentor Approval & Official PDF Sheet</h5>
                   <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5">
                     Your designated faculty counselor verifies your document side-by-side. Once approved, points are credited to your official progress, and you can download the <strong>official printable 24-row activity sheet</strong> anytime!
                   </p>
@@ -140,7 +140,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
               Project Development & Mentorship
             </h4>
             <p className="text-[11px] text-[#273e1c] dark:text-gray-300">
-              <strong>Developed by:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
+              <strong>Developed by:</strong> Team of Students, Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
             </p>
             <p className="text-[11px] text-[#273e1c] dark:text-gray-300">
               <strong>Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.

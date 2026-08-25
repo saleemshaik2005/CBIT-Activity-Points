@@ -16,6 +16,10 @@ export interface UserProfile {
   mentor_id?: string;
   mentor_name?: string;
   phone_number?: string;
+  resume_url?: string;
+  skills?: string[];
+  github_url?: string;
+  linkedin_url?: string;
   created_at?: string;
 }
 

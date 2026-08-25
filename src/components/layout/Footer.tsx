@@ -29,13 +29,13 @@ export const Footer: React.FC = () => {
                   CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
                 </h3>
                 <p className="text-xs text-[#dfa94b] dark:text-gray-300 font-medium">
-                  Autonomous Activity Points & AI Document Verification Platform • Hyderabad-75
+                  Student Portfolio Management System & AI Activity Verification Platform • Hyderabad-75
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-[#cad8c0] dark:text-gray-400 leading-relaxed max-w-xl">
-              Automated tracking of mandatory 60 activity points (50 for Lateral Entry) across 24 approved activity categories for B.E. / B.Tech degree qualification.
+              Automated tracking of student portfolios, mandatory activity points (60 for 4-Yr Regular, 45 for Lateral Entry, up to 100 max) across 24 approved activity categories for B.E. / B.Tech degree qualification.
             </p>
 
             <div className="pt-1">
@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
 
             <div className="space-y-2 text-xs text-[#cad8c0] dark:text-gray-300">
               <p>
-                <strong className="text-white">Developed By:</strong> Team of 4 Students of Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
+                <strong className="text-white">Developed By:</strong> Team of Students, Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
               </p>
               <p>
                 <strong className="text-white">Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
       <div className="bg-[#121b0f] dark:bg-[#0f1014] border-t border-[#385529]/60 dark:border-[#23242c] px-4 py-3 text-xs text-[#8a9f7e] dark:text-gray-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div>
-            © {new Date().getFullYear()} CBIT Activity Point System • CBIT (Autonomous), Gandipet, Hyderabad - 500075.
+            © {new Date().getFullYear()} CBIT Student Portfolio Management System • CBIT (Autonomous), Gandipet, Hyderabad - 500075.
           </div>
           <div className="flex items-center space-x-1 text-[11px]">
             <span>Developed by AI&DS Students with</span>

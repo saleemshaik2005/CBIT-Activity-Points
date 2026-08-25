@@ -370,7 +370,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ...sub,
           status,
           mentor_remarks: remarks || sub.mentor_remarks,
-          awarded_points: status === 'approved' ? (awardedPoints ?? sub.claimed_points) : 0,
+          awarded_points: status === 'approved' ? Number(awardedPoints !== undefined && awardedPoints !== null ? awardedPoints : (sub.claimed_points || 0)) : 0,
           approved_by: currentUser.id,
           approver_name: currentUser.full_name,
           approved_at: new Date().toISOString(),

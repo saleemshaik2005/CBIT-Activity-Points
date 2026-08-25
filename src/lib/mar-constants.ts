@@ -460,16 +460,16 @@ export function calculateStudentMARProgress(
   });
 
   approvedSubmissions.forEach(sub => {
-    const pts = sub.awarded_points ?? sub.claimed_points ?? 0;
+    const pts = Number(sub.awarded_points !== undefined && sub.awarded_points !== null ? sub.awarded_points : (sub.claimed_points || 0));
     totalUncappedApprovedPoints += pts;
 
     // Attribute to category
-    const cat = categories.find(c => c.id === sub.category_id);
-    const sno = cat ? cat.sno : 1;
+    const cat = categories.find(c => c.id === sub.category_id || c.sno === sub.category_id) || sub.category;
+    const sno = cat ? cat.sno : (typeof sub.category_id === 'number' ? sub.category_id : 1);
     categoryPointsMap[sno] = (categoryPointsMap[sno] || 0) + pts;
 
     // Attribute to semester
-    const sem = sub.semester || 1;
+    const sem = Number(sub.semester) || 1;
     semesterMap[sem] = (semesterMap[sem] || 0) + pts;
   });
 
@@ -477,7 +477,7 @@ export function calculateStudentMARProgress(
   let totalCappedApprovedPoints = 0;
   Object.entries(categoryPointsMap).forEach(([snoStr, earned]) => {
     const sno = Number(snoStr);
-    const matchingCats = categories.filter(c => c.sno === sno);
+    const matchingCats = categories.filter(c => c.sno === sno || c.id === sno);
     const maxCap = matchingCats.length > 0 ? matchingCats[0].max_points_allowed : 40;
     totalCappedApprovedPoints += Math.min(earned, maxCap);
   });
@@ -518,7 +518,11 @@ export const MOCK_CURRENT_USER: UserProfile = {
   is_lateral_entry: false,
   mentor_id: "usr-mentor-001",
   mentor_name: "Faculty Mentor (AI&DS)",
-  phone_number: "+91 98765 43210"
+  phone_number: "+91 98765 43210",
+  resume_url: "https://drive.google.com/file/d/sample-resume-saleem/view",
+  skills: ["Python", "TensorFlow", "React", "Next.js", "AI Document Intelligence", "Data Structures"],
+  github_url: "https://github.com/saleemshaik2005",
+  linkedin_url: "https://linkedin.com/in/saleemshaik"
 };
 
 // Faculty Mentor
@@ -532,8 +536,9 @@ export const MOCK_MENTOR_USER: UserProfile = {
   is_lateral_entry: false,
 };
 
-// Mock initial approved and pending submissions for Shaik Saleem
+// Mock initial approved and pending submissions across mentees
 export const MOCK_SUBMISSIONS: StudentSubmission[] = [
+  // Shaik Saleem (usr-student-001)
   {
     id: "sub-001",
     student_id: "usr-student-001",
@@ -625,5 +630,218 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     approver_name: "Faculty Mentor",
     approved_at: "2024-01-25T11:00:00Z",
     created_at: "2024-01-22T10:00:00Z"
+  },
+  {
+    id: "sub-005",
+    student_id: "usr-student-001",
+    student_name: "Shaik Saleem",
+    student_roll_no: "160122771045",
+    category_id: 13, // Innovation Projects
+    category: CBIT_24_CATEGORIES[12],
+    activity_title: "Generative AI & LLM Systems Industry Internship (8-Weeks)",
+    issuing_organization: "Tech Mahindra AI R&D Center",
+    event_date: "2024-07-20",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Verified completion certificate and internship project evaluation report.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-08-01T15:00:00Z",
+    created_at: "2024-07-25T09:00:00Z"
+  },
+
+  // Sneha Reddy (usr-student-002)
+  {
+    id: "sub-006",
+    student_id: "usr-student-002",
+    student_name: "Sneha Reddy",
+    student_roll_no: "160122771046",
+    category_id: 1, // MOOCs 12 weeks
+    category: CBIT_24_CATEGORIES[0],
+    activity_title: "NPTEL Cloud Computing & Distributed Architecture 12-Week Course",
+    issuing_organization: "NPTEL / IIT Kharagpur (SWAYAM)",
+    event_date: "2024-04-20",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Verified certificate with 84% consolidated score.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-05-05T12:00:00Z",
+    created_at: "2024-05-02T10:00:00Z"
+  },
+  {
+    id: "sub-007",
+    student_id: "usr-student-002",
+    student_name: "Sneha Reddy",
+    student_roll_no: "160122771046",
+    category_id: 13, // Innovation Projects / Internship
+    category: CBIT_24_CATEGORIES[12],
+    activity_title: "Cloud Infrastructure & DevOps Summer Internship (6-Weeks)",
+    issuing_organization: "Wipro Technologies Hyderabad",
+    event_date: "2024-07-15",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Internship letter and mentor evaluation report verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-07-25T11:00:00Z",
+    created_at: "2024-07-20T10:00:00Z"
+  },
+  {
+    id: "sub-008",
+    student_id: "usr-student-002",
+    student_name: "Sneha Reddy",
+    student_roll_no: "160122771046",
+    category_id: 4, // Tech Fest Participant
+    category: CBIT_24_CATEGORIES[3],
+    activity_title: "Smart India Hackathon (SIH 2024) Campus Edition Participant",
+    issuing_organization: "CBIT Hackathon Club",
+    event_date: "2024-02-18",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 3,
+    awarded_points: 3,
+    certificate_url: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "SIH participation verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-02-25T14:00:00Z",
+    created_at: "2024-02-20T11:00:00Z"
+  },
+
+  // Mohammed Farhan (usr-student-003, Lateral Entry)
+  {
+    id: "sub-009",
+    student_id: "usr-student-003",
+    student_name: "Mohammed Farhan",
+    student_roll_no: "160122771301",
+    category_id: 2, // MOOCs 8 weeks
+    category: CBIT_24_CATEGORIES[1],
+    activity_title: "NPTEL Introduction to Internet of Things (IoT) 8-Week Course",
+    issuing_organization: "NPTEL / IIT Kharagpur (SWAYAM)",
+    event_date: "2024-03-25",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 16,
+    awarded_points: 16,
+    certificate_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "NPTEL Certificate verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-04-02T10:00:00Z",
+    created_at: "2024-03-30T10:00:00Z"
+  },
+  {
+    id: "sub-010",
+    student_id: "usr-student-003",
+    student_name: "Mohammed Farhan",
+    student_roll_no: "160122771301",
+    category_id: 13, // Innovation / Internship
+    category: CBIT_24_CATEGORIES[12],
+    activity_title: "Full-Stack Web Development & Cloud Internship (8-Weeks)",
+    issuing_organization: "Infosys Springboard / Campus Connect",
+    event_date: "2024-06-30",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Infosys Springboard internship verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-07-10T14:00:00Z",
+    created_at: "2024-07-05T11:00:00Z"
+  },
+  {
+    id: "sub-011",
+    student_id: "usr-student-003",
+    student_name: "Mohammed Farhan",
+    student_roll_no: "160122771301",
+    category_id: 16, // Sports
+    category: CBIT_24_CATEGORIES[15],
+    activity_title: "Inter-College Cricket Tournament Runners-Up",
+    issuing_organization: "CBIT Physical Education Department",
+    event_date: "2024-02-10",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 5,
+    awarded_points: 5,
+    certificate_url: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Sports participation confirmed.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-02-15T10:00:00Z",
+    created_at: "2024-02-12T10:00:00Z"
+  },
+
+  // Ananya Rao (usr-student-004)
+  {
+    id: "sub-012",
+    student_id: "usr-student-004",
+    student_name: "Ananya Rao",
+    student_roll_no: "160122771089",
+    category_id: 1, // MOOCs 12 weeks
+    category: CBIT_24_CATEGORIES[0],
+    activity_title: "NPTEL Natural Language Processing & Large Language Models",
+    issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
+    event_date: "2024-04-25",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "Elite+Gold certificate verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-05-02T10:00:00Z",
+    created_at: "2024-04-28T09:00:00Z"
+  },
+  {
+    id: "sub-013",
+    student_id: "usr-student-004",
+    student_name: "Ananya Rao",
+    student_roll_no: "160122771089",
+    category_id: 13, // Innovation / Internship
+    category: CBIT_24_CATEGORIES[12],
+    activity_title: "Data Science & Machine Learning Research Internship (8-Weeks)",
+    issuing_organization: "TCS Research & Innovation Labs",
+    event_date: "2024-07-28",
+    semester: 4,
+    academic_year: "2024-2025",
+    claimed_points: 20,
+    awarded_points: 20,
+    certificate_url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60",
+    file_type: "image/jpeg",
+    status: "approved",
+    mentor_remarks: "TCS Research internship verified.",
+    approved_by: "usr-mentor-001",
+    approver_name: "Faculty Mentor",
+    approved_at: "2024-08-05T14:00:00Z",
+    created_at: "2024-08-01T10:00:00Z"
   }
 ];

@@ -72,7 +72,7 @@ export default function LoginPage() {
           Welcome Back
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Enter your credentials to access your CBIT Activity dashboard
+          Enter your credentials to access the CBIT Student Portfolio System
         </p>
       </div>
 

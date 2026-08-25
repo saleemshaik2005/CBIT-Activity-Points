@@ -1,4 +1,4 @@
-# CBIT Activity Point System (Autonomous)
+# CBIT Student Portfolio Management System (Autonomous)
 
 <div align="center">
   <img src="public/images/cbit-crest.png" alt="CBIT Crest" width="100" />
@@ -6,7 +6,7 @@
   # **Chaitanya Bharathi Institute of Technology (Autonomous)**
   ### *Affiliated to Osmania University • NAAC A++ • NBA Accredited • Hyderabad-75*
 
-  ## 🏆 **CBIT Activity Point System & AI Verification Platform**
+  ## 🏆 **CBIT Student Portfolio Management System & AI Verification Platform**
 
   [![Live Website](https://img.shields.io/badge/🌐_Live_Website-cbit--activity--points.vercel.app-385529?style=for-the-badge&logo=vercel)](https://cbit-activity-points.vercel.app)
   [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-a16b15?style=for-the-badge&logo=github)](https://github.com/saleemshaik2005/CBIT-Activity-Points)
@@ -23,7 +23,7 @@
 
 ## 📖 Project Overview
 
-A state-of-the-art web application engineered for **Chaitanya Bharathi Institute of Technology (Autonomous), Hyderabad** to automate non-academic Activity Points management (60 points target for 4-year B.E./B.Tech, 50 points for Diploma Lateral Entry) across Semesters I through VIII.
+A state-of-the-art web application engineered for **Chaitanya Bharathi Institute of Technology (Autonomous), Hyderabad** to manage student portfolios, resumes, and mandatory non-academic Activity Points (60 points target for 4-year B.E./B.Tech, 45 points for Diploma Lateral Entry, up to 100 max cap) across Semesters I through VIII.
 
 The platform integrates **Multimodal AI Document Intelligence** for real-time document OCR, certificate title & issuer parsing, QR verification links, credential IDs, and automatic mapping to the **24 Approved Activity Categories** with point caps and mentor verification workflows.
 
@@ -31,9 +31,8 @@ The platform integrates **Multimodal AI Document Intelligence** for real-time do
 
 ## 👨‍💻 Project Development & Academic Attribution
 
-* **Developed By:** Team of 4 Students of Department of Artificial Intelligence & Data Science (AI&DS), Section 2, 5th Semester, Batch of 2026.
-* **Project Guide & Mentor:** **Dr. D. Ramana Sir**, Department of Artificial Intelligence and Data Science (AI&DS), CBIT Hyderabad.
-* **Head of Department (HoD):** **Dr. K. Radhika Madam**, Head of Department (AI&DS), CBIT Autonomous Hyderabad.
+* **Developed By:** Team of Students, Department of Artificial Intelligence & Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
+* **Project Guide:** **Dr. K. Ramana Sir**, Department of Artificial Intelligence and Data Science (AI&DS), CBIT Hyderabad.
 
 ---
 
@@ -48,92 +47,19 @@ The platform integrates **Multimodal AI Document Intelligence** for real-time do
      * Issuing Organization / Authority
      * Completion / Award Date (`YYYY-MM-DD`)
      * **Credential ID / Certificate Number**
-     * **QR Verification URL link**
-     * Suggested Activity Points according to CBIT rubrics
-   * **100% Student Editability**: Students can review and refine all fields before submitting.
+     * **QR Verification URL & Validation Link**
+     * **Academic Relevance & Category Match Confidence**
+   * Automatically maps to the appropriate **CBIT Category (1 to 24)** with suggested points based on activity duration and level.
 
-2. **5 Distinct Academic Portals**:
-   * **Student Portal**: Real-time progress bar toward 60/50 points, category breakdown, submission logs, and official printable 24-row PDF generator.
-   * **Faculty Mentor Portal**: Side-by-side certificate previewer, document inspection lightbox, 1-click Approve, Reject with student remarks, and point adjustment.
-   * **Class Coordinator Portal**: Section analytics, at-risk student monitoring (<30 points), and batch reports.
-   * **Head of Department (HoD) Portal**: Branch completion statistics and final digital graduation signoff.
-   * **Administrator Portal**: Dynamic 24 category rulebook editor, custom point caps, and mentor allocation.
+2. **Student Portfolio & Certificate Gallery**:
+   * Complete portfolio overview with document previews.
+   * 1-Click Lightbox for inspecting certificates with zoom and download.
+   * Student Resume / CV integration.
 
-3. **Official Printable Activity Sheet (jsPDF)**:
-   * 1-Click download of the exact physical 24-row **Record of Activities for Activity Points** sheet with semester I–VIII breakdown and Mentor/HoD signature blocks.
+3. **Faculty Mentor Verification & Directory**:
+   * Side-by-side certificate inspector with OCR metadata and adjustable points.
+   * Mentee portfolio inspection drawer with full certificate history.
+   * Advanced filter tabs for NPTEL / MOOCs, Internships, Resumes, Pending submissions, and MAR Satisfied.
 
----
-
-## 📋 The 24 Approved CBIT MAR Activity Categories
-
-1. **MOOCs** (SWAYAM / NPTEL / Coursera / equivalent - 8 & 12 weeks)
-2. **Tech Fest / R&D Day / Freshers Workshop / Conference / Hackathons** (Organizer / Participant)
-3. **Rural Reporting**
-4. **Harithaharam / Plantation Drives**
-5. **Participation in Relief Camps**
-6. **Participation in Debate / Group Discussion / Technical Quiz**
-7. **Publication in Newspaper / Institution Magazine** (Editor / Writer)
-8. **Publication in External Newspaper, Magazine & Blogs**
-9. **Research Publication** (Scopus / UGC CARE / IEEE indexed)
-10. **Innovation Projects** (Prototypes, Patents, Startups outside curriculum)
-11. **Blood Donation / NSS or NCC Participation**
-12. **Blood Donation / NSS Camp Organization**
-13. **Participation in Sports & Games** (College, University, Regional, State, National level)
-14. **Cultural Programmes** (Dance, Drama, Music, Fest performance)
-15. **Member of Professional Societies** (IEEE, CSI, ACM, IETE, ASME, SAE)
-16. **Student Chapters / Campus Clubs**
-17. **Relevant Industry Visit & Report**
-18. **Photography Activities in Clubs**
-19. **Participation in Yoga Camp**
-20. **Self-Entrepreneurship Program**
-21. **Adventure Sports with Certification**
-22. **Training to Underprivileged / Differently-Abled**
-23. **Community Service & Allied Activities**
-24. **Class Representative (CR)**
-
----
-
-## 🛠️ Tech Stack
-
-* **Framework**: [Next.js 16 (App Router)](https://nextjs.org) + [React 19](https://react.dev)
-* **Styling**: [Tailwind CSS](https://tailwindcss.com) (Official CBIT Forest Green `#385529` & Gold `#a16b15`)
-* **AI Engine**: Google Gemini Multimodal API (`@google/genai` / `gemini-3.6-flash`)
-* **Database & Auth**: [Supabase](https://supabase.com) (PostgreSQL with Row Level Security)
-* **PDF Engine**: [jsPDF](https://github.com/parallax/jsPDF) & `jspdf-autotable`
-* **Icons**: [Lucide React](https://lucide.dev)
-
----
-
-## 🚀 Quick Local Setup Guide
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/saleemshaik2005/CBIT-Activity-Points.git
-cd CBIT-Activity-Points
-```
-
-### 2. Install dependencies
-```bash
-npm install
-```
-
-### 3. Configure environment variables
-Create a `.env.local` file in the root directory:
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-GEMINI_API_KEY=AIzaSy...
-```
-
-### 4. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 📄 License & Attribution
-
-Developed for **Chaitanya Bharathi Institute of Technology (Autonomous), Hyderabad - 500075**.
-All rights reserved © 2026.
+4. **1-Click Official MAR Activity Sheet (PDF Generation)**:
+   * Formatted according to official CBIT Autonomous regulations with all 24 category rows, semester distributions, total awarded points, and signature blocks.

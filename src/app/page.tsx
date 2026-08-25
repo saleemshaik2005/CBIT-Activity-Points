@@ -17,6 +17,7 @@ import {
   QrCode,
   CheckCircle2,
   LogIn,
+  Briefcase,
 } from 'lucide-react';
 import { AboutModal } from '@/components/modals/AboutModal';
 
@@ -52,13 +53,13 @@ export default function HomePage() {
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-[#385529] dark:text-gray-100 tracking-tight leading-tight">
-          CBIT Activity Point System
+          CBIT Student Portfolio Management System
         </h1>
 
         <div className="w-20 h-1 bg-[#a16b15] dark:bg-amber-400 mx-auto rounded-full" />
 
         <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl mx-auto">
-          Automated student activity points tracking, document intelligence for certificate recognition, and graduation signoffs across 8 semesters.
+          Comprehensive student portfolio tracking, AI-powered certificate recognition, 24 MAR activity categories, resume portfolios, and official graduation signoffs.
         </p>
 
         {/* Primary Action Buttons */}
@@ -78,7 +79,7 @@ export default function HomePage() {
                 className="px-6 py-3 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-sm rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all flex items-center space-x-2 cursor-pointer"
               >
                 <ShieldCheck className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-                <span>Faculty Verification Queue</span>
+                <span>Faculty Mentor Portal</span>
               </button>
             </>
           ) : (
@@ -115,10 +116,10 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto bg-white dark:bg-[#1a1b20] rounded-2xl p-6 sm:p-8 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs">
         <div className="text-center space-y-1 mb-6">
           <h2 className="text-lg font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wide">
-            Mandatory Graduation Activity Requirements
+            Mandatory Graduation Activity Requirements & Limits
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Approved non-academic points required to qualify for B.E. / B.Tech degree completion at CBIT Autonomous.
+            Mandatory activity points required to qualify for B.E. / B.Tech degree completion at CBIT Autonomous.
           </p>
         </div>
 
@@ -129,10 +130,10 @@ export default function HomePage() {
             </span>
             <div className="flex items-baseline space-x-2">
               <span className="text-3xl font-serif font-black text-[#385529] dark:text-white">60 Points</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">across Semesters I to VIII</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Target (Max 100 Pts Cap)</span>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              Earn points across approved activities including MOOCs, sports, tech fests, hackathons, and community service.
+              Earn points across approved activities including MOOCs, sports, tech fests, hackathons, internships, and community service.
             </p>
           </div>
 
@@ -141,11 +142,11 @@ export default function HomePage() {
               Diploma Lateral Entry (LE)
             </span>
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-serif font-black text-[#a16b15] dark:text-amber-400">50 Points</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">across Semesters III to VIII</span>
+              <span className="text-3xl font-serif font-black text-[#a16b15] dark:text-amber-400">45 Points</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Target (Max 75 Pts Cap)</span>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              Direct second-year admitted students fulfill 50 points requirement before final graduation signoff.
+              Direct second-year admitted students fulfill the 45 points minimum requirement (up to 75 max cap) before final degree signoff.
             </p>
           </div>
         </div>
@@ -158,7 +159,7 @@ export default function HomePage() {
             How The System Works
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            A seamless digital workflow from document upload to official graduation record generation.
+            A seamless digital workflow from document upload to official portfolio generation.
           </p>
         </div>
 
@@ -170,7 +171,7 @@ export default function HomePage() {
             </div>
             <h3 className="font-bold text-[#1c2718] dark:text-white text-sm">Upload Certificate Proof</h3>
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              Drag-and-drop your certificate PDF or snap a photo directly from your smartphone camera.
+              Drag-and-drop your certificate PDF or snap a photo directly from your smartphone or laptop.
             </p>
           </div>
 

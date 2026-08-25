@@ -67,7 +67,7 @@ export default function RegisterPage() {
           Sign Up
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Create your account for the CBIT Activity Point System
+          Create your account for the CBIT Student Portfolio Management System
         </p>
       </div>
 
@@ -81,20 +81,19 @@ export default function RegisterPage() {
             onClick={() => setRole('student')}
             className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               role === 'student'
-                ? 'bg-[#385529] dark:bg-[#22232a] text-white shadow-xs'
+                ? 'bg-[#385529] dark:bg-[#2a2b33] text-white shadow-2xs'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <GraduationCap className="w-4 h-4" />
             <span>Student</span>
           </button>
-
           <button
             type="button"
             onClick={() => setRole('faculty')}
             className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               role === 'faculty'
-                ? 'bg-[#385529] dark:bg-[#22232a] text-white shadow-xs'
+                ? 'bg-[#385529] dark:bg-[#2a2b33] text-white shadow-2xs'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
@@ -104,44 +103,41 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  required
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="email"
-                  required
-                  placeholder="name@cbit.ac.in"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
-                />
-              </div>
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
+              Full Name
+            </label>
+            <div className="relative">
+              <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <input
+                type="text"
+                required
+                placeholder={role === 'student' ? 'e.g. Shaik Saleem' : 'e.g. Dr. Faculty Mentor'}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
+              CBIT Email Address
+            </label>
+            <div className="relative">
+              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <input
+                type="email"
+                required
+                placeholder="username@cbit.ac.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
                 Department
@@ -153,7 +149,7 @@ export default function RegisterPage() {
               >
                 {CBIT_DEPARTMENTS.map((dept) => (
                   <option key={dept.code} value={dept.name}>
-                    {dept.code} — {dept.name}
+                    {dept.name}
                   </option>
                 ))}
               </select>
@@ -187,8 +183,8 @@ export default function RegisterPage() {
                 onChange={(e) => setIsLateralEntry(e.target.value === 'lateral')}
                 className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
               >
-                <option value="regular">Regular Student (4-Year B.Tech — 60 Points Target)</option>
-                <option value="lateral">Diploma Lateral Entry (Sem III to VIII — 50 Points Target)</option>
+                <option value="regular">Regular Student (4-Year B.Tech — 60 Points Target, Max 100 Pts)</option>
+                <option value="lateral">Diploma Lateral Entry (Sem III to VIII — 45 Points Target, Max 75 Pts)</option>
               </select>
             </div>
           )}
