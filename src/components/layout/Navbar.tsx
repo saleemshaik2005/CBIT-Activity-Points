@@ -60,7 +60,10 @@ export const Navbar: React.FC = () => {
     ],
     hod: [
       { label: 'Dept Analytics', href: '/hod', icon: LayoutDashboard },
+      { label: 'Faculty Mentors', href: '/hod/mentors', icon: Users },
+      { label: 'Dept Students', href: '/hod/students', icon: BookOpen },
       { label: 'Graduation Signoff', href: '/hod/signoff', icon: GraduationCap },
+      { label: 'MAR Rules', href: '/hod/rules', icon: FileCheck },
     ],
     admin: [
       { label: 'Admin Hub', href: '/admin', icon: ShieldCheck },

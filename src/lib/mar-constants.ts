@@ -845,3 +845,224 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     created_at: "2024-08-01T10:00:00Z"
   }
 ];
+
+export interface FacultyMentorDetail {
+  id: string;
+  name: string;
+  designation: string;
+  department: string;
+  section: string;
+  email: string;
+  phone: string;
+  cabin: string;
+  menteeCount: number;
+  pendingReviews: number;
+  approvedReviews: number;
+  averagePoints: number;
+  complianceRate: number;
+  mentees: {
+    id: string;
+    name: string;
+    roll: string;
+    section: string;
+    points: number;
+    target: number;
+    isLateral: boolean;
+    status: 'Satisfied' | 'In Progress' | 'At Risk';
+    nptelDone: boolean;
+    internshipDone: boolean;
+    resumeUrl?: string;
+  }[];
+}
+
+export const DEPARTMENT_FACULTY_MENTORS: FacultyMentorDetail[] = [
+  {
+    id: "fm-01",
+    name: "Dr. K. Ramana",
+    designation: "Associate Professor & Senior Mentor",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "2",
+    email: "kramana_aids@cbit.ac.in",
+    phone: "+91 98480 12345",
+    cabin: "AI&DS Block, Room 304",
+    menteeCount: 24,
+    pendingReviews: 3,
+    approvedReviews: 48,
+    averagePoints: 52.4,
+    complianceRate: 87.5,
+    mentees: [
+      { id: "usr-student-001", name: "Shaik Saleem", roll: "160122771045", section: "2", points: 55, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-saleem/view" },
+      { id: "usr-student-002", name: "Sneha Reddy", roll: "160122771046", section: "2", points: 63, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-sneha/view" },
+      { id: "usr-student-005", name: "K. Sai Tarun", roll: "160122771047", section: "2", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
+      { id: "usr-student-006", name: "V. Harini", roll: "160122771048", section: "2", points: 42, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+      { id: "usr-student-007", name: "Ch. Karthik", roll: "160122771049", section: "2", points: 25, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
+      { id: "usr-student-008", name: "M. Deepika", roll: "160122771050", section: "2", points: 65, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+    ]
+  },
+  {
+    id: "fm-02",
+    name: "Prof. M. Srinivasa Rao",
+    designation: "Professor & Section 1 Coordinator",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "1",
+    email: "msrao_aids@cbit.ac.in",
+    phone: "+91 98480 12346",
+    cabin: "AI&DS Block, Room 301",
+    menteeCount: 22,
+    pendingReviews: 2,
+    approvedReviews: 44,
+    averagePoints: 54.2,
+    complianceRate: 88.0,
+    mentees: [
+      { id: "usr-student-003", name: "Mohammed Farhan", roll: "160122771301", section: "1", points: 46, target: 45, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-farhan/view" },
+      { id: "usr-student-009", name: "P. Rithvik", roll: "160122771001", section: "1", points: 62, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+      { id: "usr-student-010", name: "S. Niharika", roll: "160122771002", section: "1", points: 58, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+      { id: "usr-student-011", name: "A. Praveen", roll: "160122771003", section: "1", points: 28, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
+      { id: "usr-student-012", name: "B. Bhavana", roll: "160122771004", section: "1", points: 64, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+    ]
+  },
+  {
+    id: "fm-03",
+    name: "Dr. T. Sridevi",
+    designation: "Associate Professor & Section 2 Coordinator",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "2",
+    email: "tsridevi_aids@cbit.ac.in",
+    phone: "+91 98480 12347",
+    cabin: "AI&DS Block, Room 305",
+    menteeCount: 22,
+    pendingReviews: 1,
+    approvedReviews: 46,
+    averagePoints: 51.0,
+    complianceRate: 85.0,
+    mentees: [
+      { id: "usr-student-013", name: "G. Varun", roll: "160122771051", section: "2", points: 61, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
+      { id: "usr-student-014", name: "N. Pooja", roll: "160122771052", section: "2", points: 48, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+      { id: "usr-student-015", name: "R. Yashwanth", roll: "160122771053", section: "2", points: 30, target: 60, isLateral: false, status: "In Progress", nptelDone: false, internshipDone: false },
+    ]
+  },
+  {
+    id: "fm-04",
+    name: "Dr. B. Indira",
+    designation: "Associate Professor & Section 3 Coordinator",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "3",
+    email: "bindira_aids@cbit.ac.in",
+    phone: "+91 98480 12348",
+    cabin: "AI&DS Block, Room 308",
+    menteeCount: 21,
+    pendingReviews: 4,
+    approvedReviews: 40,
+    averagePoints: 49.5,
+    complianceRate: 80.0,
+    mentees: [
+      { id: "usr-student-004", name: "Ananya Rao", roll: "160122771089", section: "3", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-ananya/view" },
+      { id: "usr-student-016", name: "K. Rohit", roll: "160122771090", section: "3", points: 52, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+      { id: "usr-student-017", name: "D. Meghana", roll: "160122771091", section: "3", points: 22, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
+    ]
+  },
+  {
+    id: "fm-05",
+    name: "Sri. G. Mallikarjuna Rao",
+    designation: "Assistant Professor",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "1",
+    email: "gmrao_aids@cbit.ac.in",
+    phone: "+91 98480 12349",
+    cabin: "AI&DS Block, Room 302",
+    menteeCount: 22,
+    pendingReviews: 0,
+    approvedReviews: 42,
+    averagePoints: 53.0,
+    complianceRate: 86.4,
+    mentees: [
+      { id: "usr-student-018", name: "T. Akhil", roll: "160122771005", section: "1", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+      { id: "usr-student-019", name: "M. Tejaswi", roll: "160122771006", section: "1", points: 45, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+    ]
+  },
+  {
+    id: "fm-06",
+    name: "Smt. P. Vimala",
+    designation: "Assistant Professor",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "2",
+    email: "pvimala_aids@cbit.ac.in",
+    phone: "+91 98480 12350",
+    cabin: "AI&DS Block, Room 306",
+    menteeCount: 22,
+    pendingReviews: 2,
+    approvedReviews: 39,
+    averagePoints: 50.8,
+    complianceRate: 81.8,
+    mentees: [
+      { id: "usr-student-020", name: "S. Ajay", roll: "160122771054", section: "2", points: 64, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
+      { id: "usr-student-021", name: "E. Shravya", roll: "160122771055", section: "2", points: 38, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+    ]
+  },
+  {
+    id: "fm-07",
+    name: "Dr. Ch. Rakesh",
+    designation: "Assistant Professor",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "3",
+    email: "chrakesh_aids@cbit.ac.in",
+    phone: "+91 98480 12351",
+    cabin: "AI&DS Block, Room 309",
+    menteeCount: 21,
+    pendingReviews: 1,
+    approvedReviews: 38,
+    averagePoints: 48.2,
+    complianceRate: 76.2,
+    mentees: [
+      { id: "usr-student-022", name: "P. Vinay", roll: "160122771092", section: "3", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+      { id: "usr-student-023", name: "J. Swetha", roll: "160122771093", section: "3", points: 26, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
+    ]
+  },
+  {
+    id: "fm-08",
+    name: "Smt. K. Soumya",
+    designation: "Assistant Professor",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "1",
+    email: "ksoumya_aids@cbit.ac.in",
+    phone: "+91 98480 12352",
+    cabin: "AI&DS Block, Room 303",
+    menteeCount: 22,
+    pendingReviews: 1,
+    approvedReviews: 41,
+    averagePoints: 52.0,
+    complianceRate: 86.0,
+    mentees: [
+      { id: "usr-student-024", name: "V. Harish", roll: "160122771007", section: "1", points: 65, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
+      { id: "usr-student-025", name: "L. Keerthana", roll: "160122771008", section: "1", points: 44, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
+    ]
+  }
+];
+
+export const DEPARTMENT_ALL_STUDENTS = [
+  { id: "usr-student-001", name: "Shaik Saleem", roll: "160122771045", section: "2", mentor: "Dr. K. Ramana", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-saleem/view", skills: ["Python", "TensorFlow", "React", "AI OCR", "SQL"] },
+  { id: "usr-student-002", name: "Sneha Reddy", roll: "160122771046", section: "2", mentor: "Dr. K. Ramana", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-sneha/view", skills: ["Cloud Computing", "AWS", "DevOps", "Docker"] },
+  { id: "usr-student-003", name: "Mohammed Farhan", roll: "160122771301", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 46, target: 45, maxCap: 75, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-farhan/view", skills: ["IoT Systems", "Full-Stack Web", "Node.js", "C++"] },
+  { id: "usr-student-004", name: "Ananya Rao", roll: "160122771089", section: "3", mentor: "Dr. B. Indira", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-ananya/view", skills: ["NLP", "Deep Learning", "PyTorch", "Data Science"] },
+  { id: "usr-student-005", name: "K. Sai Tarun", roll: "160122771047", section: "2", mentor: "Dr. K. Ramana", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Java", "Spring Boot", "React"] },
+  { id: "usr-student-006", name: "V. Harini", roll: "160122771048", section: "2", mentor: "Dr. K. Ramana", points: 42, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Machine Learning", "Pandas"] },
+  { id: "usr-student-007", name: "Ch. Karthik", roll: "160122771049", section: "2", mentor: "Dr. K. Ramana", points: 25, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["C", "Data Structures"] },
+  { id: "usr-student-008", name: "M. Deepika", roll: "160122771050", section: "2", mentor: "Dr. K. Ramana", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Computer Vision", "OpenCV", "Python"] },
+  { id: "usr-student-009", name: "P. Rithvik", roll: "160122771001", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cybersecurity", "Network Security", "Linux"] },
+  { id: "usr-student-010", name: "S. Niharika", roll: "160122771002", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["UI/UX Design", "Figma", "Frontend"] },
+  { id: "usr-student-011", name: "A. Praveen", roll: "160122771003", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 28, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Web Basics", "HTML", "CSS"] },
+  { id: "usr-student-012", name: "B. Bhavana", roll: "160122771004", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Architect", "GCP", "Kubernetes"] },
+  { id: "usr-student-013", name: "G. Varun", roll: "160122771051", section: "2", mentor: "Dr. T. Sridevi", points: 61, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Node.js", "Express", "MongoDB"] },
+  { id: "usr-student-014", name: "N. Pooja", roll: "160122771052", section: "2", mentor: "Dr. T. Sridevi", points: 48, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Analysis", "SQL", "Tableau"] },
+  { id: "usr-student-015", name: "R. Yashwanth", roll: "160122771053", section: "2", mentor: "Dr. T. Sridevi", points: 30, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: false, internshipDone: false, skills: ["Python", "Django"] },
+  { id: "usr-student-016", name: "K. Rohit", roll: "160122771090", section: "3", mentor: "Dr. B. Indira", points: 52, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Deep Learning", "TensorFlow", "Keras"] },
+  { id: "usr-student-017", name: "D. Meghana", roll: "160122771091", section: "3", mentor: "Dr. B. Indira", points: 22, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Python", "Flask"] },
+  { id: "usr-student-018", name: "T. Akhil", roll: "160122771005", section: "1", mentor: "Sri. G. Mallikarjuna Rao", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["React Native", "Mobile App Dev"] },
+  { id: "usr-student-019", name: "M. Tejaswi", roll: "160122771006", section: "1", mentor: "Sri. G. Mallikarjuna Rao", points: 45, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Angular", "TypeScript"] },
+  { id: "usr-student-020", name: "S. Ajay", roll: "160122771054", section: "2", mentor: "Smt. P. Vimala", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Embedded Systems", "Robotics"] },
+  { id: "usr-student-021", name: "E. Shravya", roll: "160122771055", section: "2", mentor: "Smt. P. Vimala", points: 38, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Visualization", "PowerBI"] },
+  { id: "usr-student-022", name: "P. Vinay", roll: "160122771092", section: "3", mentor: "Dr. Ch. Rakesh", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Blockchain", "Solidity", "Smart Contracts"] },
+  { id: "usr-student-023", name: "J. Swetha", roll: "160122771093", section: "3", mentor: "Dr. Ch. Rakesh", points: 26, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Java", "OOP"] },
+  { id: "usr-student-024", name: "V. Harish", roll: "160122771007", section: "1", mentor: "Smt. K. Soumya", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["AWS", "DevOps", "Terraform"] },
+  { id: "usr-student-025", name: "L. Keerthana", roll: "160122771008", section: "1", mentor: "Smt. K. Soumya", points: 44, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Scikit-Learn"] },
+];

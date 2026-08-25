@@ -13,6 +13,7 @@ import {
   Settings,
   BookOpen,
   Bell,
+  GraduationCap,
 } from 'lucide-react';
 import { UserRole } from '@/types';
 
@@ -45,9 +46,10 @@ export const MobileNav: React.FC = () => {
     ],
     hod: [
       { label: 'Analytics', href: '/hod', icon: LayoutDashboard },
-      { label: 'Signoff', href: '/hod/signoff', icon: CheckCircle },
-      { label: 'Notifs', href: '/notifications', icon: Bell },
-      { label: 'Settings', href: '/settings', icon: Settings },
+      { label: 'Mentors', href: '/hod/mentors', icon: Users },
+      { label: 'Students', href: '/hod/students', icon: BookOpen },
+      { label: 'Signoff', href: '/hod/signoff', icon: GraduationCap },
+      { label: 'Rules', href: '/hod/rules', icon: FileCheck },
     ],
     admin: [
       { label: 'Admin', href: '/admin', icon: LayoutDashboard },
