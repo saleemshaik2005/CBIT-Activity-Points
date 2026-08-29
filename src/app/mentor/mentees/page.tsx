@@ -34,6 +34,9 @@ import { StudentSubmission, UserProfile } from '@/types';
 export default function MentorMenteesPage() {
   const { currentUser, submissions, categories, settings } = useApp();
   const [sectionFilter, setSectionFilter] = useState('all');
+  const [yearFilter, setYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
+  const [modalYearFilter, setModalYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
+  const [modalSemFilter, setModalSemFilter] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>('all');
   const [activeTabFilter, setActiveTabFilter] = useState<
     'all' | 'nptel' | 'internship' | 'resumes' | 'pending' | 'at_risk' | 'completed'
   >('all');
@@ -57,6 +60,13 @@ export default function MentorMenteesPage() {
       resume_url: "https://drive.google.com/file/d/sample-resume-saleem/view",
       github_url: "https://github.com/saleemshaik2005",
       linkedin_url: "https://linkedin.com/in/saleemshaik",
+      mentor_history: [
+        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
+        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
+        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
+        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor & Senior Mentor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
+        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor & Senior Mentor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
+      ],
     },
     {
       id: "usr-student-002",
@@ -72,6 +82,13 @@ export default function MentorMenteesPage() {
       resume_url: "https://drive.google.com/file/d/sample-resume-sneha/view",
       github_url: "https://github.com/snehareddy",
       linkedin_url: "https://linkedin.com/in/snehareddy",
+      mentor_history: [
+        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
+        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
+        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
+        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
+        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
+      ],
     },
     {
       id: "usr-student-003",
@@ -87,6 +104,11 @@ export default function MentorMenteesPage() {
       resume_url: "https://drive.google.com/file/d/sample-resume-farhan/view",
       github_url: "https://github.com/farhanle",
       linkedin_url: "https://linkedin.com/in/farhanle",
+      mentor_history: [
+        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
+        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
+        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
+      ],
     },
     {
       id: "usr-student-004",
@@ -102,6 +124,13 @@ export default function MentorMenteesPage() {
       resume_url: "https://drive.google.com/file/d/sample-resume-ananya/view",
       github_url: "https://github.com/ananyarao",
       linkedin_url: "https://linkedin.com/in/ananyarao",
+      mentor_history: [
+        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
+        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
+        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
+        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
+        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
+      ],
     },
   ];
 
@@ -526,14 +555,14 @@ export default function MentorMenteesPage() {
               
               {/* Mentee Overview Banner */}
               {(() => {
-                const menteeSubs = submissions.filter((s) => s.student_id === selectedMentee.id);
+                const allMenteeSubs = submissions.filter((s) => s.student_id === selectedMentee.id);
                 const target = selectedMentee.is_lateral_entry
                   ? settings.lateral_entry_target_points
                   : settings.regular_target_points;
                 const maxCap = selectedMentee.is_lateral_entry
                   ? settings.lateral_entry_max_points || 75
                   : settings.regular_max_points || 100;
-                const progress = calculateStudentMARProgress(menteeSubs, categories, target, maxCap);
+                const progress = calculateStudentMARProgress(allMenteeSubs, categories, target, maxCap);
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -625,27 +654,188 @@ export default function MentorMenteesPage() {
                 );
               })()}
 
-              {/* Submissions & Certificate Portfolio */}
+              {/* ========================================================================= */}
+              {/* FACULTY MENTORS HISTORY (SEMESTER-WISE LOG) */}
+              {/* ========================================================================= */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-[#16171c] border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-1.5 bg-[#eef5ec] dark:bg-[#22232a] rounded-lg border border-[#385529]/20">
+                      <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wider">
+                        Semester-Wise Assigned Faculty Mentors History
+                      </h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        Historical mentor records across semesters. Contact past mentors for confirmation if needed.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+                  {(selectedMentee.mentor_history && selectedMentee.mentor_history.length > 0
+                    ? selectedMentee.mentor_history
+                    : [
+                        { semester: 1, mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "Room 305", is_current: false },
+                        { semester: 2, mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "Room 308", is_current: false },
+                        { semester: 3, mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "Room 301", is_current: false },
+                        { semester: 4, mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: false },
+                        { semester: 5, mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: true },
+                      ]
+                  ).map((mRec: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-xl border text-xs space-y-1.5 ${
+                        mRec.is_current
+                          ? 'bg-[#eef5ec]/90 dark:bg-[#1a2517] border-[#385529]/40 dark:border-emerald-800'
+                          : 'bg-[#faf9f5] dark:bg-[#121214] border-[#e8e3d8] dark:border-[#2c2d36]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold font-mono text-[11px] text-[#385529] dark:text-emerald-400">
+                          Semester {mRec.semester}
+                        </span>
+                        {mRec.is_current && (
+                          <span className="bg-[#385529] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                            Current Mentor
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-xs">{mRec.mentor_name}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{mRec.designation}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] pt-1 border-t border-black/5 dark:border-white/5">
+                        <span className="text-gray-500 dark:text-gray-400">{mRec.cabin || 'Dept Block'}</span>
+                        <div className="flex items-center space-x-2">
+                          {mRec.phone && (
+                            <a
+                              href={`tel:${mRec.phone}`}
+                              className="text-[#385529] dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-0.5"
+                              title={`Call ${mRec.mentor_name}`}
+                            >
+                              <Phone className="w-2.5 h-2.5" /> Call
+                            </a>
+                          )}
+                          {mRec.email && (
+                            <a
+                              href={`mailto:${mRec.email}?subject=Confirmation regarding mentee ${selectedMentee.full_name} (${selectedMentee.roll_number})`}
+                              className="text-[#a16b15] dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5"
+                              title={`Email ${mRec.mentor_name}`}
+                            >
+                              <Mail className="w-2.5 h-2.5" /> Email
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ========================================================================= */}
+              {/* YEAR & SEMESTER FILTERS FOR MENTEE SUBMISSIONS */}
+              {/* ========================================================================= */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between border-b border-[#e8e3d8] dark:border-[#2c2d36] pb-2">
-                  <h4 className="font-serif font-bold text-sm text-[#385529] dark:text-gray-100 flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-                    <span>Submitted Certificates & Proofs Portfolio</span>
-                  </h4>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                    Click any thumbnail to open full certificate
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e8e3d8] dark:border-[#2c2d36] pb-3">
+                  <div>
+                    <h4 className="font-serif font-bold text-sm text-[#385529] dark:text-gray-100 flex items-center gap-1.5">
+                      <Award className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
+                      <span>Submitted Certificates & Proofs Portfolio</span>
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Filter certificates by 4-Year cycle or specific semester.
+                    </p>
+                  </div>
+
+                  {/* Year-Wise Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 bg-[#faf9f5] dark:bg-[#121214] p-1.5 rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36]">
+                    <span className="text-[10px] font-bold text-gray-500 px-1 uppercase">Year:</span>
+                    {[
+                      { key: 'all', label: 'All 4 Years' },
+                      { key: '1', label: '1st Yr (Sem 1-2)' },
+                      { key: '2', label: '2nd Yr (Sem 3-4)' },
+                      { key: '3', label: '3rd Yr (Sem 5-6)' },
+                      { key: '4', label: '4th Yr (Sem 7-8)' },
+                    ].map((y) => (
+                      <button
+                        key={y.key}
+                        type="button"
+                        onClick={() => {
+                          setModalYearFilter(y.key as any);
+                          setModalSemFilter('all');
+                        }}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
+                          modalYearFilter === y.key
+                            ? 'bg-[#385529] text-white shadow-2xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#22232a]'
+                        }`}
+                      >
+                        {y.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Semester Sub-Filter Bar */}
+                <div className="flex flex-wrap items-center gap-1 bg-[#faf9f5] dark:bg-[#121214] p-1.5 rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36] text-xs">
+                  <span className="text-[10px] font-bold text-gray-500 px-2 uppercase">Semester:</span>
+                  <button
+                    type="button"
+                    onClick={() => setModalSemFilter('all')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      modalSemFilter === 'all'
+                        ? 'bg-[#a16b15] text-white'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#22232a]'
+                    }`}
+                  >
+                    All Semesters
+                  </button>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setModalSemFilter(String(s) as any)}
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                        modalSemFilter === String(s)
+                          ? 'bg-[#385529] text-white'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#22232a]'
+                      }`}
+                    >
+                      Sem {s}
+                    </button>
+                  ))}
                 </div>
 
                 {(() => {
-                  const menteeSubs = submissions.filter((s) => s.student_id === selectedMentee.id);
+                  let menteeSubs = submissions.filter((s) => s.student_id === selectedMentee.id);
+
+                  // Year Filter Application
+                  if (modalYearFilter === '1') {
+                    menteeSubs = menteeSubs.filter((s) => s.semester === 1 || s.semester === 2);
+                  } else if (modalYearFilter === '2') {
+                    menteeSubs = menteeSubs.filter((s) => s.semester === 3 || s.semester === 4);
+                  } else if (modalYearFilter === '3') {
+                    menteeSubs = menteeSubs.filter((s) => s.semester === 5 || s.semester === 6);
+                  } else if (modalYearFilter === '4') {
+                    menteeSubs = menteeSubs.filter((s) => s.semester === 7 || s.semester === 8);
+                  }
+
+                  // Semester Filter Application
+                  if (modalSemFilter !== 'all') {
+                    menteeSubs = menteeSubs.filter((s) => s.semester === Number(modalSemFilter));
+                  }
 
                   if (menteeSubs.length === 0) {
                     return (
-                      <div className="p-8 rounded-2xl bg-[#faf9f5] dark:bg-[#121214] text-center border border-dashed border-[#e8e3d8] dark:border-[#2e3039]">
+                      <div className="p-8 rounded-2xl bg-[#faf9f5] dark:bg-[#121214] text-center border border-dashed border-[#e8e3d8] dark:border-[#2c2d36]">
                         <BookOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          No certificates submitted by this mentee yet.
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                          No certificates submitted for the selected Year / Semester filter.
                         </p>
                       </div>
                     );
@@ -668,7 +858,7 @@ export default function MentorMenteesPage() {
                               <button
                                 type="button"
                                 onClick={() => setPreviewCertDoc(sub)}
-                                className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#faf9f5] dark:bg-[#1a1b20] border border-[#e8e3d8] dark:border-[#2e3039] flex-shrink-0 flex items-center justify-center cursor-pointer relative shadow-2xs hover:border-[#385529] transition-all group/thumb"
+                                className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#faf9f5] dark:bg-[#1a1b20] border border-[#e8e3d8] dark:border-[#2c2d36] flex-shrink-0 flex items-center justify-center cursor-pointer relative shadow-2xs hover:border-[#385529] transition-all group/thumb"
                                 title="Click to view full certificate"
                               >
                                 {isPdf ? (
@@ -703,6 +893,16 @@ export default function MentorMenteesPage() {
                                       ID: {sub.credential_id}
                                     </span>
                                   )}
+                                  {sub.verification_url && (
+                                    <a
+                                      href={sub.verification_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[10px] bg-[#eef5ec] text-[#385529] dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-[#385529]/20 hover:underline inline-flex items-center gap-0.5"
+                                    >
+                                      Verify Link ↗
+                                    </a>
+                                  )}
                                 </div>
 
                                 <h5 className="text-xs font-bold text-gray-900 dark:text-white leading-snug">
@@ -729,13 +929,18 @@ export default function MentorMenteesPage() {
                               </span>
                               <div>
                                 {sub.status === 'approved' && (
-                                  <span className="inline-flex items-center text-[10px] font-bold text-[#385529] dark:text-emerald-400 bg-[#eef5ec] dark:bg-[#1a1b20] px-2 py-0.5 rounded-full border border-[#385529]/20">
-                                    <Check className="w-3 h-3 mr-1" /> Approved
+                                  <span className="inline-flex items-center text-[10px] font-bold text-[#385529] dark:text-emerald-400 bg-[#eef5ec] dark:bg-[#22232a] px-2 py-0.5 rounded-full border border-[#385529]/30">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Approved
                                   </span>
                                 )}
                                 {sub.status === 'pending_mentor' && (
-                                  <span className="inline-flex items-center text-[10px] font-bold text-[#a16b15] dark:text-amber-400 bg-[#fbf5eb] dark:bg-[#1a1b20] px-2 py-0.5 rounded-full border border-[#a16b15]/30">
+                                  <span className="inline-flex items-center text-[10px] font-bold text-[#a16b15] dark:bg-[#22232a] text-amber-400 bg-[#fbf5eb] px-2 py-0.5 rounded-full border border-[#a16b15]/30">
                                     <Clock className="w-3 h-3 mr-1" /> Pending
+                                  </span>
+                                )}
+                                {sub.status === 'rejected' && (
+                                  <span className="inline-flex items-center text-[10px] font-bold text-red-700 dark:text-rose-400 bg-red-50 dark:bg-[#22232a] px-2 py-0.5 rounded-full border border-red-200">
+                                    <AlertTriangle className="w-3 h-3 mr-1" /> Rejected
                                   </span>
                                 )}
                               </div>

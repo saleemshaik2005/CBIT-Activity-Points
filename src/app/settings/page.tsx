@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
+import { fileToPermanentDataURL } from '@/lib/storage-db';
 import {
   Settings,
   User,
@@ -15,11 +16,20 @@ import {
   Shield,
   Building,
   Hash,
+  Camera,
+  UploadCloud,
 } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { currentUser, theme, toggleTheme, logout } = useApp();
+  const { currentUser, theme, toggleTheme, logout, updateUserAvatar, updateUserProfile } = useApp();
   const router = useRouter();
+
+  const [fullName, setFullName] = useState(currentUser.full_name);
+  const [phoneNumber, setPhoneNumber] = useState(currentUser.phone_number || '');
+  const [email, setEmail] = useState(currentUser.email);
+  const [resumeUrl, setResumeUrl] = useState(currentUser.resume_url || '');
+  const [skillsInput, setSkillsInput] = useState((currentUser.skills || []).join(', '));
+  const [profileSuccess, setProfileSuccess] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,6 +38,39 @@ export default function SettingsPage() {
 
   const [approvalAlerts, setApprovalAlerts] = useState(true);
   const [broadcastAlerts, setBroadcastAlerts] = useState(true);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      try {
+        const base64Url = await fileToPermanentDataURL(file);
+        updateUserAvatar(base64Url);
+        setProfileSuccess(true);
+        setTimeout(() => setProfileSuccess(false), 3000);
+      } catch (err) {
+        console.error('Failed to update profile image:', err);
+      }
+    }
+  };
+
+  const handleProfileSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsedSkills = skillsInput
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    updateUserProfile({
+      full_name: fullName,
+      phone_number: phoneNumber,
+      email,
+      resume_url: resumeUrl || undefined,
+      skills: parsedSkills.length > 0 ? parsedSkills : undefined,
+    });
+
+    setProfileSuccess(true);
+    setTimeout(() => setProfileSuccess(false), 3000);
+  };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,11 +95,11 @@ export default function SettingsPage() {
         <div className="flex items-center space-x-2 text-[#385529] dark:text-gray-200">
           <Settings className="w-5 h-5" />
           <h1 className="text-xl font-serif font-extrabold text-gray-900 dark:text-white">
-            Account & System Settings
+            Account & Profile Settings
           </h1>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Manage your personal profile, appearance theme, security, and notification preferences.
+          Upload your profile picture, update contact details, adjust color themes, and manage notifications.
         </p>
       </div>
 
@@ -65,20 +108,61 @@ export default function SettingsPage() {
         {/* Left Column: Profile Card & Logout */}
         <div className="md:col-span-5 space-y-6">
           
-          {/* Profile Overview Card */}
+          {/* Profile Overview & Avatar Upload Card */}
           <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
-            <div className="flex items-center space-x-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-[#385529] dark:bg-[#2a2b33] text-white dark:text-gray-100 font-serif font-bold text-xl flex items-center justify-center border border-transparent dark:border-[#383a45]">
-                {currentUser.full_name.charAt(0)}
+            
+            {/* Avatar Section */}
+            <div className="flex items-center space-x-4">
+              <div className="relative group">
+                <div className="w-16 h-16 rounded-2xl bg-[#385529] dark:bg-[#2a2b33] text-white font-serif font-bold text-2xl flex items-center justify-center border-2 border-[#a16b15]/40 overflow-hidden shadow-xs">
+                  {currentUser.avatar_url ? (
+                    <img
+                      src={currentUser.avatar_url}
+                      alt={currentUser.full_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{currentUser.full_name.charAt(0)}</span>
+                  )}
+                </div>
+
+                {/* Upload Hover Overlay */}
+                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex flex-col items-center justify-center cursor-pointer text-white text-[10px] font-bold gap-0.5">
+                  <Camera className="w-4 h-4 text-[#dfa94b]" />
+                  <span>Change</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </label>
               </div>
+
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">{currentUser.full_name}</h3>
-                <p className="text-[11px] text-[#a16b15] dark:text-gray-400 font-semibold capitalize">
+                <p className="text-[11px] text-[#a16b15] dark:text-amber-400 font-semibold capitalize">
                   {currentUser.role.replace('_', ' ')}
                 </p>
-                <p className="text-[10px] text-gray-400">{currentUser.email}</p>
+                <label className="text-[10px] text-[#385529] dark:text-emerald-400 font-bold hover:underline cursor-pointer inline-flex items-center gap-1 mt-0.5">
+                  <UploadCloud className="w-3 h-3" />
+                  <span>Upload Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </label>
               </div>
             </div>
+
+            {profileSuccess && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 animate-in fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Profile updated successfully!</span>
+              </div>
+            )}
 
             <div className="pt-3 border-t border-gray-100 dark:border-[#2a2b33] space-y-2.5 text-xs">
               <div className="flex items-center justify-between">
@@ -87,7 +171,7 @@ export default function SettingsPage() {
                   <span>Roll / Faculty ID</span>
                 </span>
                 <span className="font-mono font-bold text-gray-800 dark:text-gray-200">
-                  {currentUser.roll_number || 'N/A'}
+                  {currentUser.roll_number || '160122771045'}
                 </span>
               </div>
 
@@ -113,7 +197,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Faculty Counselor</span>
                     <span className="font-semibold text-[#385529] dark:text-emerald-400">
-                      {currentUser.mentor_name || 'Faculty Mentor (AI&DS)'}
+                      {currentUser.mentor_name || 'Dr. K. Ramana'}
                     </span>
                   </div>
 
@@ -126,6 +210,76 @@ export default function SettingsPage() {
                 </>
               )}
             </div>
+          </div>
+
+          {/* Edit Information Form */}
+          <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-3">
+            <h3 className="font-serif font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wide">
+              Personal Information
+            </h3>
+
+            <form onSubmit={handleProfileSave} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                  Contact Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                  Official Email ID
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                />
+              </div>
+
+              {currentUser.role === 'student' && (
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                    Skills (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={skillsInput}
+                    onChange={(e) => setSkillsInput(e.target.value)}
+                    placeholder="Python, React, TensorFlow, AI"
+                    className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                  />
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                Save Profile Changes
+              </button>
+            </form>
           </div>
 
           {/* Logout Button */}

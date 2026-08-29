@@ -208,8 +208,16 @@ export const Navbar: React.FC = () => {
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                       className="flex items-center space-x-2 p-1 sm:p-1.5 rounded-xl hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
                     >
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white dark:text-gray-200 font-bold flex items-center justify-center text-xs border border-transparent dark:border-[#383a45]">
-                        {currentUser.full_name.charAt(0)}
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white dark:text-gray-200 font-bold flex items-center justify-center text-xs border border-transparent dark:border-[#383a45] overflow-hidden">
+                        {currentUser.avatar_url ? (
+                          <img
+                            src={currentUser.avatar_url}
+                            alt={currentUser.full_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          currentUser.full_name.charAt(0)
+                        )}
                       </div>
                       <div className="hidden sm:block text-left pr-1">
                         <p className="text-xs font-bold text-[#1c2718] dark:text-gray-200 leading-tight">{currentUser.full_name}</p>

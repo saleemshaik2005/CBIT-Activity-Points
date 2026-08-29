@@ -29,6 +29,8 @@ import {
 export default function StudentDashboardPage() {
   const { currentUser, submissions, categories, settings } = useApp();
   const [selectedPreviewDoc, setSelectedPreviewDoc] = useState<StudentSubmission | null>(null);
+  const [dashYearFilter, setDashYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
+  const [dashSemFilter, setDashSemFilter] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>('all');
 
   const mySubmissions = submissions.filter((s) => s.student_id === currentUser.id);
 
@@ -40,7 +42,16 @@ export default function StudentDashboardPage() {
     generateOfficialCBITMARPDF(currentUser, mySubmissions, categories);
   };
 
-  const recentSubmissions = mySubmissions.slice(0, 4);
+  const filteredSubmissions = mySubmissions.filter((sub) => {
+    if (dashYearFilter === '1' && !(sub.semester === 1 || sub.semester === 2)) return false;
+    if (dashYearFilter === '2' && !(sub.semester === 3 || sub.semester === 4)) return false;
+    if (dashYearFilter === '3' && !(sub.semester === 5 || sub.semester === 6)) return false;
+    if (dashYearFilter === '4' && !(sub.semester === 7 || sub.semester === 8)) return false;
+    if (dashSemFilter !== 'all' && sub.semester !== Number(dashSemFilter)) return false;
+    return true;
+  });
+
+  const recentSubmissions = filteredSubmissions.slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -98,20 +109,37 @@ export default function StudentDashboardPage() {
         
         {/* Recent Submissions Feed */}
         <div className="lg:col-span-7 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e8e3d8] dark:border-[#2c2d36] pb-3">
             <div className="flex items-center space-x-2">
               <FileCheck className="w-5 h-5 text-[#385529] dark:text-gray-300" />
               <h3 className="text-base font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wide">
-                Recent Activity Submissions
+                Recent Submissions
               </h3>
             </div>
-            <Link
-              href="/student/history"
-              className="text-xs font-bold text-[#a16b15] dark:text-amber-400 hover:text-[#385529] dark:hover:text-white flex items-center gap-1"
-            >
-              <span>View All ({mySubmissions.length})</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+
+            {/* Year-Wise Quick Filters */}
+            <div className="flex flex-wrap items-center gap-1 bg-[#faf9f5] dark:bg-[#121214] p-1 rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36]">
+              {[
+                { key: 'all', label: 'All' },
+                { key: '1', label: '1st Yr' },
+                { key: '2', label: '2nd Yr' },
+                { key: '3', label: '3rd Yr' },
+                { key: '4', label: '4th Yr' },
+              ].map((y) => (
+                <button
+                  key={y.key}
+                  type="button"
+                  onClick={() => setDashYearFilter(y.key as any)}
+                  className={`px-2 py-0.5 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
+                    dashYearFilter === y.key
+                      ? 'bg-[#385529] text-white shadow-2xs'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#22232a]'
+                  }`}
+                >
+                  {y.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {recentSubmissions.length === 0 ? (

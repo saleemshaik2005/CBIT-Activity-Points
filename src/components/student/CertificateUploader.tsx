@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { AIReviewModal } from './AIReviewModal';
 import { AIExtractionResult } from '@/types';
+import { fileToPermanentDataURL } from '@/lib/storage-db';
 import {
   UploadCloud,
   Camera,
@@ -191,14 +192,15 @@ export const CertificateUploader: React.FC = () => {
     const mimeType = rawFile.type || 'image/jpeg';
     setFileType(mimeType);
 
-    const previewUrl = URL.createObjectURL(rawFile);
-    setFilePreviewUrl(previewUrl);
-
     setIsAnalyzing(true);
 
     try {
       // Optimize image size client-side if needed
       const fileToUpload = await prepareOptimizedFile(rawFile);
+
+      // Convert to permanent base64 data URL (prevents broken blob: URLs after page reload)
+      const persistentDataUrl = await fileToPermanentDataURL(fileToUpload);
+      setFilePreviewUrl(persistentDataUrl);
 
       const formData = new FormData();
       formData.append('file', fileToUpload);

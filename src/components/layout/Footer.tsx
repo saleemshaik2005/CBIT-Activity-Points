@@ -59,10 +59,16 @@ export const Footer: React.FC = () => {
             </h4>
 
             <div className="space-y-2 text-xs text-[#cad8c0] dark:text-gray-300">
-              <p>
-                <strong className="text-white">Developed By:</strong> Team of Students, Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
-              </p>
-              <p>
+              <div>
+                <p className="text-white font-bold mb-1">Developed By (AI&DS Dept, Batch 2024-2028):</p>
+                <div className="grid grid-cols-2 gap-1 text-[11px] text-[#e2ebd9] dark:text-gray-300 font-medium pl-1">
+                  <span>• <strong>SHAIK SALEEM</strong></span>
+                  <span>• <strong>MD. ASLAM</strong></span>
+                  <span>• <strong>VEMURI PRANATHI</strong></span>
+                  <span>• <strong>AMRUTH RAJ</strong></span>
+                </div>
+              </div>
+              <p className="pt-1 border-t border-white/10 text-[11px]">
                 <strong className="text-white">Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
               </p>
             </div>

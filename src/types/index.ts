@@ -1,6 +1,18 @@
 export type UserRole = 'student' | 'mentor' | 'class_teacher' | 'hod' | 'admin';
 
-export type SubmissionStatus = 'draft' | 'pending_mentor' | 'approved' | 'rejected';
+export type SubmissionStatus = 'draft' | 'pending_mentor' | 'approved' | 'rejected' | 'needs_clarification';
+
+export interface MentorHistoryRecord {
+  semester: number; // 1 to 8
+  academic_year: string;
+  mentor_id?: string;
+  mentor_name: string;
+  designation?: string;
+  email?: string;
+  phone?: string;
+  cabin?: string;
+  is_current?: boolean;
+}
 
 export interface UserProfile {
   id: string;
@@ -15,6 +27,9 @@ export interface UserProfile {
   is_lateral_entry: boolean;
   mentor_id?: string;
   mentor_name?: string;
+  mentor_email?: string;
+  mentor_phone?: string;
+  mentor_history?: MentorHistoryRecord[];
   phone_number?: string;
   resume_url?: string;
   skills?: string[];
@@ -34,11 +49,38 @@ export interface ActivityCategory {
   is_active?: boolean;
 }
 
+export interface SubmissionMessage {
+  id: string;
+  submission_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_role: UserRole;
+  text: string;
+  created_at: string;
+}
+
+export interface AITamperAnalysis {
+  authenticityScore: number; // 0 to 100
+  isSuspicious: boolean;
+  manipulationRisk: 'Low' | 'Moderate' | 'High';
+  riskPercentage: number; // 0 to 100
+  statusLabel: 'Authentic & Legitimate' | 'Minor Inconsistency' | 'Suspicious / Potential Tampering' | 'High Tampering Risk';
+  findings: string[];
+  fontConsistency: 'Consistent' | 'Mismatched' | 'Flagged';
+  compressionArtifacts: 'Normal' | 'Anomalous' | 'Layered';
+  edgeAlignment: 'Natural' | 'Irregular' | 'Pasted';
+  metadataCheck: 'Passed' | 'Inconsistent' | 'Missing';
+  verifiedAt: string;
+}
+
 export interface StudentSubmission {
   id: string;
   student_id: string;
   student_name?: string;
   student_roll_no?: string;
+  student_email?: string;
+  student_phone?: string;
+  student_section?: string;
   category_id: number;
   category?: ActivityCategory;
   activity_title: string;
@@ -52,7 +94,10 @@ export interface StudentSubmission {
   file_type?: string;
   credential_id?: string;
   verification_url?: string;
+  description?: string;
   ai_extracted_data?: AIExtractionResult;
+  ai_tamper_analysis?: AITamperAnalysis;
+  messages?: SubmissionMessage[];
   status: SubmissionStatus;
   mentor_remarks?: string;
   approved_by?: string;
@@ -80,6 +125,7 @@ export interface AIExtractionResult {
   summary: string;
   keySkillsOrTopics?: string[];
   rawTextExcerpt?: string;
+  tamperAnalysis?: AITamperAnalysis;
 }
 
 export interface SystemSettings {
@@ -128,7 +174,7 @@ export interface NotificationItem {
   id: string;
   recipient_id?: string; // target user ID or 'all' or role
   recipient_role?: UserRole | 'all';
-  type: 'approval' | 'rejection' | 'submission' | 'announcement' | 'system';
+  type: 'approval' | 'rejection' | 'submission' | 'announcement' | 'system' | 'message';
   title: string;
   message: string;
   link?: string;
@@ -136,3 +182,4 @@ export interface NotificationItem {
   sender_name?: string;
   created_at: string;
 }
+

@@ -135,14 +135,22 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Credits & Guiding Faculty */}
-          <div className="p-4 rounded-2xl bg-[#eef5ec] dark:bg-[#22232a] border border-[#385529]/20 dark:border-[#2e3039] space-y-2">
+          <div className="p-4 rounded-2xl bg-[#eef5ec] dark:bg-[#22232a] border border-[#385529]/20 dark:border-[#2e3039] space-y-2.5">
             <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#385529] dark:text-gray-200">
               Project Development & Mentorship
             </h4>
-            <p className="text-[11px] text-[#273e1c] dark:text-gray-300">
-              <strong>Developed by:</strong> Team of Students, Department of Artificial Intelligence and Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
-            </p>
-            <p className="text-[11px] text-[#273e1c] dark:text-gray-300">
+            <div>
+              <p className="text-[11px] text-[#273e1c] dark:text-gray-200 font-bold mb-1">
+                Developed by Students of AI&DS (Batch of 2024-2028):
+              </p>
+              <div className="grid grid-cols-2 gap-1 text-[11px] text-[#273e1c] dark:text-gray-300 font-medium pl-1">
+                <span>• <strong>SHAIK SALEEM</strong></span>
+                <span>• <strong>MD. ASLAM</strong></span>
+                <span>• <strong>VEMURI PRANATHI</strong></span>
+                <span>• <strong>AMRUTH RAJ</strong></span>
+              </div>
+            </div>
+            <p className="text-[11px] text-[#273e1c] dark:text-gray-300 pt-1 border-t border-[#385529]/10">
               <strong>Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
             </p>
           </div>

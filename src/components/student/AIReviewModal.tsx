@@ -36,6 +36,8 @@ interface Props {
     file_type: string;
     credential_id?: string;
     verification_url?: string;
+    description?: string;
+    ai_tamper_analysis?: any;
     ai_extracted_data: AIExtractionResult;
   }) => void;
   aiData: AIExtractionResult;
@@ -150,7 +152,9 @@ export const AIReviewModal: React.FC<Props> = ({
       file_type: fileType,
       credential_id: credentialId || undefined,
       verification_url: verificationUrl || undefined,
+      description: description || undefined,
       ai_extracted_data: aiData,
+      ai_tamper_analysis: aiData.tamperAnalysis,
     });
   };
 

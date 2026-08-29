@@ -10,6 +10,7 @@ import {
   AIExtractionResult,
   ThemeMode,
   NotificationItem,
+  SubmissionMessage,
 } from '@/types';
 import {
   CBIT_24_CATEGORIES,
@@ -33,9 +34,15 @@ interface AppContextType {
   updateSettings: (newSettings: Partial<SystemSettings>) => void;
   updateCategory: (category: ActivityCategory) => void;
   addSubmission: (submission: Omit<StudentSubmission, 'id' | 'created_at' | 'status' | 'awarded_points'> & { status?: any }) => void;
-  updateSubmissionStatus: (id: string, status: 'approved' | 'rejected', remarks?: string, awardedPoints?: number) => void;
+  updateSubmission: (id: string, updatedData: Partial<StudentSubmission>) => void;
+  updateSubmissionStatus: (id: string, status: 'approved' | 'rejected' | 'needs_clarification', remarks?: string, awardedPoints?: number) => void;
   deleteSubmission: (id: string) => void;
+  addSubmissionMessage: (submissionId: string, text: string) => void;
   resetToDefaults: () => void;
+
+  // Profile Management
+  updateUserAvatar: (avatarUrl: string) => void;
+  updateUserProfile: (data: Partial<UserProfile>) => void;
 
   // Theme
   theme: ThemeMode;
@@ -61,11 +68,12 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
   student: MOCK_CURRENT_USER,
   mentor: {
     id: "usr-mentor-001",
-    email: "mentor.aids@cbit.ac.in",
-    full_name: "Faculty Mentor",
+    email: "kramana_aids@cbit.ac.in",
+    full_name: "Dr. K. Ramana",
     role: "mentor",
     department: "Artificial Intelligence and Data Science (AI&DS)",
-    batch_year: "Faculty Counselor",
+    batch_year: "Faculty Counselor & Senior Mentor",
+    phone_number: "+91 98480 12345",
     is_lateral_entry: false,
   },
   class_teacher: {
@@ -76,6 +84,7 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
     department: "Artificial Intelligence and Data Science (AI&DS)",
     section: "2",
     batch_year: "Class Coordinator",
+    phone_number: "+91 98480 12346",
     is_lateral_entry: false,
   },
   hod: {
@@ -85,6 +94,7 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
     role: "hod",
     department: "Artificial Intelligence and Data Science (AI&DS)",
     batch_year: "Head of Department",
+    phone_number: "+91 98480 12340",
     is_lateral_entry: false,
   },
   admin: {
@@ -94,6 +104,7 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
     role: "admin",
     department: "Academic Section",
     batch_year: "Administration",
+    phone_number: "+91 98480 12300",
     is_lateral_entry: false,
   },
 };
@@ -105,10 +116,10 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     recipient_id: "usr-student-001",
     type: "approval",
     title: "Certificate Approved (+20 Points)",
-    message: "Faculty Mentor approved your NPTEL Deep Learning 12-Week Certificate.",
+    message: "Dr. K. Ramana approved your NPTEL Deep Learning 12-Week Certificate.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Faculty Mentor",
+    sender_name: "Dr. K. Ramana",
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
@@ -120,7 +131,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     message: "Your SUDHEE 2024 Fest Core AI Team Lead submission was verified.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Faculty Mentor",
+    sender_name: "Dr. K. Ramana",
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
   {
@@ -129,7 +140,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     recipient_id: "usr-mentor-001",
     type: "submission",
     title: "New Certificate Under Review",
-    message: "Shaik Saleem submitted a new certificate for Tech Fest / Hackathon.",
+    message: "Shaik Saleem submitted NPTEL Advanced LLMs Certification.",
     link: "/mentor",
     is_read: false,
     sender_name: "Shaik Saleem",
@@ -185,7 +196,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       const savedSubmissions = localStorage.getItem('cbit_mar_submissions');
-      if (savedSubmissions) setSubmissions(JSON.parse(savedSubmissions));
+      if (savedSubmissions) {
+        const parsed = JSON.parse(savedSubmissions);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSubmissions(parsed);
+        }
+      }
 
       const savedCategories = localStorage.getItem('cbit_mar_categories');
       if (savedCategories) setCategories(JSON.parse(savedCategories));
@@ -198,7 +214,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const savedRole = localStorage.getItem('cbit_mar_active_role') as UserRole;
       if (savedRole && DEMO_USERS[savedRole]) {
-        setCurrentUser(DEMO_USERS[savedRole]);
+        const baseUser = DEMO_USERS[savedRole];
+        const savedCustomProfile = localStorage.getItem(`cbit_profile_${savedRole}`);
+        if (savedCustomProfile) {
+          setCurrentUser({ ...baseUser, ...JSON.parse(savedCustomProfile) });
+        } else {
+          setCurrentUser(baseUser);
+        }
       }
     } catch (e) {
       console.warn("Could not load from localStorage:", e);
@@ -229,6 +251,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (match) targetUser = match;
     }
 
+    try {
+      const savedCustomProfile = localStorage.getItem(`cbit_profile_${targetUser.role}`);
+      if (savedCustomProfile) {
+        targetUser = { ...targetUser, ...JSON.parse(savedCustomProfile) };
+      }
+    } catch (e) {}
+
     setCurrentUser(targetUser);
     setIsAuthenticated(true);
     try {
@@ -249,8 +278,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       section: userData.section || '2',
       batch_year: userData.batch_year || '2024-2028',
       is_lateral_entry: !!userData.is_lateral_entry,
-      mentor_name: 'Faculty Mentor',
+      mentor_name: 'Dr. K. Ramana',
       mentor_id: 'usr-mentor-001',
+      mentor_email: 'kramana_aids@cbit.ac.in',
+      mentor_phone: '+91 98480 12345',
+      mentor_history: MOCK_CURRENT_USER.mentor_history,
+      phone_number: userData.phone_number || '+91 98765 43210',
     };
 
     setCurrentUser(newUser);
@@ -285,11 +318,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchRole = (role: UserRole) => {
-    const targetUser = DEMO_USERS[role] || MOCK_CURRENT_USER;
+    let targetUser = DEMO_USERS[role] || MOCK_CURRENT_USER;
+    try {
+      const savedCustomProfile = localStorage.getItem(`cbit_profile_${role}`);
+      if (savedCustomProfile) {
+        targetUser = { ...targetUser, ...JSON.parse(savedCustomProfile) };
+      }
+    } catch (e) {}
+
     setCurrentUser(targetUser);
     try {
       localStorage.setItem('cbit_mar_active_role', role);
     } catch (e) {}
+  };
+
+  const updateUserAvatar = (avatarUrl: string) => {
+    setCurrentUser((prev) => {
+      const updated = { ...prev, avatar_url: avatarUrl };
+      try {
+        localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  const updateUserProfile = (data: Partial<UserProfile>) => {
+    setCurrentUser((prev) => {
+      const updated = { ...prev, ...data };
+      try {
+        localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
   };
 
   const updateSettings = (newSettings: Partial<SystemSettings>) => {
@@ -315,7 +375,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addNotification = (item: Omit<NotificationItem, 'id' | 'created_at' | 'is_read'>) => {
     const newItem: NotificationItem = {
       ...item,
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
       is_read: false,
       created_at: new Date().toISOString(),
     };
@@ -339,8 +399,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       student_id: currentUser.id,
       student_name: currentUser.full_name,
       student_roll_no: currentUser.roll_number || '160122771045',
+      student_email: currentUser.email || 'saleemshaik2005@cbit.ac.in',
+      student_phone: currentUser.phone_number || '+91 98765 43210',
+      student_section: currentUser.section || '2',
       awarded_points: newSub.status === 'approved' ? newSub.claimed_points : 0,
       status: newSub.status || 'pending_mentor',
+      messages: [],
       created_at: new Date().toISOString(),
     };
     const nextList = [fullSubmission, ...submissions];
@@ -357,9 +421,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const updateSubmission = (id: string, updatedData: Partial<StudentSubmission>) => {
+    const nextList = submissions.map((sub) => {
+      if (sub.id === id) {
+        return {
+          ...sub,
+          ...updatedData,
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return sub;
+    });
+    saveSubmissions(nextList);
+
+    // Notify Mentor that student updated the submission
+    addNotification({
+      recipient_role: 'mentor',
+      type: 'submission',
+      title: 'Certificate Submission Updated',
+      message: `${currentUser.full_name} updated submission "${updatedData.activity_title || 'Certificate'}".`,
+      link: '/mentor',
+      sender_name: currentUser.full_name,
+    });
+  };
+
   const updateSubmissionStatus = (
     id: string,
-    status: 'approved' | 'rejected',
+    status: 'approved' | 'rejected' | 'needs_clarification',
     remarks?: string,
     awardedPoints?: number
   ) => {
@@ -373,7 +461,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           awarded_points: status === 'approved' ? Number(awardedPoints !== undefined && awardedPoints !== null ? awardedPoints : (sub.claimed_points || 0)) : 0,
           approved_by: currentUser.id,
           approver_name: currentUser.full_name,
-          approved_at: new Date().toISOString(),
+          approved_at: status === 'approved' ? new Date().toISOString() : undefined,
           updated_at: new Date().toISOString(),
         };
         return targetSub;
@@ -387,14 +475,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addNotification({
         recipient_id: targetSub.student_id,
         recipient_role: 'student',
-        type: status === 'approved' ? 'approval' : 'rejection',
-        title: status === 'approved' ? `Certificate Approved (+${targetSub.awarded_points} Pts)` : `Certificate Rejected`,
+        type: status === 'approved' ? 'approval' : status === 'rejected' ? 'rejection' : 'message',
+        title: status === 'approved' ? `Certificate Approved (+${targetSub.awarded_points} Pts)` : status === 'rejected' ? `Certificate Rejected` : `Mentor Requested Clarification`,
         message: status === 'approved'
           ? `Your submission "${targetSub.activity_title}" was approved by ${currentUser.full_name}.`
-          : `Your submission "${targetSub.activity_title}" was rejected: ${remarks || 'Please re-verify proof.'}`,
+          : status === 'rejected'
+          ? `Your submission "${targetSub.activity_title}" was rejected: ${remarks || 'Please re-verify proof.'}`
+          : `Faculty mentor ${currentUser.full_name} left a query on "${targetSub.activity_title}".`,
         link: '/student/history',
         sender_name: currentUser.full_name,
       });
+    }
+  };
+
+  const addSubmissionMessage = (submissionId: string, text: string) => {
+    if (!text.trim()) return;
+
+    const newMessage: SubmissionMessage = {
+      id: `msg-${Date.now()}`,
+      submission_id: submissionId,
+      sender_id: currentUser.id,
+      sender_name: currentUser.full_name,
+      sender_role: currentUser.role,
+      text: text.trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    let targetSub: StudentSubmission | undefined;
+    const nextList = submissions.map((sub) => {
+      if (sub.id === submissionId) {
+        targetSub = sub;
+        return {
+          ...sub,
+          messages: [...(sub.messages || []), newMessage],
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return sub;
+    });
+    saveSubmissions(nextList);
+
+    // Send high-priority notification to counterpart
+    if (targetSub) {
+      if (currentUser.role === 'mentor') {
+        addNotification({
+          recipient_id: targetSub.student_id,
+          recipient_role: 'student',
+          type: 'message',
+          title: `Mentor Message: ${targetSub.activity_title}`,
+          message: `${currentUser.full_name}: "${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`,
+          link: '/student/history',
+          sender_name: currentUser.full_name,
+        });
+      } else {
+        addNotification({
+          recipient_role: 'mentor',
+          type: 'message',
+          title: `Student Reply: ${targetSub.activity_title}`,
+          message: `${currentUser.full_name}: "${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`,
+          link: '/mentor',
+          sender_name: currentUser.full_name,
+        });
+      }
     }
   };
 
@@ -443,9 +585,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateSettings,
         updateCategory,
         addSubmission,
+        updateSubmission,
         updateSubmissionStatus,
         deleteSubmission,
+        addSubmissionMessage,
         resetToDefaults,
+
+        // Profile
+        updateUserAvatar,
+        updateUserProfile,
 
         // Theme
         theme,
@@ -477,3 +625,4 @@ export const useApp = () => {
   }
   return context;
 };
+
