@@ -34,9 +34,16 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-xs text-[#cad8c0] dark:text-gray-400 leading-relaxed max-w-xl">
-              Automated tracking of student portfolios, mandatory activity points (60 for 4-Yr Regular, 45 for Lateral Entry, up to 100 max) across 24 approved activity categories for B.E. / B.Tech degree qualification.
-            </p>
+            {/* Quote & 5th Semester Mini Project Attribution */}
+            <div className="p-4 rounded-2xl bg-[#273e1c]/90 dark:bg-[#1c1d22] border border-[#a16b15]/40 dark:border-[#2a2b33] space-y-2">
+              <p className="text-xs sm:text-sm text-[#fbf5eb] dark:text-gray-200 italic font-serif leading-relaxed">
+                “I began with an idea, not the complete knowledge to create it. AI gave me the answers, but curiosity gave me the questions—and somewhere between the two, an idea became real.”
+              </p>
+              <div className="flex items-center justify-between text-xs text-[#dfa94b] dark:text-amber-400 font-semibold pt-1 border-t border-white/10">
+                <span>— Saleem Shaik</span>
+                <span className="text-[11px] text-[#cad8c0] dark:text-gray-400">5th Semester Mini Project • AI&DS Dept</span>
+              </div>
+            </div>
 
             <div className="pt-1">
               <a
@@ -55,7 +62,7 @@ export const Footer: React.FC = () => {
           {/* Column 2: Project Development Attribution */}
           <div className="md:col-span-5 space-y-2.5 bg-[#273e1c]/80 dark:bg-[#1c1d22] p-4 sm:p-5 rounded-2xl border border-[#a16b15]/40 dark:border-[#2a2b33]">
             <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b] dark:text-gray-200">
-              Project Development & Mentorship
+              5th Semester Mini Project Development
             </h4>
 
             <div className="space-y-2 text-xs text-[#cad8c0] dark:text-gray-300">

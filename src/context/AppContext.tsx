@@ -36,6 +36,7 @@ interface AppContextType {
   addSubmission: (submission: Omit<StudentSubmission, 'id' | 'created_at' | 'status' | 'awarded_points'> & { status?: any }) => void;
   updateSubmission: (id: string, updatedData: Partial<StudentSubmission>) => void;
   updateSubmissionStatus: (id: string, status: 'approved' | 'rejected' | 'needs_clarification', remarks?: string, awardedPoints?: number) => void;
+  revokeApprovedSubmission: (id: string, reason?: string) => void;
   deleteSubmission: (id: string) => void;
   addSubmissionMessage: (submissionId: string, text: string) => void;
   resetToDefaults: () => void;
@@ -43,6 +44,7 @@ interface AppContextType {
   // Profile Management
   updateUserAvatar: (avatarUrl: string) => void;
   updateUserProfile: (data: Partial<UserProfile>) => void;
+  getStudentAvatar: (studentId?: string) => string | undefined;
 
   // Theme
   theme: ThemeMode;
@@ -540,6 +542,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const revokeApprovedSubmission = (id: string, reason?: string) => {
+    const targetSub = submissions.find((s) => s.id === id);
+    if (!targetSub) return;
+
+    const pointsDeducted = targetSub.awarded_points || targetSub.claimed_points || 0;
+    const nextList = submissions.filter((s) => s.id !== id);
+    saveSubmissions(nextList);
+
+    // Send High-Priority Notification to the student
+    addNotification({
+      recipient_id: targetSub.student_id,
+      recipient_role: 'student',
+      type: 'rejection',
+      title: `⚠️ Certificate Revoked & Deducted: "${targetSub.activity_title}" (-${pointsDeducted} Pts)`,
+      message: `Faculty mentor ${currentUser.full_name} has revoked and deleted your certificate "${targetSub.activity_title}". Reason: ${reason || 'Identified as unverified or invalid proof'}. Please discuss this directly with your current faculty mentor during counseling hours.`,
+      link: '/student/history',
+      sender_name: currentUser.full_name,
+    });
+  };
+
+  const getStudentAvatar = (studentId?: string): string | undefined => {
+    if (!studentId || studentId === 'usr-student-001' || studentId === currentUser.id) {
+      if (currentUser.role === 'student' && currentUser.avatar_url) {
+        return currentUser.avatar_url;
+      }
+      try {
+        const savedStudent = localStorage.getItem('cbit_profile_student');
+        if (savedStudent) {
+          const parsed = JSON.parse(savedStudent);
+          if (parsed.avatar_url) return parsed.avatar_url;
+        }
+      } catch (e) {}
+    }
+    return undefined;
+  };
+
   const deleteSubmission = (id: string) => {
     const nextList = submissions.filter((s) => s.id !== id);
     saveSubmissions(nextList);
@@ -587,6 +625,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addSubmission,
         updateSubmission,
         updateSubmissionStatus,
+        revokeApprovedSubmission,
         deleteSubmission,
         addSubmissionMessage,
         resetToDefaults,
@@ -594,6 +633,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Profile
         updateUserAvatar,
         updateUserProfile,
+        getStudentAvatar,
 
         // Theme
         theme,

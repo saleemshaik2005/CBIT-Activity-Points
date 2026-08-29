@@ -194,9 +194,9 @@ export const AIReviewModal: React.FC<Props> = ({
           {/* AI Match & QR Detection Strip */}
           <div className="bg-[#fbf5eb] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#a16b15] dark:text-gray-300 flex-shrink-0">
             <div className="flex items-center space-x-2 flex-wrap gap-1">
-              <span className="font-bold">AI Document Match:</span>
+              <span className="font-bold">AI Document Intelligence:</span>
               <span className="bg-[#eef5ec] dark:bg-[#1a1b20] text-[#385529] dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full text-[10px] border border-[#385529]/20 dark:border-[#2c2d36]">
-                {Math.round((aiData.confidenceScore || 0.95) * 100)}% Verified
+                OCR Fields Extracted
               </span>
               {credentialId && credentialId.length > 2 && !credentialId.toLowerCase().includes('dummy') && !credentialId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i) && (
                 <span className="bg-[#f0f4f8] dark:bg-[#1a1b20] text-[#3b566e] dark:text-gray-300 font-bold px-2 py-0.5 rounded text-[10px] border border-[#3b566e]/30 dark:border-[#2c2d36] flex items-center gap-1 font-mono">

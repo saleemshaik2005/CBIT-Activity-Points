@@ -28,7 +28,7 @@ import { generateOfficialCBITMARPDF } from '@/lib/pdf-generator';
 import { StudentSubmission } from '@/types';
 
 export default function HODStudentsDirectoryPage() {
-  const { submissions, categories } = useApp();
+  const { submissions, categories, getStudentAvatar } = useApp();
   const [sectionFilter, setSectionFilter] = useState('all');
   const [modalYearFilter, setModalYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
   const [modalSemFilter, setModalSemFilter] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>('all');
@@ -38,6 +38,15 @@ export default function HODStudentsDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [previewCertDoc, setPreviewCertDoc] = useState<StudentSubmission | null>(null);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const handleCopy = (text: string, label: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
+    setCopiedText(label);
+    setTimeout(() => setCopiedText(null), 2500);
+  };
 
   const filteredStudents = DEPARTMENT_ALL_STUDENTS.filter((st) => {
     // Section filter
@@ -245,6 +254,7 @@ export default function HODStudentsDirectoryPage() {
               ) : (
                 filteredStudents.map((student) => {
                   const percentage = Math.min(100, Math.round((student.points / student.target) * 100));
+                  const studentAvatar = getStudentAvatar(student.id);
 
                   return (
                     <tr
@@ -254,8 +264,12 @@ export default function HODStudentsDirectoryPage() {
                     >
                       <td className="py-3.5 px-4">
                         <div className="flex items-center space-x-2.5">
-                          <div className="w-8 h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
-                            {student.name.charAt(0)}
+                          <div className="w-8 h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs flex-shrink-0 overflow-hidden">
+                            {studentAvatar ? (
+                              <img src={studentAvatar} alt={student.name} className="w-full h-full object-cover" />
+                            ) : (
+                              student.name.charAt(0)
+                            )}
                           </div>
                           <div>
                             <div className="font-bold text-[#1c2718] dark:text-white group-hover:text-[#385529] dark:group-hover:text-emerald-400 transition-colors">
@@ -374,8 +388,12 @@ export default function HODStudentsDirectoryPage() {
             {/* Modal Header */}
             <div className="p-5 bg-[#385529] dark:bg-[#22232a] text-white flex items-center justify-between flex-shrink-0 border-b border-[#a16b15]/40 dark:border-[#2e3039]">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#273e1c] dark:bg-[#2c2d36] text-white font-bold flex items-center justify-center text-sm border border-[#a16b15] dark:border-[#383a45]">
-                  {selectedStudent.name.charAt(0)}
+                <div className="w-10 h-10 rounded-2xl bg-[#273e1c] dark:bg-[#2c2d36] text-white font-bold flex items-center justify-center text-sm border border-[#a16b15] dark:border-[#383a45] overflow-hidden flex-shrink-0">
+                  {getStudentAvatar(selectedStudent.id) ? (
+                    <img src={getStudentAvatar(selectedStudent.id)} alt={selectedStudent.name} className="w-full h-full object-cover" />
+                  ) : (
+                    selectedStudent.name.charAt(0)
+                  )}
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-base sm:text-lg leading-tight text-white">

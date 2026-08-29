@@ -30,6 +30,11 @@ export default function NotificationsPage() {
   const [targetAudience, setTargetAudience] = useState<'all' | 'student' | 'mentor'>('all');
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
 
+  // Auto-mark notifications as read when visiting notifications feed
+  React.useEffect(() => {
+    markAllNotificationsAsRead();
+  }, []);
+
   const filteredNotifs = notifications.filter((n) => {
     if (filter === 'unread') return !n.is_read;
     return true;

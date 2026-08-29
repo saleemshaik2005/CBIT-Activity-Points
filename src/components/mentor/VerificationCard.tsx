@@ -45,7 +45,7 @@ export const VerificationCard: React.FC<Props> = ({
   onApprove,
   onReject,
 }) => {
-  const { currentUser, addSubmissionMessage, updateSubmissionStatus } = useApp();
+  const { currentUser, addSubmissionMessage, updateSubmissionStatus, getStudentAvatar } = useApp();
   const [remarks, setRemarks] = useState('');
   const [adjustedPoints, setAdjustedPoints] = useState<number>(submission.claimed_points);
   const [showRejectBox, setShowRejectBox] = useState(false);
@@ -53,17 +53,28 @@ export const VerificationCard: React.FC<Props> = ({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [copiedField, setCopiedField] = useState<'phone' | 'email' | null>(null);
+
+  const handleCopyContact = (type: 'phone' | 'email', val: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(val);
+    }
+    setCopiedField(type);
+    setTimeout(() => setCopiedField(null), 2500);
+  };
 
   const cat = categories.find((c) => c.id === submission.category_id);
   const tamper = submission.ai_tamper_analysis;
+  const studentAvatar = getStudentAvatar(submission.student_id);
 
   const handleApprove = () => {
-    onApprove(submission.id, adjustedPoints, remarks || 'Verified and approved by Faculty Mentor.');
+    onApprove(submission.id, adjustedPoints, remarks);
+    setShowRejectBox(false);
   };
 
   const handleReject = () => {
     if (!remarks.trim()) {
-      alert('Please provide a reason or remarks for rejection so the student can correct it.');
+      setShowRejectBox(true);
       return;
     }
     onReject(submission.id, remarks);
@@ -86,8 +97,12 @@ export const VerificationCard: React.FC<Props> = ({
         {/* Student & Category Header Bar */}
         <div className="bg-[#faf9f5] dark:bg-[#22232a] px-5 py-3.5 border-b border-[#e8e3d8] dark:border-[#2c2d36] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs border border-transparent dark:border-[#383a45] flex-shrink-0">
-              {submission.student_name ? submission.student_name.charAt(0) : 'S'}
+            <div className="w-10 h-10 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs border border-transparent dark:border-[#383a45] overflow-hidden flex-shrink-0">
+              {studentAvatar ? (
+                <img src={studentAvatar} alt={submission.student_name || 'Student'} className="w-full h-full object-cover" />
+              ) : (
+                submission.student_name ? submission.student_name.charAt(0) : 'S'
+              )}
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -420,28 +435,46 @@ export const VerificationCard: React.FC<Props> = ({
             {/* Direct Phone & Email Quick Contact Bar */}
             <div className="bg-[#faf9f5] dark:bg-[#16171c] p-3 border-b border-[#e8e3d8] dark:border-[#2c2d36] flex flex-wrap items-center justify-between gap-2 text-xs">
               <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold text-gray-500 block">Immediate Student Contact:</span>
-                <span className="font-semibold text-gray-800 dark:text-gray-200">{submission.student_phone || '+91 98765 43210'}</span>
+                <span className="text-[10px] uppercase font-bold text-gray-500 block">Student Contact:</span>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{submission.student_phone || '+91 98765 43210'}</span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-600 dark:text-gray-300 font-mono text-[11px]">{submission.student_email || 'saleemshaik2005@cbit.ac.in'}</span>
+                </div>
               </div>
 
               <div className="flex items-center space-x-2">
+                {/* Mobile Phone Call Trigger */}
                 <a
                   href={`tel:${submission.student_phone || '+919876543210'}`}
-                  className="px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs"
+                  className="sm:hidden px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs"
                   title="Make a phone call to student"
                 >
                   <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
-                  <span>Call Student</span>
+                  <span>Call</span>
                 </a>
 
-                <a
-                  href={`mailto:${submission.student_email || 'student@cbit.ac.in'}?subject=Query on Certificate: ${encodeURIComponent(submission.activity_title)}`}
-                  className="px-3 py-1.5 bg-white dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] flex items-center gap-1.5 hover:bg-gray-50"
-                  title="Send official email"
+                {/* Laptop / Desktop Copy Phone Button */}
+                <button
+                  type="button"
+                  onClick={() => handleCopyContact('phone', submission.student_phone || '+91 98765 43210')}
+                  className="hidden sm:inline-flex px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                  title="Click to copy student's phone number"
                 >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Email</span>
-                </a>
+                  <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
+                  <span>{copiedField === 'phone' ? 'Copied Phone!' : `Phone: ${submission.student_phone || '+91 98765 43210'}`}</span>
+                </button>
+
+                {/* Email Address Display & Copy Button (No App Launch) */}
+                <button
+                  type="button"
+                  onClick={() => handleCopyContact('email', submission.student_email || 'saleemshaik2005@cbit.ac.in')}
+                  className="px-3 py-1.5 bg-white dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-[#2c2d36] transition-colors cursor-pointer"
+                  title="Click to copy student's email address"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#a16b15]" />
+                  <span>{copiedField === 'email' ? 'Copied Email!' : (submission.student_email || 'saleemshaik2005@cbit.ac.in')}</span>
+                </button>
               </div>
             </div>
 

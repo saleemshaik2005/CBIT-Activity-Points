@@ -36,10 +36,11 @@ export default function StudentHistoryPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPreviewDoc, setSelectedPreviewDoc] = useState<StudentSubmission | null>(null);
   const [editingSubmission, setEditingSubmission] = useState<StudentSubmission | null>(null);
-  const [chatSubmission, setChatSubmission] = useState<StudentSubmission | null>(null);
+  const [chatSubmissionId, setChatSubmissionId] = useState<string | null>(null);
   const [chatReply, setChatReply] = useState<string>('');
 
   const mySubmissions = submissions.filter((s) => s.student_id === currentUser.id);
+  const activeChatSubmission = submissions.find((s) => s.id === chatSubmissionId) || null;
 
   const filtered = mySubmissions.filter((sub) => {
     // Status Filter
@@ -69,8 +70,8 @@ export default function StudentHistoryPage() {
 
   const handleSendChatReply = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatSubmission || !chatReply.trim()) return;
-    addSubmissionMessage(chatSubmission.id, chatReply);
+    if (!chatSubmissionId || !chatReply.trim()) return;
+    addSubmissionMessage(chatSubmissionId, chatReply);
     setChatReply('');
   };
 
@@ -336,7 +337,7 @@ export default function StudentHistoryPage() {
                     {/* Contact / Message Mentor Button */}
                     <button
                       type="button"
-                      onClick={() => setChatSubmission(sub)}
+                      onClick={() => setChatSubmissionId(sub.id)}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer relative ${
                         hasMessages
                           ? 'bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 border border-[#385529]/30'
@@ -401,7 +402,7 @@ export default function StudentHistoryPage() {
       )}
 
       {/* Private Mentor-Student Inquiry Thread Modal */}
-      {chatSubmission && (
+      {activeChatSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#1a1b20] rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-[#e8e3d8] dark:border-[#2c2d36] shadow-2xl">
             
@@ -413,7 +414,7 @@ export default function StudentHistoryPage() {
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-sm text-white line-clamp-1">
-                    Mentor Inquiry: {chatSubmission.activity_title}
+                    Mentor Inquiry: {activeChatSubmission.activity_title}
                   </h3>
                   <p className="text-[11px] text-[#e2ebd9]">
                     Assigned Mentor: {currentUser.mentor_name || 'Dr. K. Ramana'}
@@ -423,7 +424,7 @@ export default function StudentHistoryPage() {
 
               <button
                 type="button"
-                onClick={() => setChatSubmission(null)}
+                onClick={() => setChatSubmissionId(null)}
                 className="p-1.5 rounded-xl bg-[#273e1c] text-gray-200 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -432,7 +433,7 @@ export default function StudentHistoryPage() {
 
             {/* Message Stream */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white dark:bg-[#121214] min-h-[260px] max-h-[360px]">
-              {(!chatSubmission.messages || chatSubmission.messages.length === 0) ? (
+              {(!activeChatSubmission.messages || activeChatSubmission.messages.length === 0) ? (
                 <div className="text-center py-8 space-y-2">
                   <MessageSquare className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto" />
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -440,7 +441,7 @@ export default function StudentHistoryPage() {
                   </p>
                 </div>
               ) : (
-                chatSubmission.messages.map((msg) => {
+                activeChatSubmission.messages.map((msg) => {
                   const isMe = msg.sender_id === currentUser.id;
                   return (
                     <div
@@ -463,23 +464,34 @@ export default function StudentHistoryPage() {
               )}
             </div>
 
-            {/* Chat Input */}
-            <form onSubmit={handleSendChatReply} className="p-3 bg-[#faf9f5] dark:bg-[#18191e] border-t border-[#e8e3d8] dark:border-[#282932] flex items-center space-x-2">
-              <input
-                type="text"
-                value={chatReply}
-                onChange={(e) => setChatReply(e.target.value)}
-                placeholder="Reply to mentor inquiry..."
-                className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
-              />
-              <button
-                type="submit"
-                className="p-2 bg-[#385529] hover:bg-[#273e1c] text-white rounded-xl transition-colors cursor-pointer"
-                title="Send Message"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+            {/* Chat Input or Closed Thread Banner */}
+            {activeChatSubmission.status === 'approved' ? (
+              <div className="p-4 bg-[#faf9f5] dark:bg-[#18191e] border-t border-[#e8e3d8] dark:border-[#282932] text-center space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-[#a16b15] dark:text-amber-400 font-bold text-xs rounded-full border border-amber-200 dark:border-amber-900/40">
+                  <span>🔒 Inquiry Thread Closed</span>
+                </div>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-sm mx-auto pt-0.5">
+                  This submission has already been approved and finalized. For any further queries, please discuss directly during mentor counseling hours.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSendChatReply} className="p-3 bg-[#faf9f5] dark:bg-[#18191e] border-t border-[#e8e3d8] dark:border-[#282932] flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={chatReply}
+                  onChange={(e) => setChatReply(e.target.value)}
+                  placeholder="Reply to mentor inquiry..."
+                  className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                />
+                <button
+                  type="submit"
+                  className="p-2 bg-[#385529] hover:bg-[#273e1c] text-white rounded-xl transition-colors cursor-pointer"
+                  title="Send Message"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            )}
 
           </div>
         </div>

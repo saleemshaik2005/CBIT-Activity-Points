@@ -35,6 +35,7 @@ export const Navbar: React.FC = () => {
     isAuthenticated,
     logout,
     unreadCount,
+    markAllNotificationsAsRead,
   } = useApp();
 
   const pathname = usePathname();
@@ -191,7 +192,8 @@ export const Navbar: React.FC = () => {
                   {/* Notification Bell */}
                   <Link
                     href="/notifications"
-                    className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all"
+                    onClick={() => markAllNotificationsAsRead()}
+                    className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
                     title="View notifications"
                   >
                     <Bell className="w-4 h-4 text-[#385529] dark:text-gray-300" />

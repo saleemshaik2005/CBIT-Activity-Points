@@ -27,12 +27,13 @@ import {
   Check,
   Github,
   Linkedin,
+  Trash2,
 } from 'lucide-react';
 import { generateOfficialCBITMARPDF } from '@/lib/pdf-generator';
 import { StudentSubmission, UserProfile } from '@/types';
 
 export default function MentorMenteesPage() {
-  const { currentUser, submissions, categories, settings } = useApp();
+  const { currentUser, submissions, categories, settings, revokeApprovedSubmission, getStudentAvatar } = useApp();
   const [sectionFilter, setSectionFilter] = useState('all');
   const [yearFilter, setYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
   const [modalYearFilter, setModalYearFilter] = useState<'all' | '1' | '2' | '3' | '4'>('all');
@@ -43,6 +44,17 @@ export default function MentorMenteesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMentee, setSelectedMentee] = useState<any | null>(null);
   const [previewCertDoc, setPreviewCertDoc] = useState<StudentSubmission | null>(null);
+  const [revokingSub, setRevokingSub] = useState<StudentSubmission | null>(null);
+  const [revokeReason, setRevokeReason] = useState<string>('Identified as invalid / unverified document proof upon faculty re-inspection.');
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const handleCopy = (text: string, label: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
+    setCopiedText(label);
+    setTimeout(() => setCopiedText(null), 2500);
+  };
 
   // Assigned mentees in AI&DS
   const mentees = [
@@ -379,6 +391,7 @@ export default function MentorMenteesPage() {
                   const progress = calculateStudentMARProgress(menteeSubmissions, categories, target, maxCap);
                   const hasNPTEL = menteeHasNPTEL(mentee.id);
                   const hasInternship = menteeHasInternship(mentee.id);
+                  const menteeAvatar = getStudentAvatar(mentee.id);
 
                   return (
                     <tr
@@ -388,8 +401,12 @@ export default function MentorMenteesPage() {
                     >
                       <td className="py-3.5 px-4">
                         <div className="flex items-center space-x-2.5">
-                          <div className="w-8 h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
-                            {mentee.full_name.charAt(0)}
+                          <div className="w-8 h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white font-bold flex items-center justify-center text-xs flex-shrink-0 overflow-hidden">
+                            {menteeAvatar ? (
+                              <img src={menteeAvatar} alt={mentee.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                              mentee.full_name.charAt(0)
+                            )}
                           </div>
                           <div>
                             <div className="font-bold text-[#1c2718] dark:text-white group-hover:text-[#385529] dark:group-hover:text-emerald-400 transition-colors">
@@ -515,8 +532,12 @@ export default function MentorMenteesPage() {
             {/* Modal Header */}
             <div className="p-5 bg-[#385529] dark:bg-[#22232a] text-white flex items-center justify-between flex-shrink-0 border-b border-[#a16b15]/40 dark:border-[#2e3039]">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#273e1c] dark:bg-[#2c2d36] text-white font-bold flex items-center justify-center text-sm border border-[#a16b15] dark:border-[#383a45]">
-                  {selectedMentee.full_name.charAt(0)}
+                <div className="w-10 h-10 rounded-2xl bg-[#273e1c] dark:bg-[#2c2d36] text-white font-bold flex items-center justify-center text-sm border border-[#a16b15] dark:border-[#383a45] overflow-hidden flex-shrink-0">
+                  {getStudentAvatar(selectedMentee.id) ? (
+                    <img src={getStudentAvatar(selectedMentee.id)} alt={selectedMentee.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    selectedMentee.full_name.charAt(0)
+                  )}
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-base sm:text-lg leading-tight text-white">
@@ -574,15 +595,29 @@ export default function MentorMenteesPage() {
                       </h4>
                       <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
                         <div className="flex items-center space-x-2">
-                          <Mail className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-                          <span>{selectedMentee.email}</span>
+                          <Mail className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400 flex-shrink-0" />
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedMentee.email, 'mentee_email')}
+                            className="hover:underline text-left cursor-pointer"
+                            title="Click to copy email address"
+                          >
+                            {copiedText === 'mentee_email' ? 'Copied Email!' : selectedMentee.email}
+                          </button>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Phone className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-                          <span>{selectedMentee.phone_number || '+91 98765 43210'}</span>
+                          <Phone className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400 flex-shrink-0" />
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(selectedMentee.phone_number || '+91 98765 43210', 'mentee_phone')}
+                            className="hover:underline text-left cursor-pointer"
+                            title="Click to copy phone number"
+                          >
+                            {copiedText === 'mentee_phone' ? 'Copied Phone Number!' : (selectedMentee.phone_number || '+91 98765 43210')}
+                          </button>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <GraduationCap className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
+                          <GraduationCap className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400 flex-shrink-0" />
                           <span>
                             {selectedMentee.is_lateral_entry ? 'Lateral Entry (Diploma Admitted)' : '4-Year Regular B.Tech Admitted'}
                           </span>
@@ -713,22 +748,33 @@ export default function MentorMenteesPage() {
                         <span className="text-gray-500 dark:text-gray-400">{mRec.cabin || 'Dept Block'}</span>
                         <div className="flex items-center space-x-2">
                           {mRec.phone && (
-                            <a
-                              href={`tel:${mRec.phone}`}
-                              className="text-[#385529] dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-0.5"
-                              title={`Call ${mRec.mentor_name}`}
-                            >
-                              <Phone className="w-2.5 h-2.5" /> Call
-                            </a>
+                            <>
+                              <a
+                                href={`tel:${mRec.phone}`}
+                                className="sm:hidden text-[#385529] dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-0.5"
+                                title={`Call ${mRec.mentor_name}`}
+                              >
+                                <Phone className="w-2.5 h-2.5" /> Call
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(mRec.phone, `mentor_phone_${idx}`)}
+                                className="hidden sm:inline-flex text-[#385529] dark:text-emerald-400 font-bold hover:underline items-center gap-0.5 cursor-pointer"
+                                title={`Copy Phone: ${mRec.phone}`}
+                              >
+                                <Phone className="w-2.5 h-2.5" /> {copiedText === `mentor_phone_${idx}` ? 'Copied!' : 'Phone'}
+                              </button>
+                            </>
                           )}
                           {mRec.email && (
-                            <a
-                              href={`mailto:${mRec.email}?subject=Confirmation regarding mentee ${selectedMentee.full_name} (${selectedMentee.roll_number})`}
-                              className="text-[#a16b15] dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5"
-                              title={`Email ${mRec.mentor_name}`}
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(mRec.email, `mentor_email_${idx}`)}
+                              className="text-[#a16b15] dark:text-amber-400 font-bold hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                              title={`Copy Email: ${mRec.email}`}
                             >
-                              <Mail className="w-2.5 h-2.5" /> Email
-                            </a>
+                              <Mail className="w-2.5 h-2.5" /> {copiedText === `mentor_email_${idx}` ? 'Copied!' : 'Email'}
+                            </button>
                           )}
                         </div>
                       </div>
@@ -923,11 +969,11 @@ export default function MentorMenteesPage() {
                             </div>
 
                             {/* Right: Points & Status */}
-                            <div className="text-right space-y-1 flex-shrink-0">
+                            <div className="text-right space-y-1.5 flex-shrink-0">
                               <span className="text-xs font-extrabold text-[#385529] dark:text-emerald-400 block">
                                 {sub.status === 'approved' ? `+${sub.awarded_points || sub.claimed_points} pts` : `${sub.claimed_points} pts`}
                               </span>
-                              <div>
+                              <div className="flex items-center space-x-1.5 justify-end">
                                 {sub.status === 'approved' && (
                                   <span className="inline-flex items-center text-[10px] font-bold text-[#385529] dark:text-emerald-400 bg-[#eef5ec] dark:bg-[#22232a] px-2 py-0.5 rounded-full border border-[#385529]/30">
                                     <CheckCircle2 className="w-3 h-3 mr-1" /> Approved
@@ -943,6 +989,19 @@ export default function MentorMenteesPage() {
                                     <AlertTriangle className="w-3 h-3 mr-1" /> Rejected
                                   </span>
                                 )}
+
+                                {/* Mentor Retrospective Revocation / Delete Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRevokingSub(sub);
+                                    setRevokeReason('Proof verified as invalid / altered upon faculty re-examination.');
+                                  }}
+                                  className="p-1 rounded-lg text-red-600 hover:bg-red-50 dark:text-rose-400 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                                  title="Delete / Revoke Certificate from Student Portfolio"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </div>
                             </div>
 
@@ -1047,6 +1106,67 @@ export default function MentorMenteesPage() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MENTOR CERTIFICATE REVOCATION CONFIRMATION MODAL */}
+      {/* ========================================================================= */}
+      {revokingSub && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1a1b20] rounded-3xl max-w-md w-full p-6 space-y-4 border border-red-200 dark:border-red-900/40 shadow-2xl">
+            <div className="flex items-center space-x-3 text-red-600 dark:text-rose-400">
+              <div className="p-2 bg-red-100 dark:bg-red-950/50 rounded-2xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-base text-gray-900 dark:text-white">
+                  Revoke & Delete Certificate
+                </h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Student: {revokingSub.student_name} ({revokingSub.student_roll_no})
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              Are you sure you want to revoke and delete <strong>"{revokingSub.activity_title}"</strong> (+{revokingSub.awarded_points || revokingSub.claimed_points} pts)?
+              This will automatically deduct the points from the student's MAR total and send an official notification advising them to discuss with their mentor.
+            </p>
+
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
+                Reason for Revocation (Sent to Student):
+              </label>
+              <textarea
+                rows={3}
+                value={revokeReason}
+                onChange={(e) => setRevokeReason(e.target.value)}
+                placeholder="State reason for revocation (e.g. altered document, invalid credential proof)..."
+                className="w-full p-2.5 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100 dark:border-[#2c2d36]">
+              <button
+                type="button"
+                onClick={() => setRevokingSub(null)}
+                className="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#2a2b33] rounded-xl hover:bg-gray-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  revokeApprovedSubmission(revokingSub.id, revokeReason);
+                  setRevokingSub(null);
+                }}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                Confirm Revocation & Notify Student
+              </button>
+            </div>
           </div>
         </div>
       )}
