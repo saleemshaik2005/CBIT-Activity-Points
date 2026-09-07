@@ -28,6 +28,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Rewrite dynamic /uploads to server streaming endpoint
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/files/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

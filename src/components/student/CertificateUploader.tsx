@@ -271,7 +271,7 @@ function createClientFallbackExtraction(fileName: string): AIExtractionResult {
 }
 
 export const CertificateUploader: React.FC = () => {
-  const { currentUser, categories, addSubmission } = useApp();
+  const { currentUser, categories, settings, addSubmission } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<BatchUploadItem[]>([]);
   const [submissionSuccessMsg, setSubmissionSuccessMsg] = useState<string | null>(null);
@@ -327,7 +327,7 @@ export const CertificateUploader: React.FC = () => {
       fileType: file.type || 'image/jpeg',
       previewUrl: '',
       status: 'analyzing',
-      progressText: 'Preparing and optimizing file...',
+      progressText: 'Preparing and uploading file to server...',
       aiData: null,
       editedTitle: file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " "),
       editedCategorySno: 1,
@@ -348,13 +348,34 @@ export const CertificateUploader: React.FC = () => {
     for (const item of newItems) {
       try {
         const optimized = await prepareOptimizedFile(item.file);
-        const persistentUrl = await fileToPermanentDataURL(optimized);
+
+        // Upload to server /api/upload to avoid large base64 strings in localStorage
+        let serverUrl = '';
+        try {
+          const uploadForm = new FormData();
+          uploadForm.append('file', optimized);
+          uploadForm.append('type', 'certificate');
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadForm,
+          });
+          if (uploadRes.ok) {
+            const uploadJson = await uploadRes.json();
+            if (uploadJson.success && uploadJson.url) {
+              serverUrl = uploadJson.url;
+            }
+          }
+        } catch (uploadErr) {
+          console.warn('[Upload] Direct server save failed, using fallback:', uploadErr);
+        }
+
+        const previewUrl = serverUrl || (await fileToPermanentDataURL(optimized));
 
         // Update preview URL in state
         setUploadQueue((prev) =>
           prev.map((q) =>
             q.id === item.id
-              ? { ...q, previewUrl: persistentUrl, progressText: 'AI scanning document fields & security marks...' }
+              ? { ...q, previewUrl, progressText: 'AI scanning document fields & security marks...' }
               : q
           )
         );
@@ -532,7 +553,7 @@ export const CertificateUploader: React.FC = () => {
       issuing_organization: item.editedOrganization,
       event_date: item.editedDate,
       semester: item.editedSemester,
-      academic_year: '2026-2027',
+      academic_year: settings.academic_year || '2025-2026',
       claimed_points: Number(item.editedPoints),
       certificate_url: item.previewUrl,
       file_type: item.fileType,
@@ -567,7 +588,7 @@ export const CertificateUploader: React.FC = () => {
         issuing_organization: item.editedOrganization,
         event_date: item.editedDate,
         semester: item.editedSemester,
-        academic_year: '2026-2027',
+        academic_year: settings.academic_year || '2025-2026',
         claimed_points: Number(item.editedPoints),
         certificate_url: item.previewUrl,
         file_type: item.fileType,

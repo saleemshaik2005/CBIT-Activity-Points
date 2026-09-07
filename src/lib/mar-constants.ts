@@ -546,6 +546,16 @@ export const MOCK_MENTOR_USER: UserProfile = {
   phone_number: "+91 98480 12345",
 };
 
+// Dynamic real-time date helpers for submissions
+const getRelDate = (daysAgo: number): string => {
+  const d = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+  return d.toISOString().split('T')[0];
+};
+
+const getRelISO = (hoursAgo: number): string => {
+  return new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
+};
+
 // Mock initial approved and pending submissions across mentees
 export const MOCK_SUBMISSIONS: StudentSubmission[] = [
   // Shaik Saleem (usr-student-001) - Pending Submission 1 (Valid & Verified by AI)
@@ -561,9 +571,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[0],
     activity_title: "NPTEL Advanced Large Language Models & GenAI Specialization (12 Weeks)",
     issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
-    event_date: "2026-07-28",
+    event_date: getRelDate(3),
     semester: 5,
-    academic_year: "2026-2027",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 0,
     certificate_url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&auto=format&fit=crop&q=80",
@@ -576,7 +586,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
       certificateTitle: "NPTEL Advanced Large Language Models & GenAI Specialization",
       recipientName: "Shaik Saleem",
       issuingOrganization: "NPTEL & IIT Madras",
-      completionDate: "2026-07-28",
+      completionDate: getRelDate(3),
       durationOrHours: "12 weeks",
       credentialId: "NPTEL26CS928S5010948",
       verificationUrl: "https://nptel.ac.in/noc/Ecertificate/?q=NPTEL26CS928S5010948",
@@ -603,7 +613,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
       compressionArtifacts: "Normal",
       edgeAlignment: "Natural",
       metadataCheck: "Passed",
-      verifiedAt: new Date().toISOString(),
+      verifiedAt: getRelISO(3),
     },
     messages: [
       {
@@ -613,7 +623,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
         sender_name: "Dr. K. Ramana (Mentor)",
         sender_role: "mentor",
         text: "Please verify if your final proctored exam score sheet is also attached with the certificate.",
-        created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+        created_at: getRelISO(3),
       },
       {
         id: "msg-2",
@@ -622,11 +632,11 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
         sender_name: "Shaik Saleem (Student)",
         sender_role: "student",
         text: "Yes Sir, the QR link contains the official consolidated marks card with 91% score. Thank you!",
-        created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+        created_at: getRelISO(1),
       },
     ],
     status: "pending_mentor",
-    created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+    created_at: getRelISO(4),
   },
 
   // Shaik Saleem (usr-student-001) - Pending Submission 2 (AI Tampering Warning / Suspicious Detection Demo)
@@ -642,9 +652,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[2],
     activity_title: "National Level AI Hackathon & Tech Expo - Core Organizing Lead",
     issuing_organization: "IEEE Hyderabad Section & CBIT",
-    event_date: "2026-08-10",
+    event_date: getRelDate(5),
     semester: 5,
-    academic_year: "2026-2027",
+    academic_year: "2025-2026",
     claimed_points: 5,
     awarded_points: 0,
     certificate_url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1200&auto=format&fit=crop&q=80",
@@ -657,7 +667,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
       certificateTitle: "National Level AI Hackathon & Tech Expo",
       recipientName: "Shaik Saleem",
       issuingOrganization: "IEEE Hyderabad Section",
-      completionDate: "2026-08-10",
+      completionDate: getRelDate(5),
+      durationOrHours: "Organizer",
       credentialId: "IEEE-HYD-ACT-98214",
       verificationUrl: "https://verify.ieee-hyderabad.org/cert/IEEE-HYD-ACT-98214",
       matchedCategorySno: 2,
@@ -683,7 +694,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
       compressionArtifacts: "Anomalous",
       edgeAlignment: "Irregular",
       metadataCheck: "Inconsistent",
-      verifiedAt: new Date().toISOString(),
+      verifiedAt: getRelISO(6),
     },
     messages: [
       {
@@ -693,13 +704,12 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
         sender_name: "Dr. K. Ramana (Mentor)",
         sender_role: "mentor",
         text: "The AI forensics detector flagged a font inconsistency and compression boundary near the candidate name. Please re-check if you uploaded the original PDF certificate from IEEE.",
-        created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+        created_at: getRelISO(2),
       },
     ],
     status: "pending_mentor",
-    created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
+    created_at: getRelISO(6),
   },
-
   // Approved Submissions
   {
     id: "sub-001",
@@ -713,9 +723,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[0],
     activity_title: "NPTEL Deep Learning & AI Foundations 12-Week Certification",
     issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
-    event_date: "2024-04-28",
+    event_date: getRelDate(14),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=60",
@@ -726,8 +736,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Verified with NPTEL score sheet. Excellent performance with Elite+Silver medal.",
     approved_by: "usr-mentor-001",
     approver_name: "Dr. K. Ramana",
-    approved_at: "2024-05-02T10:30:00Z",
-    created_at: "2024-05-01T08:15:00Z"
+    approved_at: getRelISO(240),
+    created_at: getRelISO(260),
   },
   {
     id: "sub-002",
@@ -741,9 +751,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[2],
     activity_title: "SUDHEE 2024 National Technical Fest - Core AI Team Lead",
     issuing_organization: "CBIT Hyderabad",
-    event_date: "2024-03-15",
+    event_date: getRelDate(25),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=60",
@@ -754,8 +764,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Confirmed by Sudhee 2024 Faculty Convener.",
     approved_by: "usr-mentor-001",
     approver_name: "Dr. K. Ramana",
-    approved_at: "2024-03-20T14:20:00Z",
-    created_at: "2024-03-18T11:00:00Z"
+    approved_at: getRelISO(480),
+    created_at: getRelISO(500),
   },
   {
     id: "sub-003",
@@ -769,9 +779,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[13],
     activity_title: "Voluntary Blood Donation Camp - Youth Red Cross Unit",
     issuing_organization: "Indian Red Cross Society & NSS CBIT",
-    event_date: "2023-11-10",
+    event_date: getRelDate(35),
     semester: 3,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=800&auto=format&fit=crop&q=60",
@@ -781,8 +791,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Blood donor certificate verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Prof. M. Srinivasa Rao",
-    approved_at: "2023-11-15T09:00:00Z",
-    created_at: "2023-11-12T16:00:00Z"
+    approved_at: getRelISO(720),
+    created_at: getRelISO(740),
   },
   {
     id: "sub-004",
@@ -794,11 +804,11 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     student_section: "2",
     category_id: 22, // IEEE Student Chapter Member
     category: CBIT_24_CATEGORIES[21],
-    activity_title: "IEEE Computer Society Student Branch Membership (2024-25)",
+    activity_title: "IEEE Computer Society Student Branch Membership",
     issuing_organization: "IEEE Hyderabad Section",
-    event_date: "2024-01-20",
+    event_date: getRelDate(45),
     semester: 3,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60",
@@ -809,8 +819,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Active IEEE membership verified with membership number.",
     approved_by: "usr-mentor-001",
     approver_name: "Prof. M. Srinivasa Rao",
-    approved_at: "2024-01-25T11:00:00Z",
-    created_at: "2024-01-22T10:00:00Z"
+    approved_at: getRelISO(960),
+    created_at: getRelISO(980),
   },
   {
     id: "sub-005",
@@ -824,9 +834,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Generative AI & LLM Systems Industry Internship (8-Weeks)",
     issuing_organization: "Tech Mahindra AI R&D Center",
-    event_date: "2024-07-20",
+    event_date: getRelDate(60),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60",
@@ -837,8 +847,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Verified completion certificate and internship project evaluation report.",
     approved_by: "usr-mentor-001",
     approver_name: "Dr. K. Ramana",
-    approved_at: "2024-08-01T15:00:00Z",
-    created_at: "2024-07-25T09:00:00Z"
+    approved_at: getRelISO(1200),
+    created_at: getRelISO(1240),
   },
 
   // Sneha Reddy (usr-student-002)
@@ -854,9 +864,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[0],
     activity_title: "NPTEL Cloud Computing & Distributed Architecture 12-Week Course",
     issuing_organization: "NPTEL / IIT Kharagpur (SWAYAM)",
-    event_date: "2024-04-20",
+    event_date: getRelDate(75),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=60",
@@ -867,8 +877,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Verified certificate with 84% consolidated score.",
     approved_by: "usr-mentor-001",
     approver_name: "Dr. K. Ramana",
-    approved_at: "2024-05-05T12:00:00Z",
-    created_at: "2024-05-02T10:00:00Z"
+    approved_at: getRelISO(1500),
+    created_at: getRelISO(1550),
   },
 
   {
@@ -880,9 +890,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Cloud Infrastructure & DevOps Summer Internship (6-Weeks)",
     issuing_organization: "Wipro Technologies Hyderabad",
-    event_date: "2024-07-15",
+    event_date: getRelDate(90),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60",
@@ -891,8 +901,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Internship letter and mentor evaluation report verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-07-25T11:00:00Z",
-    created_at: "2024-07-20T10:00:00Z"
+    approved_at: getRelISO(1800),
+    created_at: getRelISO(1850),
   },
   {
     id: "sub-008",
@@ -901,11 +911,11 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     student_roll_no: "160122771046",
     category_id: 4, // Tech Fest Participant
     category: CBIT_24_CATEGORIES[3],
-    activity_title: "Smart India Hackathon (SIH 2024) Campus Edition Participant",
+    activity_title: "Smart India Hackathon (SIH) Campus Edition Participant",
     issuing_organization: "CBIT Hackathon Club",
-    event_date: "2024-02-18",
+    event_date: getRelDate(100),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 3,
     awarded_points: 3,
     certificate_url: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&auto=format&fit=crop&q=60",
@@ -914,8 +924,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "SIH participation verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-02-25T14:00:00Z",
-    created_at: "2024-02-20T11:00:00Z"
+    approved_at: getRelISO(2000),
+    created_at: getRelISO(2050),
   },
 
   // Mohammed Farhan (usr-student-003, Lateral Entry)
@@ -928,9 +938,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[1],
     activity_title: "NPTEL Introduction to Internet of Things (IoT) 8-Week Course",
     issuing_organization: "NPTEL / IIT Kharagpur (SWAYAM)",
-    event_date: "2024-03-25",
+    event_date: getRelDate(110),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 16,
     awarded_points: 16,
     certificate_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=60",
@@ -939,8 +949,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "NPTEL Certificate verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-04-02T10:00:00Z",
-    created_at: "2024-03-30T10:00:00Z"
+    approved_at: getRelISO(2200),
+    created_at: getRelISO(2250),
   },
   {
     id: "sub-010",
@@ -951,9 +961,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Full-Stack Web Development & Cloud Internship (8-Weeks)",
     issuing_organization: "Infosys Springboard / Campus Connect",
-    event_date: "2024-06-30",
+    event_date: getRelDate(120),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
@@ -962,8 +972,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Infosys Springboard internship verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-07-10T14:00:00Z",
-    created_at: "2024-07-05T11:00:00Z"
+    approved_at: getRelISO(2400),
+    created_at: getRelISO(2450),
   },
   {
     id: "sub-011",
@@ -974,9 +984,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[15],
     activity_title: "Inter-College Cricket Tournament Runners-Up",
     issuing_organization: "CBIT Physical Education Department",
-    event_date: "2024-02-10",
+    event_date: getRelDate(130),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 5,
     awarded_points: 5,
     certificate_url: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&auto=format&fit=crop&q=60",
@@ -985,8 +995,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Sports participation confirmed.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-02-15T10:00:00Z",
-    created_at: "2024-02-12T10:00:00Z"
+    approved_at: getRelISO(2600),
+    created_at: getRelISO(2650),
   },
 
   // Ananya Rao (usr-student-004)
@@ -999,9 +1009,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[0],
     activity_title: "NPTEL Natural Language Processing & Large Language Models",
     issuing_organization: "NPTEL / IIT Madras (SWAYAM)",
-    event_date: "2024-04-25",
+    event_date: getRelDate(140),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=60",
@@ -1010,8 +1020,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "Elite+Gold certificate verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-05-02T10:00:00Z",
-    created_at: "2024-04-28T09:00:00Z"
+    approved_at: getRelISO(2800),
+    created_at: getRelISO(2850),
   },
   {
     id: "sub-013",
@@ -1022,9 +1032,9 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Data Science & Machine Learning Research Internship (8-Weeks)",
     issuing_organization: "TCS Research & Innovation Labs",
-    event_date: "2024-07-28",
+    event_date: getRelDate(150),
     semester: 4,
-    academic_year: "2024-2025",
+    academic_year: "2025-2026",
     claimed_points: 20,
     awarded_points: 20,
     certificate_url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60",
@@ -1033,8 +1043,8 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     mentor_remarks: "TCS Research internship verified.",
     approved_by: "usr-mentor-001",
     approver_name: "Faculty Mentor",
-    approved_at: "2024-08-05T14:00:00Z",
-    created_at: "2024-08-01T10:00:00Z"
+    approved_at: getRelISO(3000),
+    created_at: getRelISO(3050),
   }
 ];
 

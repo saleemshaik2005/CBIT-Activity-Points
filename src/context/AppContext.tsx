@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import {
   UserProfile,
   StudentSubmission,
@@ -180,7 +180,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     academic_year: "2025-2026",
   });
 
-  // Load persisted state from localStorage
+  const [serverProfiles, setServerProfiles] = useState<Record<string, UserProfile>>({});
+  const lastUpdatedRef = useRef<string>('');
+
+  // Sync state from server database
+  const syncWithServer = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sync', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success && json.data) {
+        const {
+          submissions: serverSubs,
+          profiles,
+          categories: serverCats,
+          settings: serverSettings,
+          notifications: serverNotifs,
+          lastUpdated,
+        } = json.data;
+
+        if (lastUpdated && lastUpdated === lastUpdatedRef.current) {
+          // No change on server
+          return;
+        }
+        if (lastUpdated) {
+          lastUpdatedRef.current = lastUpdated;
+        }
+
+        if (Array.isArray(serverSubs) && serverSubs.length > 0) {
+          setSubmissions(serverSubs);
+          try {
+            localStorage.setItem('cbit_mar_submissions', JSON.stringify(serverSubs));
+          } catch (e) {}
+        }
+
+        if (Array.isArray(serverCats) && serverCats.length > 0) {
+          setCategories(serverCats);
+          try {
+            localStorage.setItem('cbit_mar_categories', JSON.stringify(serverCats));
+          } catch (e) {}
+        }
+
+        if (serverSettings) {
+          setSettings(serverSettings);
+          try {
+            localStorage.setItem('cbit_mar_settings', JSON.stringify(serverSettings));
+          } catch (e) {}
+        }
+
+        if (Array.isArray(serverNotifs) && serverNotifs.length > 0) {
+          setNotifications(serverNotifs);
+          try {
+            localStorage.setItem('cbit_notifications', JSON.stringify(serverNotifs));
+          } catch (e) {}
+        }
+
+        if (profiles) {
+          setServerProfiles(profiles);
+          setCurrentUser((prev) => {
+            const serverProfile = profiles[prev.role];
+            if (serverProfile) {
+              const merged = { ...prev, ...serverProfile };
+              try {
+                localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(merged));
+              } catch (e) {}
+              return merged;
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[Sync Client] Failed to sync with server:', err);
+    }
+  }, []);
+
+  // Dispatch mutation actions to server
+  const postSyncAction = useCallback(async (action: string, payload: any) => {
+    try {
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.lastUpdated) {
+          lastUpdatedRef.current = json.lastUpdated;
+        }
+      }
+    } catch (err) {
+      console.warn(`[Sync Client] Error syncing action "${action}":`, err);
+    }
+  }, []);
+
+  // Load persisted state from localStorage and sync with server
   useEffect(() => {
     try {
       const savedTheme = localStorage.getItem('cbit_theme') as ThemeMode;
@@ -228,7 +322,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.warn("Could not load from localStorage:", e);
     }
-  }, []);
+
+    // Authoritative sync with server database on mount
+    syncWithServer();
+
+    // Multi-device real-time sync listeners
+    const onFocus = () => {
+      syncWithServer();
+    };
+    window.addEventListener('focus', onFocus);
+
+    // Polling every 5 seconds ensures changes on one device are instantly seen on other devices
+    const pollInterval = setInterval(() => {
+      syncWithServer();
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(pollInterval);
+    };
+  }, [syncWithServer]);
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -343,6 +456,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
       return updated;
     });
+
+    postSyncAction('update_avatar', {
+      role: currentUser.role,
+      avatarUrl,
+      studentId: currentUser.id,
+    });
   };
 
   const updateUserProfile = (data: Partial<UserProfile>) => {
@@ -352,6 +471,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(updated));
       } catch (e) {}
       return updated;
+    });
+
+    postSyncAction('update_profile', {
+      role: currentUser.role,
+      profile: data,
     });
   };
 
@@ -363,6 +487,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
       return updated;
     });
+
+    postSyncAction('update_settings', newSettings);
   };
 
   const updateCategory = (updatedCat: ActivityCategory) => {
@@ -389,6 +515,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
       return next;
     });
+
+    postSyncAction('add_notification', newItem);
   };
 
   const markNotificationAsRead = (id: string) => {
@@ -399,6 +527,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
       return next;
     });
+
+    postSyncAction('mark_notification_read', { id });
   };
 
   const markAllNotificationsAsRead = () => {
@@ -412,6 +542,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
       return next;
     });
+
+    postSyncAction('mark_all_notifications_read', { role: currentUser.role, userId: currentUser.id });
   };
 
   const addSubmission = (newSub: Omit<StudentSubmission, 'id' | 'created_at' | 'status' | 'awarded_points'> & { status?: any }) => {
@@ -431,6 +563,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     const nextList = [fullSubmission, ...submissions];
     saveSubmissions(nextList);
+
+    // Sync to server database
+    postSyncAction('add_submission', fullSubmission);
 
     // Notify Mentor
     addNotification({
@@ -455,6 +590,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return sub;
     });
     saveSubmissions(nextList);
+
+    postSyncAction('update_submission', { id, updatedData });
 
     // Notify Mentor that student updated the submission
     addNotification({
@@ -491,6 +628,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return sub;
     });
     saveSubmissions(nextList);
+
+    postSyncAction('update_submission_status', {
+      id,
+      status,
+      remarks,
+      awardedPoints: status === 'approved' ? Number(awardedPoints !== undefined && awardedPoints !== null ? awardedPoints : (targetSub?.claimed_points || 0)) : 0,
+      approverName: currentUser.full_name,
+      approverId: currentUser.id,
+    });
 
     // Notify Student
     if (targetSub) {
@@ -536,6 +682,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     saveSubmissions(nextList);
 
+    postSyncAction('bulk_approve_submissions', {
+      ids: submissionIds,
+      remarks,
+      approverName: currentUser.full_name,
+      approverId: currentUser.id,
+    });
+
     // Send notifications to each affected student
     approvedSubs.forEach((sub) => {
       addNotification({
@@ -577,6 +730,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     saveSubmissions(nextList);
 
+    postSyncAction('add_message', {
+      submissionId,
+      message: newMessage,
+    });
+
     // Send high-priority notification to counterpart
     if (targetSub) {
       if (currentUser.role === 'mentor') {
@@ -610,6 +768,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const nextList = submissions.filter((s) => s.id !== id);
     saveSubmissions(nextList);
 
+    postSyncAction('delete_submission', { id });
+
     // Send High-Priority Notification to the student
     addNotification({
       recipient_id: targetSub.student_id,
@@ -623,9 +783,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getStudentAvatar = (studentId?: string): string | undefined => {
-    if (!studentId || studentId === 'usr-student-001' || studentId === currentUser.id) {
+    // If querying the logged-in user
+    if ((!studentId && currentUser.avatar_url) || (studentId === currentUser.id && currentUser.avatar_url)) {
+      return currentUser.avatar_url;
+    }
+
+    // If querying student role or Shaik Saleem
+    if (!studentId || studentId === 'usr-student-001') {
       if (currentUser.role === 'student' && currentUser.avatar_url) {
         return currentUser.avatar_url;
+      }
+      if (serverProfiles.student?.avatar_url) {
+        return serverProfiles.student.avatar_url;
       }
       try {
         const savedStudent = localStorage.getItem('cbit_profile_student');
@@ -635,12 +804,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch (e) {}
     }
+
+    // Check if any matching server profile exists
+    if (studentId) {
+      const matchProfile = Object.values(serverProfiles).find((p) => p.id === studentId);
+      if (matchProfile?.avatar_url) return matchProfile.avatar_url;
+    }
+
+    const sub = submissions.find((s) => s.student_id === studentId && (s as any).student_avatar);
+    if (sub && (sub as any).student_avatar) return (sub as any).student_avatar;
+
     return undefined;
   };
 
   const deleteSubmission = (id: string) => {
     const nextList = submissions.filter((s) => s.id !== id);
     saveSubmissions(nextList);
+    postSyncAction('delete_submission', { id });
   };
 
   const resetToDefaults = () => {
@@ -659,6 +839,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem('cbit_mar_submissions');
     localStorage.removeItem('cbit_mar_categories');
     localStorage.removeItem('cbit_mar_settings');
+    postSyncAction('reset_defaults', {});
   };
 
   // Filter unread notifications relevant to current user

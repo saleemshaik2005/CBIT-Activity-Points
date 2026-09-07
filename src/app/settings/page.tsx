@@ -18,6 +18,7 @@ import {
   Hash,
   Camera,
   UploadCloud,
+  Loader2,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -38,17 +39,43 @@ export default function SettingsPage() {
 
   const [approvalAlerts, setApprovalAlerts] = useState(true);
   const [broadcastAlerts, setBroadcastAlerts] = useState(true);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       try {
+        setIsUploadingAvatar(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', 'avatar');
+        formData.append('role', currentUser.role);
+        formData.append('studentId', currentUser.id);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.url) {
+            updateUserAvatar(json.url);
+            setProfileSuccess(true);
+            setTimeout(() => setProfileSuccess(false), 3000);
+            return;
+          }
+        }
+
+        // Fallback to permanent data URL if upload route is unreachable
         const base64Url = await fileToPermanentDataURL(file);
         updateUserAvatar(base64Url);
         setProfileSuccess(true);
         setTimeout(() => setProfileSuccess(false), 3000);
       } catch (err) {
         console.error('Failed to update profile image:', err);
+      } finally {
+        setIsUploadingAvatar(false);
       }
     }
   };
@@ -128,12 +155,17 @@ export default function SettingsPage() {
 
                 {/* Upload Hover Overlay */}
                 <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex flex-col items-center justify-center cursor-pointer text-white text-[10px] font-bold gap-0.5">
-                  <Camera className="w-4 h-4 text-[#dfa94b]" />
-                  <span>Change</span>
+                  {isUploadingAvatar ? (
+                    <Loader2 className="w-4 h-4 text-[#dfa94b] animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4 text-[#dfa94b]" />
+                  )}
+                  <span>{isUploadingAvatar ? 'Saving...' : 'Change'}</span>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleAvatarChange}
+                    disabled={isUploadingAvatar}
                     className="hidden"
                   />
                 </label>
@@ -144,13 +176,23 @@ export default function SettingsPage() {
                 <p className="text-[11px] text-[#a16b15] dark:text-amber-400 font-semibold capitalize">
                   {currentUser.role.replace('_', ' ')}
                 </p>
-                <label className="text-[10px] text-[#385529] dark:text-emerald-400 font-bold hover:underline cursor-pointer inline-flex items-center gap-1 mt-0.5">
-                  <UploadCloud className="w-3 h-3" />
-                  <span>Upload Photo</span>
+                <label className={`text-[10px] text-[#385529] dark:text-emerald-400 font-bold hover:underline cursor-pointer inline-flex items-center gap-1 mt-0.5 ${isUploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
+                  {isUploadingAvatar ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Uploading to Server...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="w-3 h-3" />
+                      <span>Upload Photo</span>
+                    </>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleAvatarChange}
+                    disabled={isUploadingAvatar}
                     className="hidden"
                   />
                 </label>

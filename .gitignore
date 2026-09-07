@@ -30,3 +30,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploads and temporary files
+data/*.tmp
+public/uploads/*
+!public/uploads/**/.gitkeep
+!public/uploads/certificates/
+!public/uploads/avatars/
