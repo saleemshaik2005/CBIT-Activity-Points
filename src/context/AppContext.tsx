@@ -38,6 +38,7 @@ interface AppContextType {
   updateSubmissionStatus: (id: string, status: 'approved' | 'rejected' | 'needs_clarification', remarks?: string, awardedPoints?: number) => void;
   revokeApprovedSubmission: (id: string, reason?: string) => void;
   deleteSubmission: (id: string) => void;
+  bulkApproveSubmissions: (submissionIds: string[], remarks?: string) => void;
   addSubmissionMessage: (submissionId: string, text: string) => void;
   resetToDefaults: () => void;
 
@@ -381,17 +382,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       is_read: false,
       created_at: new Date().toISOString(),
     };
-    saveNotifications([newItem, ...notifications]);
+    setNotifications((prev) => {
+      const next = [newItem, ...prev];
+      try {
+        localStorage.setItem('cbit_notifications', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
   };
 
   const markNotificationAsRead = (id: string) => {
-    const next = notifications.map((n) => (n.id === id ? { ...n, is_read: true } : n));
-    saveNotifications(next);
+    setNotifications((prev) => {
+      const next = prev.map((n) => (n.id === id ? { ...n, is_read: true } : n));
+      try {
+        localStorage.setItem('cbit_notifications', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
   };
 
   const markAllNotificationsAsRead = () => {
-    const next = notifications.map((n) => ({ ...n, is_read: true }));
-    saveNotifications(next);
+    setNotifications((prev) => {
+      const next = prev.map((n) => {
+        const isForMe = n.recipient_role === 'all' || n.recipient_role === currentUser.role || n.recipient_id === currentUser.id;
+        return isForMe ? { ...n, is_read: true } : n;
+      });
+      try {
+        localStorage.setItem('cbit_notifications', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
   };
 
   const addSubmission = (newSub: Omit<StudentSubmission, 'id' | 'created_at' | 'status' | 'awarded_points'> & { status?: any }) => {
@@ -488,6 +508,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sender_name: currentUser.full_name,
       });
     }
+  };
+
+  const bulkApproveSubmissions = (submissionIds: string[], remarks?: string) => {
+    if (!submissionIds.length) return;
+
+    const approvedAt = new Date().toISOString();
+    const approvedSubs: StudentSubmission[] = [];
+
+    const nextList = submissions.map((sub) => {
+      if (submissionIds.includes(sub.id)) {
+        const approvedSub: StudentSubmission = {
+          ...sub,
+          status: 'approved',
+          mentor_remarks: remarks || 'Bulk verified & approved via AI Authenticity verification',
+          awarded_points: sub.claimed_points || 0,
+          approved_by: currentUser.id,
+          approver_name: currentUser.full_name,
+          approved_at: approvedAt,
+          updated_at: approvedAt,
+        };
+        approvedSubs.push(approvedSub);
+        return approvedSub;
+      }
+      return sub;
+    });
+
+    saveSubmissions(nextList);
+
+    // Send notifications to each affected student
+    approvedSubs.forEach((sub) => {
+      addNotification({
+        recipient_id: sub.student_id,
+        recipient_role: 'student',
+        type: 'approval',
+        title: `Certificate Bulk Approved (+${sub.awarded_points} Pts)`,
+        message: `Your submission "${sub.activity_title}" was verified and approved by ${currentUser.full_name}.`,
+        link: '/student/history',
+        sender_name: currentUser.full_name,
+      });
+    });
   };
 
   const addSubmissionMessage = (submissionId: string, text: string) => {
@@ -625,6 +685,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addSubmission,
         updateSubmission,
         updateSubmissionStatus,
+        bulkApproveSubmissions,
         revokeApprovedSubmission,
         deleteSubmission,
         addSubmissionMessage,

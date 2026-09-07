@@ -25,19 +25,30 @@ export default function ClassTeacherPage() {
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border-t-4 border-[#3b566e] dark:border-sky-500/80 border-x border-b border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-1">
-        <div className="flex items-center space-x-2 text-[#3b566e] dark:text-sky-400">
-          <Users className="w-5 h-5" />
-          <span className="text-xs font-bold uppercase tracking-wider bg-[#f0f4f8] dark:bg-[#22232a] text-[#3b566e] dark:text-sky-400 px-2.5 py-0.5 rounded-full border border-[#3b566e]/20 dark:border-[#2e3039]">
-            Class Coordinator Portal
-          </span>
+      <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border-t-4 border-[#3b566e] dark:border-sky-500/80 border-x border-b border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2 text-[#3b566e] dark:text-sky-400">
+            <Users className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider bg-[#f0f4f8] dark:bg-[#22232a] text-[#3b566e] dark:text-sky-400 px-2.5 py-0.5 rounded-full border border-[#3b566e]/20 dark:border-[#2e3039]">
+              Class Coordinator Portal
+            </span>
+          </div>
+          <h1 className="text-2xl font-serif font-extrabold text-[#385529] dark:text-gray-100">
+            Class Section Overview: {classStats.section}
+          </h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Class Coordinator: <strong>{currentUser.full_name}</strong> • Department of {currentUser.department}
+          </p>
         </div>
-        <h1 className="text-2xl font-serif font-extrabold text-[#385529] dark:text-gray-100">
-          Class Section Overview: {classStats.section}
-        </h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Class Coordinator: <strong>{currentUser.full_name}</strong> • Department of {currentUser.department}
-        </p>
+
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <a
+            href="/teacher/reports"
+            className="px-4 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
+          >
+            <span>Batch MAR Master Report</span>
+          </a>
+        </div>
       </div>
 
       {/* KPI Cards */}

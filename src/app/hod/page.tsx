@@ -83,18 +83,10 @@ export default function HODDashboardPage() {
 
           <Link
             href="/hod/students"
-            className="px-4 py-2.5 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-2xs transition-all flex items-center space-x-1.5 cursor-pointer"
-          >
-            <BookOpen className="w-4 h-4 text-[#385529] dark:text-emerald-400" />
-            <span>Student Directory</span>
-          </Link>
-
-          <Link
-            href="/hod/signoff"
             className="px-4 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
           >
-            <GraduationCap className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
-            <span>Batch Signoff</span>
+            <BookOpen className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
+            <span>Student Directory</span>
           </Link>
         </div>
       </div>
@@ -252,7 +244,7 @@ export default function HODDashboardPage() {
                 Early-Warning MAR Intervention System
               </h4>
               <p className="text-xs text-red-700 dark:text-rose-300">
-                8 students in AI&DS have less than 30 points as of 5th Semester. Action is recommended before end-of-semester MAR signoff.
+                8 students in AI&DS have less than 30 points as of 5th Semester. Action is recommended before the semester MAR evaluation.
               </p>
             </div>
           </div>

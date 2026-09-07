@@ -36,6 +36,7 @@ export const Navbar: React.FC = () => {
     logout,
     unreadCount,
     markAllNotificationsAsRead,
+    submissions,
   } = useApp();
 
   const pathname = usePathname();
@@ -63,7 +64,6 @@ export const Navbar: React.FC = () => {
       { label: 'Dept Analytics', href: '/hod', icon: LayoutDashboard },
       { label: 'Faculty Mentors', href: '/hod/mentors', icon: Users },
       { label: 'Dept Students', href: '/hod/students', icon: BookOpen },
-      { label: 'Graduation Signoff', href: '/hod/signoff', icon: GraduationCap },
       { label: 'MAR Rules', href: '/hod/rules', icon: FileCheck },
     ],
     admin: [
@@ -130,6 +130,9 @@ export const Navbar: React.FC = () => {
                 {currentNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
+                  const pendingMentorCount = submissions.filter((s) => s.status === 'pending_mentor').length;
+                  const showMentorBadge = currentUser.role === 'mentor' && item.href === '/mentor' && pendingMentorCount > 0;
+
                   return (
                     <Link
                       key={item.href}
@@ -142,6 +145,11 @@ export const Navbar: React.FC = () => {
                     >
                       <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#385529] dark:text-emerald-400' : 'text-[#a16b15] dark:text-gray-400'}`} />
                       <span>{item.label}</span>
+                      {showMentorBadge && (
+                        <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-[#a16b15] text-white leading-none">
+                          {pendingMentorCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -192,7 +200,6 @@ export const Navbar: React.FC = () => {
                   {/* Notification Bell */}
                   <Link
                     href="/notifications"
-                    onClick={() => markAllNotificationsAsRead()}
                     className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
                     title="View notifications"
                   >

@@ -180,3 +180,114 @@ export function generateOfficialCBITMARPDF(
   const filename = `CBIT_MAR_${student.roll_number || 'Activity_Points'}.pdf`;
   doc.save(filename);
 }
+
+export function generateBatchMARReportPDF(
+  section: string,
+  department: string,
+  academicYear: string,
+  coordinatorName: string,
+  students: Array<{
+    roll: string;
+    name: string;
+    section: string;
+    mentor: string;
+    points: number;
+    target: number;
+    isLateral?: boolean;
+    status: string;
+    nptelDone?: boolean;
+    internshipDone?: boolean;
+  }>
+) {
+  const doc = new jsPDF('l', 'mm', 'a4');
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(CBIT_COLLEGE_NAME, pageWidth / 2, 12, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.text(`DEPARTMENT OF ${department.toUpperCase()}`, pageWidth / 2, 17, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.text(`TABULATION REGISTER OF MANDATORY ADDITIONAL REQUIREMENTS (MAR) - ${section.toUpperCase()}`, pageWidth / 2, 22, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.text(`Academic Year: ${academicYear}   |   Class Coordinator: ${coordinatorName}   |   Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 27, { align: 'center' });
+
+  const tableRows: any[] = students.map((s, idx) => [
+    (idx + 1).toString(),
+    s.roll,
+    s.name,
+    `Sec ${s.section}`,
+    s.isLateral ? 'Lateral Entry' : 'Regular',
+    s.mentor,
+    `${s.points} pts`,
+    `${s.target} pts`,
+    s.status.toUpperCase(),
+    `${Math.min(100, Math.round((s.points / (s.target || 1)) * 100))}%`
+  ]);
+
+  const satisfiedCount = students.filter(s => s.points >= s.target).length;
+  const inProgressCount = students.filter(s => s.points < s.target && s.points >= 30).length;
+  const atRiskCount = students.filter(s => s.points < 30).length;
+
+  tableRows.push([
+    { content: `Total Students: ${students.length}   |   Satisfied: ${satisfiedCount} (${Math.round((satisfiedCount / (students.length || 1)) * 100)}%)   |   In Progress: ${inProgressCount}   |   At-Risk: ${atRiskCount}`, colSpan: 10, styles: { fontStyle: 'bold', fillColor: [245, 245, 245], halign: 'center' } }
+  ]);
+
+  tableRows.push([
+    { content: 'Signature of Class Coordinator: ______________________', colSpan: 5, styles: { fontStyle: 'bold', halign: 'left', cellPadding: 4 } },
+    { content: 'Signature of Head of Department: ______________________', colSpan: 5, styles: { fontStyle: 'bold', halign: 'right', cellPadding: 4 } }
+  ]);
+
+  autoTable(doc, {
+    startY: 32,
+    head: [[
+      'S.No',
+      'Roll Number',
+      'Student Name',
+      'Section',
+      'Admission Type',
+      'Assigned Mentor',
+      'Approved MAR Pts',
+      'Target Pts',
+      'Requirement Status',
+      'Compliance'
+    ]],
+    body: tableRows,
+    theme: 'grid',
+    styles: {
+      fontSize: 8,
+      cellPadding: 1.8,
+      lineColor: [180, 180, 180],
+      lineWidth: 0.1,
+      textColor: [20, 20, 20],
+      valign: 'middle',
+    },
+    headStyles: {
+      fillColor: [56, 85, 41],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { cellWidth: 12, halign: 'center' },
+      1: { cellWidth: 28, halign: 'center', fontStyle: 'bold' },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 16, halign: 'center' },
+      4: { cellWidth: 26, halign: 'center' },
+      5: { cellWidth: 44 },
+      6: { cellWidth: 26, halign: 'center', fontStyle: 'bold' },
+      7: { cellWidth: 22, halign: 'center' },
+      8: { cellWidth: 32, halign: 'center', fontStyle: 'bold' },
+      9: { cellWidth: 18, halign: 'center' },
+    },
+    margin: { left: 12, right: 12, bottom: 10 },
+  });
+
+  const filename = `CBIT_Batch_MAR_Master_Report_${section.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+  doc.save(filename);
+}

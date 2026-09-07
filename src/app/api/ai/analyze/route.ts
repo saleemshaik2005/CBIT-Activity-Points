@@ -30,8 +30,20 @@ export async function POST(req: NextRequest) {
       file.name
     );
 
+    if (extraction.isDocument === false) {
+      return NextResponse.json({
+        success: false,
+        isDocument: false,
+        error: extraction.documentRejectionReason || 'The uploaded image is not recognized as an official certificate or document proof.',
+        data: extraction,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     return NextResponse.json({
       success: true,
+      isDocument: true,
       data: extraction,
       fileName: file.name,
       fileSize: file.size,

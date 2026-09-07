@@ -37,12 +37,15 @@ The official 24 CBIT MAR Categories are:
 ${MAR_CATEGORIES_PROMPT_REFERENCE}
 
 CRITICAL RULES:
-1. STRICT DOCUMENT VALIDATION:
-   - Check if this image/file is a legitimate document proof (e.g. Certificate of Participation/Appreciation/Merit/Completion, Score Sheet, NPTEL/SWAYAM/Coursera certificate, Membership card, Letter, Paper publication, Event ID proof, Workshop/Hackathon pass).
-   - If the image is a selfie, personal portrait, photo of animal, meme, wallpaper, landscape, vehicle, food, or non-document photo without official academic text, return:
+1. STRICT DOCUMENT VALIDATION & APPROPRIATENESS GUARDRAIL:
+   - Check if this image/file is a legitimate academic or extra-curricular document proof (e.g. Certificate of Participation/Appreciation/Merit/Completion, Official Score Sheet, NPTEL/SWAYAM/Coursera/MOOC certificate, Professional Society Membership Card, Industrial Visit/Internship Offer or Completion Letter, Research Paper publication reprint, Event ID proof, Workshop/Hackathon pass).
+   - If the image is a personal photo, selfie, portrait, picture of animals/pets, scenery, wallpaper, meme, vehicle, food, cartoon, artwork, gaming graphic, or any arbitrary photo without official academic credentials/text, or if it contains inappropriate, offensive, or non-educational content, YOU MUST REJECT IT:
      "isDocument": false,
-     "documentRejectionReason": "The uploaded image does not appear to be an official certificate or document proof. Please upload a clear photo or PDF of your certificate."
-   - If it is a valid document, return "isDocument": true.
+     "documentRejectionReason": "The uploaded image is not appropriate or not recognized as an official certificate or document proof. AI has restricted this image from being submitted to your mentor."
+   - If the image is blurry, illegible, or contains no readable text, return:
+     "isDocument": false,
+     "documentRejectionReason": "The uploaded file is illegible and does not contain readable document text. Please upload a clear photo or PDF of your certificate."
+   - ONLY return "isDocument": true if the image is unambiguously an official academic certificate, event credential, or official activity proof.
 
 2. ACCURATE FIELD EXTRACTION:
    - Certificate / Activity Title: Exact course title, competition name, or event title printed on the certificate.
@@ -133,22 +136,19 @@ Output STRICTLY valid JSON with no markdown formatting or backticks:
       try {
         const result = await makeAIRequest(model, key.trim(), payload);
         
+        // If AI explicitly flagged that this image is not a document or inappropriate
         if (result.isDocument === false) {
-          throw new Error(
-            result.documentRejectionReason ||
-            'The uploaded file is not recognized as an official certificate or document proof. Please upload a clear document image or PDF.'
-          );
+          return {
+            ...result,
+            isDocument: false,
+            documentRejectionReason:
+              result.documentRejectionReason ||
+              'The uploaded image is not appropriate or not recognized as an official certificate or document proof. AI has restricted this image from being submitted to your mentor.',
+          };
         }
 
         return result;
       } catch (err: any) {
-        if (
-          err.message &&
-          (err.message.includes('not recognized as an official certificate') ||
-           err.message.includes('not appear to be an official certificate'))
-        ) {
-          throw err;
-        }
         console.warn(`[AI Engine] Model ${model} request error:`, err?.message || err);
         lastError = err;
         continue;
@@ -334,13 +334,77 @@ function fallbackSemanticDocumentAnalyzer(
   mimeType: string,
   fileName?: string
 ): AIExtractionResult {
-  const name = (fileName || 'Certificate_Document').toLowerCase();
+  const name = (fileName || '').toLowerCase().trim();
 
-  // Basic check for non-document extensions
-  if (name.includes('selfie') || name.includes('meme') || name.includes('photo_of_') || name.includes('cat') || name.includes('dog')) {
+  // Inappropriate, adult, or offensive image detection
+  const inappropriateKeywords = [
+    'nsfw', 'nude', 'sexy', 'porn', 'adult', 'violence', 'weapon',
+    'offensive', 'inappropriate', 'vulgar', 'hate', 'abuse'
+  ];
+  if (inappropriateKeywords.some((kw) => name.includes(kw))) {
     return {
       isDocument: false,
-      documentRejectionReason: 'The uploaded image does not appear to be an official certificate or document proof. Please upload a clear photo or PDF of your certificate.',
+      documentRejectionReason: 'This image contains inappropriate content and is strictly ineligible for academic certificate submission.',
+      certificateTitle: '',
+      recipientName: '',
+      issuingOrganization: '',
+      completionDate: '',
+      matchedCategorySno: 1,
+      matchedCategoryName: '',
+      matchedSubType: '',
+      suggestedPoints: 0,
+      confidenceScore: 0,
+      summary: '',
+    };
+  }
+
+  // Non-document file patterns (selfies, random camera photos, scenery, memes, pets, etc.)
+  const nonDocKeywords = [
+    'selfie', 'meme', 'photo_of_', 'cat', 'dog', 'pet', 'animal', 'car', 'bike',
+    'food', 'sunset', 'landscape', 'scenery', 'wallpaper', 'avatar', 'portrait',
+    'profile', 'face', 'snap', 'tiktok', 'reel', 'insta', 'fb_img', 'whatsapp_image',
+    'camera', 'dcim', 'screenshot_202', 'random', 'wallpaper', 'nature', 'drawing',
+    'game', 'pubg', 'freefire', 'movie', 'poster', 'thumbnail'
+  ];
+
+  // Positive academic document keywords that indicate an authentic certificate/proof
+  const academicDocKeywords = [
+    'cert', 'nptel', 'swayam', 'coursera', 'mooc', 'udemy', 'hackathon', 'techfest',
+    'workshop', 'fest', 'sports', 'tournament', 'nss', 'blood', 'donation', 'internship',
+    'paper', 'publication', 'ieee', 'journal', 'csi', 'conference', 'symposium', 'letter',
+    'mark', 'score', 'cbit', 'degree', 'merit', 'participation', 'appreciation', 'completion',
+    'achievement', 'training', 'webinar', 'credential', 'proof', 'document', 'mar'
+  ];
+
+  const hasNonDocKeyword = nonDocKeywords.some((kw) => name.includes(kw));
+  const hasAcademicKeyword = academicDocKeywords.some((kw) => name.includes(kw));
+  const isPdf = mimeType.includes('pdf') || name.endsWith('.pdf');
+
+  // If flagged with non-document keyword, or if it's a generic camera photo without any academic document indication
+  const isGenericCameraPhoto = /^img[-_]?\d+/i.test(name) || /^dsc[-_]?\d+/i.test(name) || /^photo/i.test(name) || /^image/i.test(name) || /^pic/i.test(name);
+
+  if (hasNonDocKeyword || (isGenericCameraPhoto && !hasAcademicKeyword && !isPdf)) {
+    return {
+      isDocument: false,
+      documentRejectionReason: 'The uploaded image does not appear to be an official certificate or document proof. AI has restricted this image from being submitted to your mentor.',
+      certificateTitle: '',
+      recipientName: '',
+      issuingOrganization: '',
+      completionDate: '',
+      matchedCategorySno: 1,
+      matchedCategoryName: '',
+      matchedSubType: '',
+      suggestedPoints: 0,
+      confidenceScore: 0,
+      summary: '',
+    };
+  }
+
+  // If completely lacking academic cues and not a PDF, reject by default for safety
+  if (!hasAcademicKeyword && !isPdf) {
+    return {
+      isDocument: false,
+      documentRejectionReason: 'The uploaded image could not be identified as an official academic certificate or event proof. Please upload a clear certificate image or PDF.',
       certificateTitle: '',
       recipientName: '',
       issuingOrganization: '',
@@ -368,7 +432,7 @@ function fallbackSemanticDocumentAnalyzer(
     points = 20;
     certTitle = 'NPTEL Online Certification Course';
     issuer = 'NPTEL (Ministry of Education, Govt of India)';
-  } else if (name.includes('hackathon') || name.includes('techfest') || name.includes('workshop')) {
+  } else if (name.includes('hackathon') || name.includes('techfest') || name.includes('workshop') || name.includes('symposium')) {
     catSno = 2;
     catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
     subType = name.includes('organizer') ? 'Organizer' : 'Participant';
@@ -389,6 +453,13 @@ function fallbackSemanticDocumentAnalyzer(
     points = 5;
     certTitle = 'Community Service & Social Leadership Activity';
     issuer = 'National Service Scheme (NSS)';
+  } else if (name.includes('internship') || name.includes('training') || name.includes('offer')) {
+    catSno = 10;
+    catName = 'Innovation Projects (other than course requirements)';
+    subType = 'General';
+    points = 20;
+    certTitle = 'Industry Internship & Practical Training';
+    issuer = 'Tech R&D Center';
   } else if (name.includes('paper') || name.includes('ieee') || name.includes('journal') || name.includes('publication')) {
     catSno = 6;
     catName = 'Publication in News Magazine / Journal';

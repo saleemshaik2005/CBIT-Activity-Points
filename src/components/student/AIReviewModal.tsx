@@ -141,6 +141,10 @@ export const AIReviewModal: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (aiData.isDocument === false) {
+      alert(aiData.documentRejectionReason || 'The uploaded file is not recognized as a legitimate certificate or document proof. AI has restricted this image from being submitted to your mentor.');
+      return;
+    }
     onSubmit({
       category_id: selectedCategoryId,
       activity_title: title,
@@ -471,10 +475,19 @@ export const AIReviewModal: React.FC<Props> = ({
             <button
               type="submit"
               form="ai-review-form"
-              className="px-6 py-2.5 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 border-b-2 border-[#a16b15] dark:border-emerald-700 cursor-pointer"
+              disabled={aiData.isDocument === false}
+              className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all flex items-center justify-center space-x-2 border-b-2 ${
+                aiData.isDocument === false
+                  ? 'bg-gray-400 dark:bg-gray-700 text-gray-200 border-gray-500 cursor-not-allowed'
+                  : 'bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white hover:shadow-lg border-[#a16b15] dark:border-emerald-700 cursor-pointer'
+              }`}
             >
               <Check className="w-4 h-4" />
-              <span>Confirm & Submit for Mentor Approval</span>
+              <span>
+                {aiData.isDocument === false
+                  ? 'Submission Blocked (Ineligible Image)'
+                  : 'Confirm & Submit for Mentor Approval'}
+              </span>
             </button>
           </div>
 

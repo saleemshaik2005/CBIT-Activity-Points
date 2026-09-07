@@ -18,10 +18,12 @@ import {
 import { UserRole } from '@/types';
 
 export const MobileNav: React.FC = () => {
-  const { currentUser, isAuthenticated, unreadCount } = useApp();
+  const { currentUser, isAuthenticated, unreadCount, submissions } = useApp();
   const pathname = usePathname();
 
   if (!isAuthenticated) return null;
+
+  const pendingMentorCount = submissions.filter((s) => s.status === 'pending_mentor').length;
 
   const roleNavItems: Record<UserRole, { label: string; href: string; icon: React.ElementType }[]> = {
     student: [
@@ -48,7 +50,6 @@ export const MobileNav: React.FC = () => {
       { label: 'Analytics', href: '/hod', icon: LayoutDashboard },
       { label: 'Mentors', href: '/hod/mentors', icon: Users },
       { label: 'Students', href: '/hod/students', icon: BookOpen },
-      { label: 'Signoff', href: '/hod/signoff', icon: GraduationCap },
       { label: 'Rules', href: '/hod/rules', icon: FileCheck },
     ],
     admin: [
@@ -68,6 +69,7 @@ export const MobileNav: React.FC = () => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           const isNotif = item.label === 'Notifs';
+          const isMentorQueue = currentUser.role === 'mentor' && item.href === '/mentor';
 
           return (
             <Link
@@ -84,6 +86,11 @@ export const MobileNav: React.FC = () => {
                 {isNotif && unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#a71a1b] dark:bg-red-500 text-white font-bold text-[8px] flex items-center justify-center">
                     {unreadCount}
+                  </span>
+                )}
+                {isMentorQueue && pendingMentorCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#a16b15] text-white font-bold text-[8px] flex items-center justify-center">
+                    {pendingMentorCount}
                   </span>
                 )}
               </div>

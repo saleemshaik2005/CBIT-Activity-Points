@@ -28,6 +28,7 @@ import {
   Github,
   Linkedin,
   Trash2,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { generateOfficialCBITMARPDF } from '@/lib/pdf-generator';
 import { StudentSubmission, UserProfile } from '@/types';
@@ -225,6 +226,74 @@ export default function MentorMenteesPage() {
     return true;
   });
 
+  const handleExportMenteesCSV = () => {
+    const headers = [
+      'Roll Number',
+      'Student Name',
+      'Section',
+      'Batch Year',
+      'Admission Type',
+      'Email',
+      'Phone Number',
+      'Total Approved Points',
+      'Target Points',
+      'Max Cap',
+      'Compliance Status',
+      'NPTEL Completed',
+      'Internship Completed',
+      'Pending Verifications Count',
+      'Faculty Counselor',
+    ].join(',');
+
+    const rows = filteredMentees.map((m) => {
+      const menteeSubmissions = submissions.filter((s) => s.student_id === m.id);
+      const target = m.is_lateral_entry
+        ? settings.lateral_entry_target_points
+        : settings.regular_target_points;
+      const maxCap = m.is_lateral_entry
+        ? settings.lateral_entry_max_points || 75
+        : settings.regular_max_points || 100;
+      const progress = calculateStudentMARProgress(menteeSubmissions, categories, target, maxCap);
+      const hasNptel = menteeHasNPTEL(m.id) ? 'YES' : 'NO';
+      const hasIntern = menteeHasInternship(m.id) ? 'YES' : 'NO';
+      const pendingCount = menteeSubmissions.filter((s) => s.status === 'pending_mentor').length;
+      const statusText = progress.isCompleted
+        ? 'COMPLETED'
+        : progress.totalApprovedPoints < 30
+        ? 'AT RISK'
+        : 'IN PROGRESS';
+
+      return [
+        `"${m.roll_number}"`,
+        `"${m.full_name}"`,
+        `"Section ${m.section}"`,
+        `"${m.batch_year}"`,
+        m.is_lateral_entry ? 'Lateral Entry' : 'Regular',
+        `"${m.email}"`,
+        `"${m.phone_number}"`,
+        progress.totalApprovedPoints,
+        target,
+        maxCap,
+        statusText,
+        hasNptel,
+        hasIntern,
+        pendingCount,
+        `"${currentUser.full_name}"`,
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent([headers, ...rows].join('\n'));
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute(
+      'download',
+      `CBIT_Mentee_MAR_Roster_${currentUser.full_name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       
@@ -242,19 +311,31 @@ export default function MentorMenteesPage() {
           </p>
         </div>
 
-        {/* Section Filter */}
-        <div className="flex items-center space-x-2">
-          <Filter className="w-3.5 h-3.5 text-gray-400" />
-          <select
-            value={sectionFilter}
-            onChange={(e) => setSectionFilter(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+        {/* Action Controls: Export CSV & Section Filter */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportMenteesCSV}
+            className="px-3.5 py-2 bg-white dark:bg-[#22232a] hover:bg-gray-50 dark:hover:bg-[#2c2d36] text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-300 dark:border-[#2e3039] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+            title="Export mentees roster and points to CSV"
           >
-            <option value="all">All Sections (1, 2, 3)</option>
-            <option value="1">Section 1</option>
-            <option value="2">Section 2</option>
-            <option value="3">Section 3</option>
-          </select>
+            <FileSpreadsheet className="w-3.5 h-3.5 text-[#385529] dark:text-emerald-400" />
+            <span>Export Mentees (CSV)</span>
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <Filter className="w-3.5 h-3.5 text-gray-400" />
+            <select
+              value={sectionFilter}
+              onChange={(e) => setSectionFilter(e.target.value)}
+              className="px-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+            >
+              <option value="all">All Sections (1, 2, 3)</option>
+              <option value="1">Section 1</option>
+              <option value="2">Section 2</option>
+              <option value="3">Section 3</option>
+            </select>
+          </div>
         </div>
       </div>
 
