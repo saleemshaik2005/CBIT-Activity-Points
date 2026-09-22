@@ -504,11 +504,10 @@ export default function HODStudentsDirectoryPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
                   {[
-                    { semester: 1, mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "Room 305", is_current: false },
-                    { semester: 2, mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "Room 308", is_current: false },
-                    { semester: 3, mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "Room 301", is_current: false },
-                    { semester: 4, mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: false },
-                    { semester: 5, mentor_name: selectedStudent.mentor || "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: true },
+                    { semester: 1, mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", cabin: "Room 305", is_current: false },
+                    { semester: 2, mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", cabin: "Room 308", is_current: false },
+                    { semester: 4, mentor_name: "Prior Semester Mentor", designation: "Faculty Mentor", email: "aids@cbit.ac.in", cabin: "AI&DS Block", is_current: false },
+                    { semester: 5, mentor_name: selectedStudent.mentor || "Assigned Faculty Mentor", designation: "Faculty Mentor", email: "aids@cbit.ac.in", cabin: "AI&DS Block", is_current: true },
                   ].map((mRec: any, idx: number) => (
                     <div
                       key={idx}

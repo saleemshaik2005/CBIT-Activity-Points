@@ -37,3 +37,10 @@ public/uploads/*
 !public/uploads/**/.gitkeep
 !public/uploads/certificates/
 !public/uploads/avatars/
+
+# internal docs, blueprints, and seeding scripts
+*.pdf
+scripts/seed_production_roster.js
+scripts/make_pdf.js
+scratch/
+

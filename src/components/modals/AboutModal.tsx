@@ -151,7 +151,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
               </div>
             </div>
             <p className="text-[11px] text-[#273e1c] dark:text-gray-300 pt-1 border-t border-[#385529]/10">
-              <strong>Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
+              <strong>Department:</strong> Department of Artificial Intelligence and Data Science (AI&DS), CBIT Autonomous Hyderabad.
             </p>
           </div>
 

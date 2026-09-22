@@ -19,6 +19,7 @@ import {
   Download,
 } from 'lucide-react';
 import { StudentSubmission } from '@/types';
+import { isSubmissionForMentor } from '@/lib/mar-constants';
 
 export default function MentorQueuePage() {
   const { currentUser, submissions, categories, updateSubmissionStatus, bulkApproveSubmissions } = useApp();
@@ -27,8 +28,13 @@ export default function MentorQueuePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [bulkActionSuccess, setBulkActionSuccess] = useState<string | null>(null);
 
-  const pendingSubmissions = submissions.filter((s) => s.status === 'pending_mentor');
-  const approvedSubmissions = submissions.filter((s) => s.status === 'approved');
+  // If logged in as a faculty mentor, filter queue strictly to assigned mentees
+  const relevantSubmissions = currentUser.role === 'mentor'
+    ? submissions.filter((s) => isSubmissionForMentor(s, currentUser))
+    : submissions;
+
+  const pendingSubmissions = relevantSubmissions.filter((s) => s.status === 'pending_mentor');
+  const approvedSubmissions = relevantSubmissions.filter((s) => s.status === 'approved');
 
   // Check if a submission has any tamper signs or low authenticity score
   const isSubmissionSuspicious = (sub: StudentSubmission) => {

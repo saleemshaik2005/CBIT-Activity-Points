@@ -57,95 +57,33 @@ export default function MentorMenteesPage() {
     setTimeout(() => setCopiedText(null), 2500);
   };
 
-  // Assigned mentees in AI&DS
-  const mentees = [
-    {
-      id: "usr-student-001",
-      full_name: "Shaik Saleem",
-      roll_number: "160122771045",
-      department: "Artificial Intelligence and Data Science (AI&DS)",
-      section: "2",
-      batch_year: "2024-2028 (5th Semester)",
-      is_lateral_entry: false,
-      email: "saleemshaik2005@cbit.ac.in",
-      phone_number: "+91 98765 43210",
-      skills: ["Python", "TensorFlow", "React", "Next.js", "AI Document Intelligence", "SQL"],
-      resume_url: "https://drive.google.com/file/d/sample-resume-saleem/view",
-      github_url: "https://github.com/saleemshaik2005",
-      linkedin_url: "https://linkedin.com/in/saleemshaik",
-      mentor_history: [
-        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
-        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
-        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
-        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor & Senior Mentor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
-        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor & Senior Mentor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
-      ],
-    },
-    {
-      id: "usr-student-002",
-      full_name: "Sneha Reddy",
-      roll_number: "160122771046",
-      department: "Artificial Intelligence and Data Science (AI&DS)",
-      section: "2",
-      batch_year: "2024-2028 (5th Semester)",
-      is_lateral_entry: false,
-      email: "sneha.reddy@cbit.ac.in",
-      phone_number: "+91 98765 43211",
-      skills: ["Cloud Computing", "AWS", "DevOps", "Docker", "Python"],
-      resume_url: "https://drive.google.com/file/d/sample-resume-sneha/view",
-      github_url: "https://github.com/snehareddy",
-      linkedin_url: "https://linkedin.com/in/snehareddy",
-      mentor_history: [
-        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
-        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
-        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
-        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
-        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
-      ],
-    },
-    {
-      id: "usr-student-003",
-      full_name: "Mohammed Farhan",
-      roll_number: "160122771301",
-      department: "Artificial Intelligence and Data Science (AI&DS)",
-      section: "1",
-      batch_year: "2025-2028 (5th Semester)",
-      is_lateral_entry: true, // Lateral Entry (45 pts target, 75 max cap)
-      email: "farhan.le@cbit.ac.in",
-      phone_number: "+91 98765 43212",
-      skills: ["IoT Systems", "Full-Stack Web", "Node.js", "MongoDB", "Embedded C"],
-      resume_url: "https://drive.google.com/file/d/sample-resume-farhan/view",
-      github_url: "https://github.com/farhanle",
-      linkedin_url: "https://linkedin.com/in/farhanle",
-      mentor_history: [
-        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
-        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
-        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
-      ],
-    },
-    {
-      id: "usr-student-004",
-      full_name: "Ananya Rao",
-      roll_number: "160122771089",
-      department: "Artificial Intelligence and Data Science (AI&DS)",
-      section: "3",
-      batch_year: "2024-2028 (5th Semester)",
-      is_lateral_entry: false,
-      email: "ananya.rao@cbit.ac.in",
-      phone_number: "+91 98765 43213",
-      skills: ["NLP", "Deep Learning", "PyTorch", "Data Science", "Research Publications"],
-      resume_url: "https://drive.google.com/file/d/sample-resume-ananya/view",
-      github_url: "https://github.com/ananyarao",
-      linkedin_url: "https://linkedin.com/in/ananyarao",
-      mentor_history: [
-        { semester: 1, academic_year: "2024-2025", mentor_id: "fm-03", mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "AI&DS Block, Room 305", is_current: false },
-        { semester: 2, academic_year: "2024-2025", mentor_id: "fm-04", mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "AI&DS Block, Room 308", is_current: false },
-        { semester: 3, academic_year: "2025-2026", mentor_id: "fm-02", mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "AI&DS Block, Room 301", is_current: false },
-        { semester: 4, academic_year: "2025-2026", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: false },
-        { semester: 5, academic_year: "2026-2027", mentor_id: "fm-01", mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "AI&DS Block, Room 304", is_current: true },
-      ],
-    },
-  ];
+  const [menteesList, setMenteesList] = useState<any[]>([]);
+  const [loadingMentees, setLoadingMentees] = useState<boolean>(true);
+
+  React.useEffect(() => {
+    async function fetchMentees() {
+      try {
+        setLoadingMentees(true);
+        const queryParam = currentUser.role === 'mentor' && currentUser.id ? `?mentor_id=${currentUser.id}` : '';
+        const res = await fetch(`/api/students${queryParam}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            setMenteesList(json.data);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load live mentees:', err);
+      } finally {
+        setLoadingMentees(false);
+      }
+    }
+    fetchMentees();
+  }, [currentUser.id, currentUser.role]);
+
+  // Fallback if network unavailable
+  const mentees = menteesList.length > 0 ? menteesList : [];
 
   // Helper checks for each mentee
   const menteeHasNPTEL = (studentId: string) => {
@@ -190,7 +128,7 @@ export default function MentorMenteesPage() {
       const matchName = m.full_name.toLowerCase().includes(q);
       const matchRoll = m.roll_number.toLowerCase().includes(q);
       const matchEmail = m.email.toLowerCase().includes(q);
-      const matchSkills = m.skills?.some((sk) => sk.toLowerCase().includes(q));
+      const matchSkills = m.skills?.some((sk: string) => sk.toLowerCase().includes(q));
       if (!matchName && !matchRoll && !matchEmail && !matchSkills) return false;
     }
 
@@ -688,14 +626,18 @@ export default function MentorMenteesPage() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <Phone className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400 flex-shrink-0" />
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(selectedMentee.phone_number || '+91 98765 43210', 'mentee_phone')}
-                            className="hover:underline text-left cursor-pointer"
-                            title="Click to copy phone number"
-                          >
-                            {copiedText === 'mentee_phone' ? 'Copied Phone Number!' : (selectedMentee.phone_number || '+91 98765 43210')}
-                          </button>
+                          {selectedMentee.phone_number ? (
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(selectedMentee.phone_number, 'mentee_phone')}
+                              className="hover:underline text-left cursor-pointer"
+                              title="Click to copy phone number"
+                            >
+                              {copiedText === 'mentee_phone' ? 'Copied Phone Number!' : selectedMentee.phone_number}
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 italic">Phone: Not provided</span>
+                          )}
                         </div>
                         <div className="flex items-center space-x-2">
                           <GraduationCap className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400 flex-shrink-0" />
@@ -794,11 +736,10 @@ export default function MentorMenteesPage() {
                   {(selectedMentee.mentor_history && selectedMentee.mentor_history.length > 0
                     ? selectedMentee.mentor_history
                     : [
-                        { semester: 1, mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", phone: "+91 98480 12347", cabin: "Room 305", is_current: false },
-                        { semester: 2, mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", phone: "+91 98480 12348", cabin: "Room 308", is_current: false },
-                        { semester: 3, mentor_name: "Prof. M. Srinivasa Rao", designation: "Professor", email: "msrao_aids@cbit.ac.in", phone: "+91 98480 12346", cabin: "Room 301", is_current: false },
-                        { semester: 4, mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: false },
-                        { semester: 5, mentor_name: "Dr. K. Ramana", designation: "Associate Professor", email: "kramana_aids@cbit.ac.in", phone: "+91 98480 12345", cabin: "Room 304", is_current: true },
+                        { semester: 1, mentor_name: "Dr. T. Sridevi", designation: "Associate Professor", email: "tsridevi_aids@cbit.ac.in", cabin: "Room 305", is_current: false },
+                        { semester: 2, mentor_name: "Dr. B. Indira", designation: "Associate Professor", email: "bindira_aids@cbit.ac.in", cabin: "Room 308", is_current: false },
+                        { semester: 4, mentor_name: "Prior Semester Mentor", designation: "Faculty Mentor", email: "aids@cbit.ac.in", cabin: "AI&DS Block", is_current: false },
+                        { semester: 5, mentor_name: currentUser.full_name || "Assigned Faculty Mentor", designation: "Faculty Mentor", email: currentUser.email || "aids@cbit.ac.in", cabin: "AI&DS Block", is_current: true },
                       ]
                   ).map((mRec: any, idx: number) => (
                     <div

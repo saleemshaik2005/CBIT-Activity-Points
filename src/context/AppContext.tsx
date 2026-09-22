@@ -23,6 +23,7 @@ import {
   CBIT_COLLEGE_NAME,
   CBIT_COLLEGE_CODE,
 } from '@/lib/mar-constants';
+import { createClient } from '@/lib/supabase/client';
 
 interface AppContextType {
   currentUser: UserProfile;
@@ -53,7 +54,8 @@ interface AppContextType {
 
   // Auth
   isAuthenticated: boolean;
-  login: (email: string, role?: UserRole) => Promise<boolean>;
+  login: (email: string, role?: UserRole, password?: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<void>;
   register: (userData: Partial<UserProfile>) => Promise<boolean>;
   logout: () => void;
 
@@ -70,44 +72,42 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const DEMO_USERS: Record<UserRole, UserProfile> = {
   student: MOCK_CURRENT_USER,
   mentor: {
-    id: "usr-mentor-001",
-    email: "kramana_aids@cbit.ac.in",
-    full_name: "Dr. K. Ramana",
+    id: "378feeb5-4cd4-430e-812c-c9d95fa1734d",
+    email: "shobarani_aids@cbit.ac.in",
+    full_name: "Dr. Shobarani Salvadi",
     role: "mentor",
     department: "Artificial Intelligence and Data Science (AI&DS)",
-    batch_year: "Faculty Counselor & Senior Mentor",
-    phone_number: "+91 98480 12345",
+    batch_year: "Assistant Professor (Faculty Mentor 1)",
     is_lateral_entry: false,
   },
   class_teacher: {
-    id: "usr-teacher-001",
-    email: "coordinator.aids@cbit.ac.in",
-    full_name: "Class Coordinator",
+    id: "4137919d-34de-475f-914c-166da2ddcbf1",
+    email: "saisreetalla_aids@cbit.ac.in",
+    full_name: "Ms. Talla Sai Sree",
     role: "class_teacher",
+    roll_number: "11628",
     department: "Artificial Intelligence and Data Science (AI&DS)",
     section: "2",
-    batch_year: "Class Coordinator",
-    phone_number: "+91 98480 12346",
+    batch_year: "Class Coordinator (Faculty ID: 11628)",
     is_lateral_entry: false,
   },
   hod: {
-    id: "usr-hod-001",
-    email: "hod.aids@cbit.ac.in",
-    full_name: "Head of Department",
+    id: "4cb6c35f-56ab-419e-8d1f-0f83c1868c10",
+    email: "kradhika_aids@cbit.ac.in",
+    full_name: "Dr. K. Radhika",
     role: "hod",
     department: "Artificial Intelligence and Data Science (AI&DS)",
-    batch_year: "Head of Department",
-    phone_number: "+91 98480 12340",
+    batch_year: "Professor & Head, AI&DS Dept.",
     is_lateral_entry: false,
   },
   admin: {
-    id: "usr-admin-001",
-    email: "admin.mar@cbit.ac.in",
-    full_name: "System Administrator",
+    id: "4a004de1-7e56-4616-9371-fe673a5dff96",
+    email: "cbit.spms.admin@gmail.com",
+    full_name: "System Administrator (Shaik Saleem)",
     role: "admin",
-    department: "Academic Section",
-    batch_year: "Administration",
-    phone_number: "+91 98480 12300",
+    roll_number: "160124771129-ADMIN",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    batch_year: "SPMS Administrator & Tech Lead",
     is_lateral_entry: false,
   },
 };
@@ -119,10 +119,10 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     recipient_id: "usr-student-001",
     type: "approval",
     title: "Certificate Approved (+20 Points)",
-    message: "Dr. K. Ramana approved your NPTEL Deep Learning 12-Week Certificate.",
+    message: "Dr. Anireddy Srilakshmi approved your NPTEL Deep Learning 12-Week Certificate.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Dr. K. Ramana",
+    sender_name: "Dr. Anireddy Srilakshmi",
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
@@ -134,7 +134,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     message: "Your SUDHEE 2024 Fest Core AI Team Lead submission was verified.",
     link: "/student/history",
     is_read: false,
-    sender_name: "Dr. K. Ramana",
+    sender_name: "Dr. Anireddy Srilakshmi",
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
   {
@@ -238,12 +238,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (profiles) {
           setServerProfiles(profiles);
           setCurrentUser((prev) => {
+            // NEVER clobber an authenticated student with another student's profile!
+            if (prev.role === 'student' && prev.roll_number && prev.roll_number !== profiles['student']?.roll_number) {
+              return prev;
+            }
             const serverProfile = profiles[prev.role];
-            if (serverProfile) {
+            if (serverProfile && (!prev.id || prev.id === serverProfile.id)) {
               const merged = { ...prev, ...serverProfile };
-              try {
-                localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(merged));
-              } catch (e) {}
               return merged;
             }
             return prev;
@@ -309,14 +310,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const savedNotifs = localStorage.getItem('cbit_notifications');
       if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
 
-      const savedRole = localStorage.getItem('cbit_mar_active_role') as UserRole;
-      if (savedRole && DEMO_USERS[savedRole]) {
-        const baseUser = DEMO_USERS[savedRole];
-        const savedCustomProfile = localStorage.getItem(`cbit_profile_${savedRole}`);
-        if (savedCustomProfile) {
-          setCurrentUser({ ...baseUser, ...JSON.parse(savedCustomProfile) });
-        } else {
-          setCurrentUser(baseUser);
+      const savedUserStr = localStorage.getItem('cbit_current_user');
+      if (savedUserStr) {
+        try {
+          const parsedUser = JSON.parse(savedUserStr);
+          if (parsedUser && parsedUser.id) {
+            setCurrentUser(parsedUser);
+          }
+        } catch (e) {}
+      } else {
+        const savedRole = localStorage.getItem('cbit_mar_active_role') as UserRole;
+        if (savedRole && DEMO_USERS[savedRole]) {
+          const baseUser = DEMO_USERS[savedRole];
+          const savedCustomProfile = localStorage.getItem(`cbit_profile_${savedRole}`);
+          if (savedCustomProfile) {
+            setCurrentUser({ ...baseUser, ...JSON.parse(savedCustomProfile) });
+          } else {
+            setCurrentUser(baseUser);
+          }
         }
       }
     } catch (e) {
@@ -325,6 +336,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Authoritative sync with server database on mount
     syncWithServer();
+
+    // Check active Supabase OAuth session on mount
+    try {
+      const supabase = createClient();
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (session?.user?.email) {
+          const email = session.user.email.toLowerCase();
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*, mentor:mentor_id(id, full_name, email, phone_number)')
+            .eq('email', email)
+            .maybeSingle();
+
+          if (profile) {
+            const authUser: UserProfile = {
+              id: profile.id,
+              email: profile.email,
+              full_name: profile.full_name,
+              role: profile.role,
+              roll_number: profile.roll_number || undefined,
+              department: profile.department || 'Artificial Intelligence and Data Science (AI&DS)',
+              section: profile.section || '2',
+              batch_year: profile.batch_year || '2024-2028 (5th Semester)',
+              is_lateral_entry: !!profile.is_lateral_entry,
+              mentor_id: profile.mentor_id || undefined,
+              mentor_name: profile.mentor?.full_name || undefined,
+              mentor_email: profile.mentor?.email || undefined,
+              avatar_url: profile.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+              phone_number: profile.phone_number || undefined,
+            };
+            setCurrentUser(authUser);
+            setIsAuthenticated(true);
+            try {
+              localStorage.setItem('cbit_is_auth', 'true');
+              localStorage.setItem('cbit_mar_active_role', authUser.role);
+              localStorage.setItem(`cbit_profile_${authUser.role}`, JSON.stringify(authUser));
+              localStorage.setItem('cbit_current_user', JSON.stringify(authUser));
+            } catch (e) {}
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[AppContext] Supabase session check error:', e);
+    }
 
     // Multi-device real-time sync listeners
     const onFocus = () => {
@@ -358,12 +413,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const login = async (email: string, role?: UserRole): Promise<boolean> => {
+  const login = async (identifier: string, role?: UserRole, password?: string): Promise<boolean> => {
+    // 1. If password provided, authenticate against Supabase API
+    if (password && password.trim()) {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password }),
+        });
+        const json = await res.json();
+        if (json.success && json.user) {
+          const authenticatedUser: UserProfile = json.user;
+          setCurrentUser(authenticatedUser);
+          setIsAuthenticated(true);
+          try {
+            localStorage.setItem('cbit_is_auth', 'true');
+            localStorage.setItem('cbit_mar_active_role', authenticatedUser.role);
+            localStorage.setItem(`cbit_profile_${authenticatedUser.role}`, JSON.stringify(authenticatedUser));
+            localStorage.setItem('cbit_current_user', JSON.stringify(authenticatedUser));
+          } catch (e) {}
+          return true;
+        } else {
+          throw new Error(json.error || 'Authentication failed. Please check your credentials.');
+        }
+      } catch (err: any) {
+        console.error('[Login] Error:', err);
+        throw err;
+      }
+    }
+
+    // 2. Demo role selection fallback (when clicking quick test buttons in dev)
     let targetUser: UserProfile = MOCK_CURRENT_USER;
     if (role && DEMO_USERS[role]) {
       targetUser = DEMO_USERS[role];
     } else {
-      const match = Object.values(DEMO_USERS).find((u) => u.email.toLowerCase() === email.toLowerCase());
+      const match = Object.values(DEMO_USERS).find((u) => u.email.toLowerCase() === identifier.toLowerCase() || u.roll_number === identifier);
       if (match) targetUser = match;
     }
 
@@ -389,17 +474,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       email: userData.email || 'student@cbit.ac.in',
       full_name: userData.full_name || 'CBIT Student',
       role: userData.role || 'student',
-      roll_number: userData.roll_number || '160122771099',
+      roll_number: userData.roll_number || '160124771129',
       department: userData.department || 'Artificial Intelligence and Data Science (AI&DS)',
       section: userData.section || '2',
-      batch_year: userData.batch_year || '2024-2028',
+      batch_year: userData.batch_year || '2024-2028 (5th Semester)',
       is_lateral_entry: !!userData.is_lateral_entry,
-      mentor_name: 'Dr. K. Ramana',
-      mentor_id: 'usr-mentor-001',
-      mentor_email: 'kramana_aids@cbit.ac.in',
-      mentor_phone: '+91 98480 12345',
-      mentor_history: MOCK_CURRENT_USER.mentor_history,
-      phone_number: userData.phone_number || '+91 98765 43210',
+      mentor_name: userData.mentor_name || 'Dr. Anireddy Srilakshmi',
+      mentor_id: userData.mentor_id || 'dd38a4de-c509-44dd-99c6-5d98f6bb29c4',
+      mentor_email: userData.mentor_email || 'srilakshmia_aids@cbit.ac.in',
+      mentor_history: userData.mentor_history || MOCK_CURRENT_USER.mentor_history,
+      phone_number: userData.phone_number || undefined,
     };
 
     setCurrentUser(newUser);
@@ -407,14 +491,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       localStorage.setItem('cbit_is_auth', 'true');
       localStorage.setItem('cbit_mar_active_role', newUser.role);
+      localStorage.setItem('cbit_current_user', JSON.stringify(newUser));
     } catch (e) {}
     return true;
   };
 
-  const logout = () => {
+  const loginWithGoogle = async (): Promise<void> => {
+    const supabase = createClient();
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account',
+        },
+      },
+    });
+    if (error) {
+      console.error('[Google OAuth] Error:', error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
     setIsAuthenticated(false);
     try {
       localStorage.setItem('cbit_is_auth', 'false');
+      localStorage.removeItem('cbit_current_user');
+      localStorage.removeItem('cbit_profile_student');
+      localStorage.removeItem('cbit_profile_mentor');
+      localStorage.removeItem('cbit_profile_class_teacher');
+      localStorage.removeItem('cbit_profile_hod');
+      localStorage.removeItem('cbit_profile_admin');
+      localStorage.removeItem('cbit_mar_active_role');
+      const supabase = createClient();
+      await supabase.auth.signOut();
     } catch (e) {}
   };
 
@@ -547,15 +660,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addSubmission = (newSub: Omit<StudentSubmission, 'id' | 'created_at' | 'status' | 'awarded_points'> & { status?: any }) => {
+    // Generate valid UUID for PostgreSQL primary key
+    const generatedId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === 'x' ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+
     const fullSubmission: StudentSubmission = {
       ...newSub,
-      id: `sub-${Date.now()}`,
+      id: generatedId,
       student_id: currentUser.id,
       student_name: currentUser.full_name,
-      student_roll_no: currentUser.roll_number || '160122771045',
-      student_email: currentUser.email || 'saleemshaik2005@cbit.ac.in',
-      student_phone: currentUser.phone_number || '+91 98765 43210',
+      student_roll_no: currentUser.roll_number || '160124771129',
+      student_email: currentUser.email || 'cbit.spms.admin@gmail.com',
+      student_phone: currentUser.phone_number || undefined,
       student_section: currentUser.section || '2',
+      mentor_id: currentUser.mentor_id || undefined,
       awarded_points: newSub.status === 'approved' ? newSub.claimed_points : 0,
       status: newSub.status || 'pending_mentor',
       messages: [],
@@ -567,8 +690,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Sync to server database
     postSyncAction('add_submission', fullSubmission);
 
-    // Notify Mentor
+    // Notify Mentor specifically
     addNotification({
+      recipient_id: currentUser.mentor_id || undefined,
       recipient_role: 'mentor',
       type: 'submission',
       title: 'New Certificate Submitted',
@@ -579,13 +703,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateSubmission = (id: string, updatedData: Partial<StudentSubmission>) => {
+    let targetSub: StudentSubmission | undefined;
     const nextList = submissions.map((sub) => {
       if (sub.id === id) {
-        return {
+        targetSub = {
           ...sub,
           ...updatedData,
           updated_at: new Date().toISOString(),
         };
+        return targetSub;
       }
       return sub;
     });
@@ -595,10 +721,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Notify Mentor that student updated the submission
     addNotification({
+      recipient_id: targetSub?.mentor_id || currentUser.mentor_id || undefined,
       recipient_role: 'mentor',
       type: 'submission',
       title: 'Certificate Submission Updated',
-      message: `${currentUser.full_name} updated submission "${updatedData.activity_title || 'Certificate'}".`,
+      message: `${currentUser.full_name} updated submission "${updatedData.activity_title || targetSub?.activity_title || 'Certificate'}".`,
       link: '/mentor',
       sender_name: currentUser.full_name,
     });
@@ -842,11 +969,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     postSyncAction('reset_defaults', {});
   };
 
-  // Filter unread notifications relevant to current user
+  // Filter unread notifications strictly relevant to current user
   const relevantNotifications = notifications.filter((n) => {
+    // If a specific recipient_id is targeted, it MUST match the current user's ID
+    if (n.recipient_id) {
+      return n.recipient_id === currentUser.id;
+    }
+    // Otherwise check for role-wide announcement or broadcast to all
     if (n.recipient_role === 'all') return true;
     if (n.recipient_role === currentUser.role) return true;
-    if (n.recipient_id === currentUser.id) return true;
     return false;
   });
 
@@ -884,6 +1015,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Auth
         isAuthenticated,
         login,
+        loginWithGoogle,
         register,
         logout,
 

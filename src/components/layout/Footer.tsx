@@ -76,7 +76,7 @@ export const Footer: React.FC = () => {
                 </div>
               </div>
               <p className="pt-1 border-t border-white/10 text-[11px]">
-                <strong className="text-white">Project Guide:</strong> Dr. K. Ramana Sir, Department of AI&DS, CBIT Autonomous Hyderabad.
+                <strong className="text-white">Department:</strong> Department of Artificial Intelligence and Data Science (AI&DS), CBIT Autonomous Hyderabad.
               </p>
             </div>
           </div>

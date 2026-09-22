@@ -224,15 +224,25 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 8. STORAGE BUCKET CONFIGURATION (For Certificate uploads)
+-- 8. STORAGE BUCKET CONFIGURATION (For Certificate & Avatar uploads)
 INSERT INTO storage.buckets (id, name, public) 
-VALUES ('certificates', 'certificates', true)
+VALUES 
+    ('certificates', 'certificates', true),
+    ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Authenticated users can upload certificates" 
-ON storage.objects FOR INSERT 
-WITH CHECK (bucket_id = 'certificates' AND auth.role() = 'authenticated');
-
+DROP POLICY IF EXISTS "Public Read Access for Certificates" ON storage.objects;
 CREATE POLICY "Public Read Access for Certificates" 
 ON storage.objects FOR SELECT 
-USING (bucket_id = 'certificates');
+USING (bucket_id IN ('certificates', 'avatars'));
+
+DROP POLICY IF EXISTS "Upload Certificates and Avatars" ON storage.objects;
+CREATE POLICY "Upload Certificates and Avatars" 
+ON storage.objects FOR INSERT 
+WITH CHECK (bucket_id IN ('certificates', 'avatars'));
+
+DROP POLICY IF EXISTS "Update Certificates and Avatars" ON storage.objects;
+CREATE POLICY "Update Certificates and Avatars" 
+ON storage.objects FOR UPDATE 
+USING (bucket_id IN ('certificates', 'avatars'));
+

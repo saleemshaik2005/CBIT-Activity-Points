@@ -437,33 +437,37 @@ export const VerificationCard: React.FC<Props> = ({
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-bold text-gray-500 block">Student Contact:</span>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-gray-800 dark:text-gray-200">{submission.student_phone || '+91 98765 43210'}</span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{submission.student_phone || 'Phone: Not provided'}</span>
                   <span className="text-gray-400">•</span>
-                  <span className="text-gray-600 dark:text-gray-300 font-mono text-[11px]">{submission.student_email || 'saleemshaik2005@cbit.ac.in'}</span>
+                  <span className="text-gray-600 dark:text-gray-300 font-mono text-[11px]">{submission.student_email || 'student@cbit.ac.in'}</span>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
-                {/* Mobile Phone Call Trigger */}
-                <a
-                  href={`tel:${submission.student_phone || '+919876543210'}`}
-                  className="sm:hidden px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs"
-                  title="Make a phone call to student"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
-                  <span>Call</span>
-                </a>
+                {/* Mobile Phone Call Trigger (Only if phone available) */}
+                {submission.student_phone && (
+                  <>
+                    <a
+                      href={`tel:${submission.student_phone}`}
+                      className="sm:hidden px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs"
+                      title="Make a phone call to student"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
+                      <span>Call</span>
+                    </a>
 
-                {/* Laptop / Desktop Copy Phone Button */}
-                <button
-                  type="button"
-                  onClick={() => handleCopyContact('phone', submission.student_phone || '+91 98765 43210')}
-                  className="hidden sm:inline-flex px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-                  title="Click to copy student's phone number"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
-                  <span>{copiedField === 'phone' ? 'Copied Phone!' : `Phone: ${submission.student_phone || '+91 98765 43210'}`}</span>
-                </button>
+                    {/* Laptop / Desktop Copy Phone Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleCopyContact('phone', submission.student_phone!)}
+                      className="hidden sm:inline-flex px-3 py-1.5 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                      title="Click to copy student's phone number"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-[#dfa94b]" />
+                      <span>{copiedField === 'phone' ? 'Copied Phone!' : `Phone: ${submission.student_phone}`}</span>
+                    </button>
+                  </>
+                )}
 
                 {/* Email Address Display & Copy Button (No App Launch) */}
                 <button

@@ -239,14 +239,14 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Faculty Counselor</span>
                     <span className="font-semibold text-[#385529] dark:text-emerald-400">
-                      {currentUser.mentor_name || 'Dr. K. Ramana'}
+                      {currentUser.mentor_name || 'Dr. Anireddy Srilakshmi'}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Entry Category</span>
                     <span className="font-bold text-[#a16b15] dark:text-amber-400">
-                      {currentUser.is_lateral_entry ? 'Lateral Entry (45 Pts)' : '4-Yr Regular (60 Pts)'}
+                      {currentUser.is_lateral_entry ? 'Lateral Entry (50 Pts)' : '4-Yr Regular (60 Pts)'}
                     </span>
                   </div>
                 </>
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                   type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+91 98765 43210"
+                  placeholder="e.g. 9876543210 (Optional)"
                   className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
                 />
               </div>

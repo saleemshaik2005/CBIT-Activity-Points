@@ -15,6 +15,26 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+function formatNotificationDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const hoursStr = String(hours).padStart(2, '0');
+    return `${day} ${month} ${year} at ${hoursStr}:${minutes} ${ampm}`;
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function NotificationsPage() {
   const {
     currentUser,
@@ -215,7 +235,7 @@ export default function NotificationsPage() {
                       {item.message}
                     </p>
                     <div className="flex items-center space-x-2 text-[10px] text-gray-400 dark:text-gray-500 pt-0.5">
-                      <span>{new Date(item.created_at).toLocaleDateString()} at {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span suppressHydrationWarning>{formatNotificationDate(item.created_at)}</span>
                       {item.sender_name && (
                         <>
                           <span>•</span>

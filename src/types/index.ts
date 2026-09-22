@@ -81,6 +81,7 @@ export interface StudentSubmission {
   student_email?: string;
   student_phone?: string;
   student_section?: string;
+  mentor_id?: string;
   category_id: number;
   category?: ActivityCategory;
   activity_title: string;

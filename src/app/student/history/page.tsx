@@ -417,7 +417,7 @@ export default function StudentHistoryPage() {
                     Mentor Inquiry: {activeChatSubmission.activity_title}
                   </h3>
                   <p className="text-[11px] text-[#e2ebd9]">
-                    Assigned Mentor: {currentUser.mentor_name || 'Dr. K. Ramana'}
+                    Assigned Mentor: {currentUser.mentor_name || 'Assigned Faculty Mentor'}
                   </p>
                 </div>
               </div>

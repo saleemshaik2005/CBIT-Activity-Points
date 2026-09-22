@@ -32,7 +32,9 @@ The platform integrates **Multimodal AI Document Intelligence** for real-time do
 ## 👨‍💻 Project Development & Academic Attribution
 
 * **Developed By:** Team of Students, Department of Artificial Intelligence & Data Science (AI&DS), Section 2, 5th Semester, Batch of 2024-2028.
-* **Project Guide:** **Dr. K. Ramana Sir**, Department of Artificial Intelligence and Data Science (AI&DS), CBIT Hyderabad.
+* **Faculty Mentors:** Dr. Shobarani Salvadi (Mentor 1), Dr. SHEENA MOHAMMED (Mentor 2), Dr. Anireddy Srilakshmi (Mentor 3).
+* **Class Coordinator:** Ms. Talla Sai Sree (Faculty ID: 11628).
+* **Head of Department:** Dr. K. Radhika, Department of AI&DS, CBIT Hyderabad.
 
 ---
 

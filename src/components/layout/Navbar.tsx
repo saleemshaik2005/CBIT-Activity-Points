@@ -25,6 +25,7 @@ import {
   LogIn,
 } from 'lucide-react';
 import { AboutModal } from '@/components/modals/AboutModal';
+import { isSubmissionForMentor } from '@/lib/mar-constants';
 
 export const Navbar: React.FC = () => {
   const {
@@ -130,7 +131,7 @@ export const Navbar: React.FC = () => {
                 {currentNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
-                  const pendingMentorCount = submissions.filter((s) => s.status === 'pending_mentor').length;
+                  const pendingMentorCount = submissions.filter((s) => s.status === 'pending_mentor' && isSubmissionForMentor(s, currentUser)).length;
                   const showMentorBadge = currentUser.role === 'mentor' && item.href === '/mentor' && pendingMentorCount > 0;
 
                   return (

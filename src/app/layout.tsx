@@ -6,10 +6,11 @@ import { MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
 
 import { RouteGuard } from '@/components/layout/RouteGuard';
+import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt';
 
 export const metadata: Metadata = {
   title: 'CBIT Student Portfolio Management System - Academic & Activity Tracking',
-  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad - Comprehensive Student Portfolio Management System with AI Document Intelligence, 24 MAR Categories Tracking, Resumes, and Graduation Approvals. Developed by Students of AI & Data Science (AI&DS, 5th Sem, Batch 2024-2028) under the guidance of Dr. K. Ramana Sir (Project Guide).',
+  description: 'Chaitanya Bharathi Institute of Technology (CBIT Autonomous), Hyderabad - Comprehensive Student Portfolio Management System with AI Document Intelligence, 24 MAR Categories Tracking, Resumes, and Graduation Approvals. Developed by Students of AI & Data Science (AI&DS, 5th Sem, Batch 2024-2028).',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -42,6 +43,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <MobileNav />
+            <PWAInstallPrompt />
           </RouteGuard>
         </AppProvider>
       </body>

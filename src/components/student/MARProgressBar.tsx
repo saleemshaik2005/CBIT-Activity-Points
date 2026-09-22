@@ -33,7 +33,7 @@ export const MARProgressBar: React.FC<Props> = ({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#385529] dark:text-gray-200 bg-[#eef5ec] dark:bg-[#22232a] px-3 py-1 rounded-full border border-[#385529]/20 dark:border-[#2e3039] flex items-center gap-1.5 font-serif">
               <Award className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-              {isLateralEntry ? 'Lateral Entry (Min 45 Pts, Max 75 Pts)' : '4-Year B.Tech (Min 60 Pts, Max 100 Pts)'}
+              {isLateralEntry ? 'Lateral Entry (Min 50 Pts Target, Max 75 Pts)' : '4-Year B.Tech (Min 60 Pts Target, Max 100 Pts)'}
             </span>
             {progress.isCompleted ? (
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
@@ -71,12 +71,18 @@ export const MARProgressBar: React.FC<Props> = ({
           <div className="flex flex-wrap items-center gap-2.5 pt-1">
             <div className="flex items-center space-x-1.5 text-xs text-[#385529] dark:text-emerald-400 bg-[#eef5ec] dark:bg-[#22232a] px-2.5 py-1 rounded-md border border-[#385529]/20 dark:border-[#2e3039] font-medium">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#385529] dark:text-emerald-400" />
-              <span><strong>{progress.totalApprovedPoints}</strong> Approved</span>
+              <span><strong>{progress.totalApprovedPoints}</strong> Confirmed Points (Sem 5)</span>
             </div>
+
+            <div className="flex items-center space-x-1.5 text-xs text-[#a16b15] dark:text-amber-300 bg-[#fbf5eb] dark:bg-amber-950/30 px-2.5 py-1 rounded-md border border-[#a16b15]/30 dark:border-amber-800/40 font-medium">
+              <Clock className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
+              <span>Sem 1–4 Activity Points: <strong>Yet to be confirmed by Mentor</strong></span>
+            </div>
+
             {progress.totalPendingPoints > 0 && (
-              <div className="flex items-center space-x-1.5 text-xs text-[#a16b15] dark:text-amber-400 bg-[#fbf5eb] dark:bg-[#22232a] px-2.5 py-1 rounded-md border border-[#a16b15]/30 dark:border-[#2e3039] font-medium">
-                <Clock className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-                <span><strong>{progress.totalPendingPoints}</strong> Pending Mentor</span>
+              <div className="flex items-center space-x-1.5 text-xs text-[#3b566e] dark:text-blue-300 bg-[#f0f4f8] dark:bg-[#22232a] px-2.5 py-1 rounded-md border border-[#3b566e]/20 dark:border-[#2e3039] font-medium">
+                <Clock className="w-3.5 h-3.5 text-[#3b566e] dark:text-blue-400" />
+                <span><strong>{progress.totalPendingPoints}</strong> Pending Mentor Review</span>
               </div>
             )}
             {progress.totalUncappedApprovedPoints > progress.totalApprovedPoints && (

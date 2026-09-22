@@ -1,12 +1,38 @@
 {
   "submissions": [
     {
+      "id": "c25e0d50-0db6-4f16-82bb-b9ead1597ec0",
+      "student_id": "9c448454-2a1a-4a57-9dea-bf1ba36f4d97",
+      "category_id": 1,
+      "activity_title": "Service Role Verified",
+      "status": "pending_mentor",
+      "claimed_points": 15,
+      "certificate_url": "https://test.com"
+    },
+    {
+      "id": "baf65ccc-1175-4465-9838-210ca4e73e0e",
+      "student_id": "9c448454-2a1a-4a57-9dea-bf1ba36f4d97",
+      "category_id": 1,
+      "activity_title": "Debug Check",
+      "status": "pending_mentor",
+      "claimed_points": 10,
+      "certificate_url": "https://test.com"
+    },
+    {
+      "id": "b8e434eb-6d55-44b4-aeb3-78a4f8c87f27",
+      "student_id": "9c448454-2a1a-4a57-9dea-bf1ba36f4d97",
+      "category_id": 1,
+      "activity_title": "Debug Check",
+      "status": "pending_mentor",
+      "claimed_points": 10,
+      "certificate_url": "https://test.com"
+    },
+    {
       "id": "sub-pending-001",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 1,
       "category": {
@@ -74,7 +100,7 @@
           "id": "msg-1",
           "submission_id": "sub-pending-001",
           "sender_id": "usr-mentor-001",
-          "sender_name": "Dr. K. Ramana (Mentor)",
+          "sender_name": "Dr. Anireddy Srilakshmi (Mentor)",
           "sender_role": "mentor",
           "text": "Please verify if your final proctored exam score sheet is also attached with the certificate.",
           "created_at": "2026-09-07T03:24:43.678Z"
@@ -96,9 +122,8 @@
       "id": "sub-pending-002",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 3,
       "category": {
@@ -164,7 +189,7 @@
           "id": "msg-t1",
           "submission_id": "sub-pending-002",
           "sender_id": "usr-mentor-001",
-          "sender_name": "Dr. K. Ramana (Mentor)",
+          "sender_name": "Dr. Anireddy Srilakshmi (Mentor)",
           "sender_role": "mentor",
           "text": "The AI forensics detector flagged a font inconsistency and compression boundary near the candidate name. Please re-check if you uploaded the original PDF certificate from IEEE.",
           "created_at": "2026-09-07T04:24:43.678Z"
@@ -177,9 +202,8 @@
       "id": "sub-001",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 1,
       "category": {
@@ -205,7 +229,7 @@
       "status": "approved",
       "mentor_remarks": "Verified with NPTEL score sheet. Excellent performance with Elite+Silver medal.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Dr. K. Ramana",
+      "approver_name": "Dr. Anireddy Srilakshmi",
       "approved_at": "2026-09-03T18:24:43.682Z",
       "created_at": "2026-09-03T06:24:43.682Z"
     },
@@ -213,9 +237,8 @@
       "id": "sub-002",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 3,
       "category": {
@@ -241,7 +264,7 @@
       "status": "approved",
       "mentor_remarks": "Confirmed by Sudhee 2024 Faculty Convener.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Dr. K. Ramana",
+      "approver_name": "Dr. Anireddy Srilakshmi",
       "approved_at": "2026-09-02T18:24:43.682Z",
       "created_at": "2026-09-02T06:24:43.682Z"
     },
@@ -249,9 +272,8 @@
       "id": "sub-003",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 14,
       "category": {
@@ -276,7 +298,7 @@
       "status": "approved",
       "mentor_remarks": "Blood donor certificate verified.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Prof. M. Srinivasa Rao",
+      "approver_name": "Ms. Talla Sai Sree",
       "approved_at": "2026-09-01T18:24:43.682Z",
       "created_at": "2026-09-01T06:24:43.682Z"
     },
@@ -284,9 +306,8 @@
       "id": "sub-004",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 22,
       "category": {
@@ -312,7 +333,7 @@
       "status": "approved",
       "mentor_remarks": "Active IEEE membership verified with membership number.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Prof. M. Srinivasa Rao",
+      "approver_name": "Ms. Talla Sai Sree",
       "approved_at": "2026-08-31T18:24:43.682Z",
       "created_at": "2026-08-31T06:24:43.682Z"
     },
@@ -320,9 +341,8 @@
       "id": "sub-005",
       "student_id": "usr-student-001",
       "student_name": "Shaik Saleem",
-      "student_roll_no": "160122771045",
+      "student_roll_no": "160124771129",
       "student_email": "saleemshaik2005@cbit.ac.in",
-      "student_phone": "+91 98765 43210",
       "student_section": "2",
       "category_id": 13,
       "category": {
@@ -348,7 +368,7 @@
       "status": "approved",
       "mentor_remarks": "Verified completion certificate and internship project evaluation report.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Dr. K. Ramana",
+      "approver_name": "Dr. Anireddy Srilakshmi",
       "approved_at": "2026-08-30T18:24:43.682Z",
       "created_at": "2026-08-30T06:24:43.682Z"
     },
@@ -358,7 +378,6 @@
       "student_name": "Sneha Reddy",
       "student_roll_no": "160122771046",
       "student_email": "sneha.reddy@cbit.ac.in",
-      "student_phone": "+91 98765 43211",
       "student_section": "2",
       "category_id": 1,
       "category": {
@@ -384,7 +403,7 @@
       "status": "approved",
       "mentor_remarks": "Verified certificate with 84% consolidated score.",
       "approved_by": "usr-mentor-001",
-      "approver_name": "Dr. K. Ramana",
+      "approver_name": "Dr. Anireddy Srilakshmi",
       "approved_at": "2026-08-29T18:24:43.682Z",
       "created_at": "2026-08-29T06:24:43.682Z"
     },
@@ -612,16 +631,14 @@
       "email": "saleemshaik2005@cbit.ac.in",
       "full_name": "Shaik Saleem",
       "role": "student",
-      "roll_number": "160122771045",
+      "roll_number": "160124771129",
       "department": "Artificial Intelligence and Data Science (AI&DS)",
       "section": "2",
       "batch_year": "2024-2028 (5th Semester)",
       "is_lateral_entry": false,
-      "mentor_name": "Dr. K. Ramana",
+      "mentor_name": "Dr. Anireddy Srilakshmi",
       "mentor_id": "usr-mentor-001",
-      "mentor_email": "kramana_aids@cbit.ac.in",
-      "mentor_phone": "+91 98480 12345",
-      "phone_number": "+91 98765 43210",
+      "mentor_email": "srilakshmia_aids@cbit.ac.in",
       "skills": [
         "Python",
         "TensorFlow",
@@ -636,33 +653,30 @@
     },
     "mentor": {
       "id": "usr-mentor-001",
-      "email": "kramana_aids@cbit.ac.in",
-      "full_name": "Dr. K. Ramana",
+      "email": "srilakshmia_aids@cbit.ac.in",
+      "full_name": "Dr. Anireddy Srilakshmi",
       "role": "mentor",
       "department": "Artificial Intelligence and Data Science (AI&DS)",
       "batch_year": "Faculty Counselor & Senior Mentor",
-      "phone_number": "+91 98480 12345",
       "is_lateral_entry": false
     },
     "class_teacher": {
       "id": "usr-teacher-001",
-      "email": "msrao_aids@cbit.ac.in",
-      "full_name": "Prof. M. Srinivasa Rao",
+      "email": "saisreetalla_aids@cbit.ac.in",
+      "full_name": "Ms. Talla Sai Sree",
       "role": "class_teacher",
       "department": "Artificial Intelligence and Data Science (AI&DS)",
       "section": "2",
       "batch_year": "Class Coordinator",
-      "phone_number": "+91 98480 12346",
       "is_lateral_entry": false
     },
     "hod": {
       "id": "usr-hod-001",
-      "email": "hod_aids@cbit.ac.in",
-      "full_name": "Dr. P. Suresh Kumar",
+      "email": "kradhika_aids@cbit.ac.in",
+      "full_name": "Dr. K. Radhika",
       "role": "hod",
       "department": "Artificial Intelligence and Data Science (AI&DS)",
       "batch_year": "Head of Department",
-      "phone_number": "+91 98480 12340",
       "is_lateral_entry": false
     },
     "admin": {
@@ -672,7 +686,6 @@
       "role": "admin",
       "department": "Academic Section",
       "batch_year": "Administration",
-      "phone_number": "+91 98480 12300",
       "is_lateral_entry": false
     }
   },
@@ -974,10 +987,10 @@
       "recipient_id": "usr-student-001",
       "type": "approval",
       "title": "Certificate Approved (+20 Points)",
-      "message": "Dr. K. Ramana approved your NPTEL Deep Learning Specialization Certificate.",
+      "message": "Dr. Anireddy Srilakshmi approved your NPTEL Deep Learning Specialization Certificate.",
       "link": "/student/history",
-      "is_read": false,
-      "sender_name": "Dr. K. Ramana",
+      "is_read": true,
+      "sender_name": "Dr. Anireddy Srilakshmi",
       "created_at": "2026-09-07T04:24:43.682Z"
     },
     {
@@ -988,7 +1001,7 @@
       "title": "New Certificate In Queue",
       "message": "Shaik Saleem submitted NPTEL Advanced LLMs & GenAI Specialization for review.",
       "link": "/mentor",
-      "is_read": false,
+      "is_read": true,
       "sender_name": "Shaik Saleem",
       "created_at": "2026-09-07T01:24:43.682Z"
     },
@@ -1004,5 +1017,5 @@
       "created_at": "2026-09-06T06:24:43.682Z"
     }
   ],
-  "lastUpdated": "2026-09-07T06:24:43.683Z"
+  "lastUpdated": "2026-09-22T21:44:11.614Z"
 }

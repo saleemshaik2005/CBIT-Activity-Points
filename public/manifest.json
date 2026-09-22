@@ -1,11 +1,11 @@
 {
-  "name": "CBIT Activity Points (MAR)",
-  "short_name": "CBIT MAR",
-  "description": "Chaitanya Bharathi Institute of Technology - Mandatory Additional Requirements (MAR) Activity Points Automation & Intelligence System",
+  "name": "CBIT Student Portfolio Management System",
+  "short_name": "CBIT SPMS",
+  "description": "Chaitanya Bharathi Institute of Technology - Student Portfolio & MAR Activity Points Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0066cc",
+  "theme_color": "#385529",
   "orientation": "portrait-primary",
   "icons": [
     {
