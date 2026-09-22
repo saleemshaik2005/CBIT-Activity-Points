@@ -226,7 +226,7 @@ function LoginFormContent() {
               <span>Login Instructions for Class</span>
             </div>
             <p className="text-[10.5px] text-gray-600 dark:text-gray-300 leading-relaxed">
-              <strong>Students:</strong> Log in with Google above or enter Roll Number &amp; initial formula <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono text-[10px]">Cbit@&lt;last3digits&gt;</code> (e.g. <span className="font-semibold text-[#a16b15]">Cbit@071</span>).
+              <strong>Students:</strong> Log in with Google above or enter Roll Number &amp; initial formula <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono text-[10px]">Cbit@&lt;last3digits&gt;</code> (e.g. <span className="font-semibold text-[#a16b15]">Cbit@310</span>).
             </p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400">
               <strong>Faculty:</strong> Log in with institutional email &amp; issued faculty password.
@@ -264,12 +264,12 @@ function LoginFormContent() {
 
             <button
               type="button"
-              onClick={() => handleQuickUser('160124771071', 'Cbit@071', 'student')}
+              onClick={() => handleQuickUser('160124771310', 'Cbit@310', 'student')}
               className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
             >
               <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Shraddha (071)</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Mentor: Dr. Shobarani Salvadi</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Aslam (310)</span>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">Mentor: Dr. Anireddy Srilakshmi</span>
             </button>
 
             <button
