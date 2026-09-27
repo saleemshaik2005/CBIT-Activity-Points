@@ -147,32 +147,109 @@ async function prepareOptimizedFileAndScanQR(
 }
 
 /**
- * Runs client-side Pretrained LSTM Neural OCR (Tesseract.js) on an image file
- * so OCR works seamlessly both online and offline.
+ * Runs client-side Pretrained LSTM Neural OCR (Tesseract.js) on a contrast-enhanced canvas
+ * with explicit CDN worker/core paths so OCR works reliably on mobile & desktop browsers.
  */
 async function runClientTesseractOCR(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) return '';
+  let objectUrl = '';
   try {
-    const Tesseract = await import('tesseract.js');
-    const { data } = await Tesseract.recognize(file, 'eng');
+    objectUrl = URL.createObjectURL(file);
+    const enhancedBlob: Blob = await new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const targetW = Math.min(1800, Math.max(1200, img.naturalWidth || 1400));
+          const scale = targetW / Math.max(1, img.naturalWidth || 1400);
+          const targetH = Math.round((img.naturalHeight || 1000) * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.filter = 'grayscale(100%) contrast(135%)';
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+            canvas.toBlob((b) => resolve(b || file), 'image/png');
+          } else {
+            resolve(file);
+          }
+        } catch {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+      img.src = objectUrl;
+    });
+
+    const TesseractMod = await import('tesseract.js');
+    const Tesseract = (TesseractMod as any).default || TesseractMod;
+    const worker = await Tesseract.createWorker('eng', 1, {
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',
+      langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+    });
+    const { data } = await worker.recognize(enhancedBlob);
+    await worker.terminate();
+    URL.revokeObjectURL(objectUrl);
     return (data?.text || '').trim();
   } catch (err) {
-    console.warn('[Client OCR] Tesseract warning:', err);
-    return '';
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    try {
+      const TesseractMod = await import('tesseract.js');
+      const Tesseract = (TesseractMod as any).default || TesseractMod;
+      const { data } = await Tesseract.recognize(file, 'eng');
+      return (data?.text || '').trim();
+    } catch (innerErr) {
+      console.warn('[Client OCR] Tesseract fallback warning:', innerErr);
+      return '';
+    }
   }
 }
 
 /**
  * Offline / Local Browser Certificate Extraction Pipeline (when device is offline)
+ * Strictly enforces the Document vs. Non-Document check and extracts only real certificate text.
  */
 function buildOfflineCertificateExtraction(
   ocrText: string,
   qrPayloads: string[],
   studentName: string,
-  fileName: string
+  _fileName: string
 ): AIExtractionResult {
-  const cleanText = (ocrText || '').replace(/\r/g, '\n').trim();
+  const cleanText = (ocrText || '').replace(/\r/g, '\n').replace(/[ \t]+/g, ' ').trim();
+  const words = cleanText
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => /^[a-zA-Z]{3,}$/.test(w));
   const lower = cleanText.toLowerCase();
+
+  const certKeyTerms = [
+    'certificate', 'certify', 'certified', 'awarded', 'presented', 'participation',
+    'participated', 'completion', 'completed', 'achievement', 'appreciation', 'merit',
+    'excellence', 'winner', 'runner', 'organizer', 'coordinator', 'institute', 'university',
+    'college', 'department', 'engineering', 'technology', 'cbit', 'chaitanya', 'workshop',
+    'hackathon', 'conference', 'seminar', 'course', 'internship', 'nptel', 'swayam', 'coursera',
+    'ieee', 'acm', 'infosys', 'cisco', 'grade', 'score', 'roll', 'student', 'signature', 'fest',
+    'sudhee', 'shruthi', 'enchante',
+  ];
+  const matchedTerms = certKeyTerms.filter((t) => lower.includes(t));
+
+  if (words.length < 6 || (matchedTerms.length < 2 && qrPayloads.length === 0)) {
+    return {
+      isDocument: false,
+      documentRejectionReason:
+        'Non-Document Image Blocked: This photo does not contain recognizable certificate text, institutional headers, or academic credentials. Selfies and non-document images are strictly blocked.',
+      certificateTitle: '',
+      recipientName: '',
+      issuingOrganization: '',
+      completionDate: '',
+      matchedCategorySno: 2,
+      matchedCategoryName: 'Rejected Non-Document',
+      suggestedPoints: 0,
+      confidenceScore: 0,
+      summary: 'Rejected non-document image.',
+    };
+  }
 
   const urlRegex = /https?:\/\/[^\s"'<>)\]]+/gi;
   const visibleUrls = Array.from(new Set(cleanText.match(urlRegex) || []));
@@ -182,18 +259,51 @@ function buildOfflineCertificateExtraction(
     if (m) m.forEach((u) => qrUrls.push(u));
   }
 
-  let certTitle = 'Certificate of Participation';
+  // Extract Recipient Name strictly from OCR text
+  let recipientName = '';
+  const nameMatch = cleanText.match(
+    /(?:presented\s+to|certify\s+that|awarded\s+to|conferred\s+upon|Mr\.|Ms\.|Miss)\s*[:\-]?\s*\n?\s*([A-Z][A-Za-z.\s']{2,45}?)(?=\s*\n|\s+for\s+|\s+has\s+|\s+in\s+|\s+of\s+|$)/i
+  );
+  if (nameMatch && nameMatch[1]) {
+    recipientName = nameMatch[1].replace(/\s+/g, ' ').trim();
+  }
+
+  // Extract Event / Course Title strictly from OCR text
+  let certTitle = '';
   const eventMatch = cleanText.match(
-    /(?:for\s+attending\s+the\s+event|event\s+titled|workshop\s+on|participated\s+in)\s+([A-Z0-9][A-Za-z0-9\s:&,\-]{2,50})/i
+    /(?:for\s+attending\s+the\s+event|event\s+titled|workshop\s+on|course\s+on|participated\s+in)\s*["']?([A-Z0-9][A-Za-z0-9\s:&,\-]{2,55}?)["']?(?=\s+organized|\s+conducted|\s+held|\s+on\s+\d|\n|$)/i
   );
   if (eventMatch && eventMatch[1]) {
     certTitle = eventMatch[1].trim();
-  } else if (fileName && !/^img|camera|photo|image/i.test(fileName)) {
-    certTitle = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+  } else {
+    const headerMatch = cleanText.match(
+      /\b(CERTIFICATE\s+OF\s+(?:PARTICIPATION|MERIT|APPRECIATION|COMPLETION|ACHIEVEMENT|EXCELLENCE))\b/i
+    );
+    if (headerMatch && headerMatch[1]) {
+      certTitle = headerMatch[1].replace(/\b\w/g, (c) => c.toUpperCase());
+    }
   }
 
-  let issuer = 'Chaitanya Bharathi Institute of Technology (CBIT)';
-  if (lower.includes('nptel') || lower.includes('swayam')) {
+  // Extract Date strictly from OCR text
+  let extractedDate = '';
+  const dmy = cleanText.match(/\b(0?[1-9]|[12]\d|3[01])[-/.](0?[1-9]|1[0-2])[-/.](20\d{2})\b/);
+  const textDate = cleanText.match(
+    /\b(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,\s]+(20\d{2})\b/i
+  );
+  if (textDate) {
+    const mMap: Record<string, string> = {
+      jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+      jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    };
+    extractedDate = `${textDate[3]}-${mMap[textDate[2].toLowerCase().slice(0, 3)] || '01'}-${textDate[1].padStart(2, '0')}`;
+  } else if (dmy) {
+    extractedDate = `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+  }
+
+  let issuer = '';
+  if (lower.includes('chaitanya bharathi') || /\bcbit\b/.test(lower)) {
+    issuer = 'Chaitanya Bharathi Institute of Technology (CBIT)';
+  } else if (lower.includes('nptel') || lower.includes('swayam')) {
     issuer = 'NPTEL / SWAYAM (Ministry of Education)';
   } else if (lower.includes('coursera')) {
     issuer = 'Coursera';
@@ -209,9 +319,9 @@ function buildOfflineCertificateExtraction(
   return {
     isDocument: true,
     certificateTitle: certTitle,
-    recipientName: studentName || 'Verified Student',
+    recipientName,
     issuingOrganization: issuer,
-    completionDate: new Date().toISOString().split('T')[0],
+    completionDate: extractedDate,
     credentialId: qrPayloads[0] && !qrPayloads[0].startsWith('http') ? qrPayloads[0] : undefined,
     verificationUrl: qrUrls[0] || visibleUrls[0] || undefined,
     qrCodes: qrPayloads,
@@ -235,7 +345,7 @@ function buildOfflineCertificateExtraction(
       statusLabel: 'No obvious anomaly detected',
       findings: [
         '1. Document & Pixel Structure: Processed locally via on-device canvas & compression analyzer.',
-        `2. Recipient Identity Cross-Check: Verified against authenticated student profile (${studentName}).`,
+        `2. Recipient Identity Cross-Check: Extracted recipient "${recipientName || 'Pending manual entry'}" compared against student "${studentName}".`,
         `3. QR & Verification Link Status: ${qrStatus}.`,
         '4. Assessment Summary: No obvious anomaly detected.',
       ],
@@ -402,12 +512,12 @@ export const CertificateUploader: React.FC = () => {
       status: 'analyzing',
       progressText: 'Compressing image & decoding QR codes...',
       aiData: null,
-      editedRecipient: currentUser.full_name || '',
-      editedTitle: file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '),
+      editedRecipient: '',
+      editedTitle: '',
       editedCategorySno: 2,
       editedCategoryId: 4,
-      editedOrganization: 'Chaitanya Bharathi Institute of Technology (CBIT)',
-      editedDate: new Date().toISOString().split('T')[0],
+      editedOrganization: '',
+      editedDate: '',
       editedSemester: 5,
       editedPoints: 3,
       editedCredentialId: '',
@@ -456,13 +566,13 @@ export const CertificateUploader: React.FC = () => {
                   ...q,
                   previewUrl,
                   fileSize: finalCompressedBytes,
-                  progressText: 'Running Pretrained OCR, QR Decoding & ELA Pixel Forensics...',
+                  progressText: 'Running Pretrained LSTM OCR, QR Decoding & 64-Block ELA Forensics...',
                 }
               : q
           )
         );
 
-        // 3. Run client-side Tesseract OCR for images to assist fast extraction & offline mode
+        // 3. Run client-side Tesseract OCR on contrast-enhanced canvas
         const clientOcrText = await runClientTesseractOCR(optimizedFile);
 
         // 4. Call Non-Gemini Certificate Intelligence Pipeline (/api/ai/analyze)
@@ -493,7 +603,7 @@ export const CertificateUploader: React.FC = () => {
                 rejectionMessage =
                   json.error ||
                   json.data?.documentRejectionReason ||
-                  'The uploaded file is not recognized as an official certificate or document proof.';
+                  'Non-Document Image Blocked: The uploaded file is not recognized as an official certificate or document proof.';
               } else if (json.data) {
                 extractionResult = json.data;
               }
@@ -505,12 +615,20 @@ export const CertificateUploader: React.FC = () => {
 
         // 5. If offline or server unreachable, use local browser OCR + jsQR pipeline
         if (!isRejected && !extractionResult) {
-          extractionResult = buildOfflineCertificateExtraction(
+          const offlineResult = buildOfflineCertificateExtraction(
             clientOcrText,
             qrPayloads,
             currentUser.full_name,
             item.fileName
           );
+          if (offlineResult.isDocument === false) {
+            isRejected = true;
+            rejectionMessage =
+              offlineResult.documentRejectionReason ||
+              'Non-Document Image Blocked: Selfies and non-certificate images are not permitted.';
+          } else {
+            extractionResult = offlineResult;
+          }
         }
 
         if (isRejected) {
@@ -539,26 +657,12 @@ export const CertificateUploader: React.FC = () => {
                     ...q,
                     status: 'valid',
                     aiData: extractionResult,
-                    editedRecipient:
-                      extractionResult?.recipientName &&
-                      !extractionResult.recipientName.includes('Uncertain')
-                        ? extractionResult.recipientName
-                        : currentUser.full_name,
-                    editedTitle:
-                      extractionResult?.certificateTitle &&
-                      !extractionResult.certificateTitle.includes('Unavailable')
-                        ? extractionResult.certificateTitle
-                        : q.editedTitle,
+                    editedRecipient: extractionResult?.recipientName || '',
+                    editedTitle: extractionResult?.certificateTitle || '',
                     editedCategorySno: cat.sno,
                     editedCategoryId: cat.id,
-                    editedOrganization:
-                      extractionResult?.issuingOrganization &&
-                      !extractionResult.issuingOrganization.includes('Unavailable')
-                        ? extractionResult.issuingOrganization
-                        : 'Chaitanya Bharathi Institute of Technology (CBIT)',
-                    editedDate:
-                      extractionResult?.completionDate ||
-                      new Date().toISOString().split('T')[0],
+                    editedOrganization: extractionResult?.issuingOrganization || '',
+                    editedDate: extractionResult?.completionDate || '',
                     editedPoints: extractionResult?.suggestedPoints || cat.default_points,
                     editedCredentialId: extractionResult?.credentialId || '',
                     editedVerificationUrl: extractionResult?.verificationUrl || '',
@@ -632,6 +736,14 @@ export const CertificateUploader: React.FC = () => {
 
   const handleSubmitSingle = (item: BatchUploadItem) => {
     if (item.status !== 'valid') return;
+    if (!item.editedTitle.trim()) {
+      alert('Please verify or enter the Activity / Event Title extracted from the certificate before submitting.');
+      return;
+    }
+    if (!item.editedDate.trim()) {
+      alert('Please select or confirm the Event / Completion Date from the certificate before submitting.');
+      return;
+    }
 
     addSubmission({
       student_id: currentUser.id,
@@ -640,9 +752,9 @@ export const CertificateUploader: React.FC = () => {
       student_email: currentUser.email,
       student_section: currentUser.section,
       category_id: item.editedCategoryId,
-      activity_title: item.editedTitle,
-      issuing_organization: item.editedOrganization,
-      event_date: item.editedDate,
+      activity_title: item.editedTitle.trim(),
+      issuing_organization: item.editedOrganization.trim() || 'Chaitanya Bharathi Institute of Technology (CBIT)',
+      event_date: item.editedDate.trim(),
       semester: item.editedSemester,
       academic_year: settings.academic_year || '2025-2026',
       claimed_points: Number(item.editedPoints),
@@ -1159,6 +1271,7 @@ export const CertificateUploader: React.FC = () => {
                               </label>
                               <input
                                 type="text"
+                                placeholder="Extracted recipient from certificate"
                                 value={item.editedRecipient}
                                 onChange={(e) =>
                                   updateItemField(item.id, 'editedRecipient', e.target.value)
@@ -1173,6 +1286,7 @@ export const CertificateUploader: React.FC = () => {
                               </label>
                               <input
                                 type="text"
+                                placeholder="Extracted event / course title from document"
                                 value={item.editedTitle}
                                 onChange={(e) =>
                                   updateItemField(item.id, 'editedTitle', e.target.value)
@@ -1203,7 +1317,7 @@ export const CertificateUploader: React.FC = () => {
                               </select>
                             </div>
 
-                            {matchingSubtypes.length > 1 ? (
+                            {matchingSubtypes.length > 1 && (
                               <div>
                                 <label className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
                                   Activity Sub-Type *
@@ -1222,25 +1336,26 @@ export const CertificateUploader: React.FC = () => {
                                   ))}
                                 </select>
                               </div>
-                            ) : (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
-                                  Issuing Organization *
-                                </label>
-                                <input
-                                  type="text"
-                                  value={item.editedOrganization}
-                                  onChange={(e) =>
-                                    updateItemField(item.id, 'editedOrganization', e.target.value)
-                                  }
-                                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-gray-100 font-medium focus:ring-2 focus:ring-[#385529] focus:outline-none"
-                                />
-                              </div>
                             )}
 
                             <div>
                               <label className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
-                                Completion Date *
+                                Issuing Organization *
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="Extracted issuing institute / organization"
+                                value={item.editedOrganization}
+                                onChange={(e) =>
+                                  updateItemField(item.id, 'editedOrganization', e.target.value)
+                                }
+                                className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-gray-100 font-medium focus:ring-2 focus:ring-[#385529] focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                                Event / Completion Date *
                               </label>
                               <input
                                 type="date"

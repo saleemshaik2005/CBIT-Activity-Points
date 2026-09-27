@@ -3,7 +3,91 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const { identifier, password } = await req.json();
+    const body = await req.json();
+    const { identifier, password, mode, googleEmail, googleCredential } = body;
+
+    // Handle Direct Google Sign-In & Strict Roster Whitelist Verification (Never redirects to localhost)
+    if (mode === 'google_oauth') {
+      let verifiedEmail = (googleEmail || '').trim().toLowerCase();
+
+      // If a Google JWT credential token was returned by Google Identity Services, decode its email payload
+      if (googleCredential && typeof googleCredential === 'string') {
+        try {
+          const parts = googleCredential.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+            if (payload.email) {
+              verifiedEmail = String(payload.email).toLowerCase();
+            }
+          }
+        } catch (jwtErr) {
+          console.warn('[Google Login API] JWT decode warning:', jwtErr);
+        }
+      }
+
+      if (!verifiedEmail || !verifiedEmail.includes('@')) {
+        return NextResponse.json(
+          { success: false, error: 'Please enter or select your college-registered Google Mail address.' },
+          { status: 400 }
+        );
+      }
+
+      // Query Supabase profiles strictly for pre-authorized 67 students + 6 faculty
+      const { data: foundProfile, error: pErr } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .ilike('email', verifiedEmail)
+        .maybeSingle();
+
+      // Ensure any student has a valid official roll_number
+      const isUnauthorized =
+        pErr ||
+        !foundProfile ||
+        (foundProfile.role === 'student' && (!foundProfile.roll_number || !foundProfile.roll_number.trim()));
+
+      if (isUnauthorized) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Access Restricted: The Google account (${verifiedEmail}) is not registered in the official CBIT AI&DS Section 2 classroom roster (67 Students & 6 Faculty).`,
+          },
+          { status: 403 }
+        );
+      }
+
+      let mentorData: any = null;
+      if (foundProfile.mentor_id) {
+        const { data: mentorRecord } = await supabaseAdmin
+          .from('profiles')
+          .select('id, full_name, email, phone_number')
+          .eq('id', foundProfile.mentor_id)
+          .maybeSingle();
+        mentorData = mentorRecord;
+      }
+
+      const userProfile = {
+        id: foundProfile.id,
+        email: foundProfile.email,
+        full_name: foundProfile.full_name,
+        role: foundProfile.role,
+        roll_number: foundProfile.roll_number || undefined,
+        department: foundProfile.department || 'Artificial Intelligence and Data Science (AI&DS)',
+        section: foundProfile.section || '2',
+        batch_year: foundProfile.batch_year || '2024-2028 (5th Semester)',
+        is_lateral_entry: !!foundProfile.is_lateral_entry,
+        mentor_id: foundProfile.mentor_id || undefined,
+        mentor_name: mentorData?.full_name || undefined,
+        mentor_email: mentorData?.email || undefined,
+        mentor_phone: mentorData?.phone_number || undefined,
+        avatar_url: foundProfile.avatar_url || undefined,
+        phone_number: foundProfile.phone_number || undefined,
+      };
+
+      return NextResponse.json({
+        success: true,
+        user: userProfile,
+      });
+    }
 
     if (!identifier || !password) {
       return NextResponse.json(

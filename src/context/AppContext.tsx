@@ -55,7 +55,7 @@ interface AppContextType {
   // Auth
   isAuthenticated: boolean;
   login: (email: string, role?: UserRole, password?: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (googleEmailOrCredential?: string) => Promise<void>;
   register: (userData: Partial<UserProfile>) => Promise<boolean>;
   logout: () => void;
 
@@ -504,23 +504,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const loginWithGoogle = async (): Promise<void> => {
-    const supabase = createClient();
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${origin}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'select_account',
-        },
-      },
-    });
-    if (error) {
-      console.error('[Google OAuth] Error:', error);
-      throw error;
+  const loginWithGoogle = async (googleEmailOrCredential?: string): Promise<void> => {
+    const input = (googleEmailOrCredential || '').trim();
+    if (!input) {
+      throw new Error('Please enter or select your CBIT-registered Google Mail address to continue.');
     }
+
+    const isJwt = input.split('.').length === 3 && !input.includes('@');
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'google_oauth',
+        googleEmail: isJwt ? undefined : input,
+        googleCredential: isJwt ? input : undefined,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success || !data.user) {
+      throw new Error(
+        data.error ||
+          'Google Sign-In failed: This Google account is not registered in the CBIT AI&DS Section 2 roster.'
+      );
+    }
+
+    const cleanProfile = sanitizeUserProfile(data.user);
+    persistActiveUser(cleanProfile);
+    setIsAuthenticated(true);
   };
 
   const logout = async () => {

@@ -500,7 +500,243 @@ async function runVisualAnomalyAnalysis(
 }
 
 /**
- * Stage 3: Pretrained OCR & PDF Document Text Extraction
+ * Comprehensive dictionary of institutional, certificate, and academic credential keywords
+ * used to distinguish real certificates/documents from selfies, portraits, or random photos.
+ */
+const CERTIFICATE_DOMAIN_KEYWORDS = [
+  'certificate',
+  'certify',
+  'certified',
+  'certifies',
+  'certification',
+  'awarded',
+  'presented',
+  'conferred',
+  'participation',
+  'participated',
+  'participating',
+  'completion',
+  'completed',
+  'completing',
+  'achievement',
+  'appreciation',
+  'merit',
+  'excellence',
+  'recognition',
+  'recognized',
+  'winner',
+  'runner',
+  'first',
+  'second',
+  'third',
+  'place',
+  'prize',
+  'rank',
+  'position',
+  'organizer',
+  'organizing',
+  'organized',
+  'coordinator',
+  'coordinating',
+  'volunteer',
+  'volunteered',
+  'institute',
+  'institution',
+  'university',
+  'college',
+  'academy',
+  'school',
+  'department',
+  'faculty',
+  'engineering',
+  'technology',
+  'autonomous',
+  'chaitanya',
+  'bharathi',
+  'cbit',
+  'hyderabad',
+  'gandipet',
+  'workshop',
+  'hackathon',
+  'symposium',
+  'conference',
+  'seminar',
+  'webinar',
+  'bootcamp',
+  'conclave',
+  'summit',
+  'course',
+  'training',
+  'internship',
+  'intern',
+  'project',
+  'research',
+  'paper',
+  'journal',
+  'publication',
+  'published',
+  'nptel',
+  'swayam',
+  'coursera',
+  'udemy',
+  'edx',
+  'udacity',
+  'linkedin',
+  'kaggle',
+  'hackerrank',
+  'leetcode',
+  'codechef',
+  'ieee',
+  'acm',
+  'csi',
+  'iste',
+  'infosys',
+  'springboard',
+  'cisco',
+  'aws',
+  'microsoft',
+  'google',
+  'ibm',
+  'oracle',
+  'meta',
+  'grade',
+  'score',
+  'marks',
+  'percentage',
+  'credits',
+  'elite',
+  'silver',
+  'gold',
+  'hours',
+  'weeks',
+  'days',
+  'months',
+  'duration',
+  'semester',
+  'academic',
+  'roll',
+  'student',
+  'candidate',
+  'branch',
+  'section',
+  'btech',
+  'be',
+  'director',
+  'principal',
+  'dean',
+  'hod',
+  'head',
+  'president',
+  'secretary',
+  'convenor',
+  'convener',
+  'chairman',
+  'signature',
+  'signatory',
+  'authorized',
+  'date',
+  'issued',
+  'credential',
+  'verify',
+  'verified',
+  'verification',
+  'fest',
+  'cultural',
+  'technical',
+  'techfest',
+  'sudhee',
+  'shruthi',
+  'enchante',
+  'communicando',
+  'chaitanyam',
+  'sports',
+  'tournament',
+  'championship',
+  'athletic',
+  'competition',
+  'contest',
+  'quiz',
+  'coding',
+  'olympiad',
+  'nss',
+  'ncc',
+  'blood',
+  'donation',
+  'service',
+  'social',
+  'club',
+  'chapter',
+];
+
+/**
+ * Evaluates whether an uploaded image/PDF is an actual Certificate / Academic Document
+ * vs. a non-document image (selfie, personal photo, room scene, object, meme).
+ */
+export function evaluateIsCertificateDocument(
+  rawText: string,
+  qrSummary: QRScanSummary
+): {
+  isDocument: boolean;
+  wordCount: number;
+  matchedKeywords: string[];
+  rejectionReason?: string;
+} {
+  const clean = (rawText || '').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const words = clean.split(' ').filter((w) => /^[a-zA-Z]{3,}$/.test(w));
+  const lowerWords = new Set(words.map((w) => w.toLowerCase()));
+  const lowerFull = clean.toLowerCase();
+
+  const matchedKeywords = CERTIFICATE_DOMAIN_KEYWORDS.filter(
+    (kw) => lowerWords.has(kw) || (kw.length >= 5 && lowerFull.includes(kw))
+  );
+
+  // If a valid institutional/verification QR code was decoded AND at least 3 words exist, accept
+  if (qrSummary.qrCodes.length > 0 && (matchedKeywords.length >= 1 || words.length >= 5)) {
+    return {
+      isDocument: true,
+      wordCount: words.length,
+      matchedKeywords,
+    };
+  }
+
+  // Strict Non-Document Gate:
+  // A real certificate or official document proof has at least 6+ recognizable alphabetic words
+  // AND at least 2+ certificate/institutional/academic keywords (or 1 strong keyword like 'certificate'/'certify'/'nptel' with 5+ words).
+  const hasCoreCertWord =
+    lowerFull.includes('certif') ||
+    lowerFull.includes('awarded') ||
+    lowerFull.includes('presented') ||
+    lowerFull.includes('participat') ||
+    lowerFull.includes('nptel') ||
+    lowerFull.includes('coursera') ||
+    lowerFull.includes('cbit') ||
+    lowerFull.includes('chaitanya bharathi') ||
+    lowerFull.includes('institute of technology');
+
+  if (words.length < 6 || (matchedKeywords.length < 2 && !hasCoreCertWord)) {
+    const snippet = words.slice(0, 6).join(' ');
+    return {
+      isDocument: false,
+      wordCount: words.length,
+      matchedKeywords,
+      rejectionReason:
+        words.length <= 4
+          ? `Non-Document Image Blocked: This photo appears to be a personal photo, selfie, or non-document image (${
+              snippet ? `only detected text: "${snippet}"` : 'no certificate text detected'
+            }). Only official certificates and academic document proofs are permitted.`
+          : `Non-Certificate Image Blocked: No institutional headers, certificate clauses ("certify that", "presented to", "participated"), or academic credentials were detected in this image. Please upload a valid certificate document.`,
+    };
+  }
+
+  return {
+    isDocument: true,
+    wordCount: words.length,
+    matchedKeywords,
+  };
+}
+
+/**
+ * Stage 3: Pretrained Multi-Pass OCR & PDF Document Text Extraction
  */
 async function extractCertificateText(
   buffer: Buffer,
@@ -528,55 +764,206 @@ async function extractCertificateText(
     }
   }
 
-  // 2. If client already ran Tesseract OCR worker and extracted substantial text, use it
-  if (clientOcrText && clientOcrText.trim().length > 20) {
-    return {
-      text: clientOcrText.trim(),
-      pageCount: 1,
-      source: 'Pretrained LSTM Neural OCR Engine',
-    };
+  const collectedTexts: string[] = [];
+  if (clientOcrText && clientOcrText.trim().length > 5) {
+    collectedTexts.push(clientOcrText.trim());
   }
 
-  // 3. Run Server-Side Pretrained Tesseract.js LSTM Neural OCR on sharp-preprocessed image
-  if (!isPdf) {
+  // 2. Always run Server-Side Pretrained Tesseract.js LSTM Neural OCR on sharp-enhanced image
+  // if clientOcrText is missing or doesn't yet contain rich certificate text
+  const clientHasCertKeywords =
+    clientOcrText &&
+    CERTIFICATE_DOMAIN_KEYWORDS.filter((k) => clientOcrText.toLowerCase().includes(k)).length >= 3;
+
+  if (!isPdf && !clientHasCertKeywords) {
     try {
-      const preprocessedBuffer = await sharp(buffer)
+      const TesseractMod = await import('tesseract.js');
+      const Tesseract = (TesseractMod as any).default || TesseractMod;
+
+      // Pass A: High-resolution normalized grayscale + sharpened text strokes
+      const passABuffer = await sharp(buffer)
         .rotate()
-        .resize({ width: 1500, withoutEnlargement: false })
+        .resize({ width: 1800, withoutEnlargement: false })
         .grayscale()
         .normalise()
-        .sharpen()
+        .sharpen({ sigma: 1.2 })
         .png()
         .toBuffer();
 
-      const Tesseract = await import('tesseract.js');
-      const { data } = await Tesseract.recognize(preprocessedBuffer, 'eng', {
-        cachePath: '/tmp',
-      });
-      if (data?.text && data.text.trim().length > 10) {
-        return {
-          text: data.text.trim(),
-          pageCount: 1,
-          source: 'Pretrained Tesseract LSTM OCR',
-        };
+      const resA = await Tesseract.recognize(passABuffer, 'eng');
+      if (resA?.data?.text && resA.data.text.trim().length > 5) {
+        collectedTexts.push(resA.data.text.trim());
+      }
+
+      // If Pass A yielded sparse text, run Pass B with contrast boost for decorative/light certificates
+      const combinedSoFar = collectedTexts.join('\n');
+      if (combinedSoFar.split(/\s+/).length < 15) {
+        const passBBuffer = await sharp(buffer)
+          .rotate()
+          .resize({ width: 1800, withoutEnlargement: false })
+          .grayscale()
+          .linear(1.45, -35)
+          .sharpen({ sigma: 1.5 })
+          .png()
+          .toBuffer();
+
+        const resB = await Tesseract.recognize(passBBuffer, 'eng');
+        if (resB?.data?.text && resB.data.text.trim().length > 5) {
+          collectedTexts.push(resB.data.text.trim());
+        }
       }
     } catch (ocrErr) {
       console.warn('[CertificateIntelligence] Server Tesseract OCR warning:', ocrErr);
     }
   }
 
+  const mergedText = Array.from(new Set(collectedTexts)).join('\n').trim();
+
   return {
-    text: (clientOcrText || '').trim(),
+    text: mergedText,
     pageCount: 1,
-    source: 'Visual & Structural Document Parser',
+    source:
+      mergedText.length > 0
+        ? 'Pretrained Tesseract LSTM Neural OCR Engine'
+        : 'Visual & Structural Document Scanner',
   };
 }
 
 /**
- * Stage 4: Deterministic Field Parser & CBIT 24 MAR Category Classifier
- * Strictly extracts only what is present in the text/QR payload without inventing missing fields.
+ * Extracts completion / event date strictly from certificate OCR text (YYYY-MM-DD).
+ * Handles all Indian & international date formats, date ranges, and common OCR digit typos.
+ * NEVER falls back to today's date or filename timestamps.
  */
-function parseStructuredFieldsFromText(
+export function extractCompletionDateFromText(rawText: string): string {
+  if (!rawText || rawText.trim().length < 4) return '';
+
+  // Fix common OCR digit substitutions inside date-like tokens (e.g. "2O26" -> "2026", "2O25" -> "2025")
+  const ocrNormalized = rawText
+    .replace(/\b2[OQo]2([0-9])\b/g, '202$1')
+    .replace(/\b([0-3])[OQo]([-/.])([01][0-9])([-/.])(202[0-9])\b/g, '$10$2$3$4$5')
+    .replace(/\b([Il])([0-9])\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/gi, '1$2 $3');
+
+  const monthMap: Record<string, string> = {
+    jan: '01', january: '01',
+    feb: '02', february: '02',
+    mar: '03', march: '03',
+    apr: '04', april: '04',
+    may: '05',
+    jun: '06', june: '06',
+    jul: '07', july: '07',
+    aug: '08', august: '08',
+    sep: '09', sept: '09', september: '09',
+    oct: '10', october: '10',
+    nov: '11', november: '11',
+    dec: '12', december: '12',
+  };
+
+  const monthPattern =
+    '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)';
+
+  // 1. Date Range: "24th to 27th January 2026" or "15 - 17 March, 2025" -> use end date
+  const rangeDayMonthYear = ocrNormalized.match(
+    new RegExp(
+      `\\b(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:to|-|–|and|&)\\s*(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:of\\s+)?(${monthPattern})[.,\\s\\-]+(20\\d{2})\\b`,
+      'i'
+    )
+  );
+  if (rangeDayMonthYear) {
+    const day = rangeDayMonthYear[2].padStart(2, '0');
+    const monKey = rangeDayMonthYear[3].toLowerCase().slice(0, 3);
+    const mon = monthMap[monKey] || '01';
+    const yr = rangeDayMonthYear[4];
+    return `${yr}-${mon}-${day}`;
+  }
+
+  // 2. Standard "27th January 2026", "27 January, 2026", "27-Jan-2026", "27th of Jan 2026"
+  const dayMonthYear = ocrNormalized.match(
+    new RegExp(
+      `\\b(\\d{1,2})(?:st|nd|rd|th)?[\\s\\-.,/]+(?:of\\s+)?(${monthPattern})[\\s\\-.,/]+(20\\d{2})\\b`,
+      'i'
+    )
+  );
+  if (dayMonthYear) {
+    const dayNum = parseInt(dayMonthYear[1], 10);
+    if (dayNum >= 1 && dayNum <= 31) {
+      const day = String(dayNum).padStart(2, '0');
+      const monKey = dayMonthYear[2].toLowerCase().slice(0, 3);
+      const mon = monthMap[monKey] || '01';
+      const yr = dayMonthYear[3];
+      return `${yr}-${mon}-${day}`;
+    }
+  }
+
+  // 3. "January 27, 2026" or "Jan 27th 2026"
+  const monthDayYear = ocrNormalized.match(
+    new RegExp(
+      `\\b(${monthPattern})[\\s.,\\-]+(\\d{1,2})(?:st|nd|rd|th)?[\\s.,\\-]+(20\\d{2})\\b`,
+      'i'
+    )
+  );
+  if (monthDayYear) {
+    const dayNum = parseInt(monthDayYear[2], 10);
+    if (dayNum >= 1 && dayNum <= 31) {
+      const day = String(dayNum).padStart(2, '0');
+      const monKey = monthDayYear[1].toLowerCase().slice(0, 3);
+      const mon = monthMap[monKey] || '01';
+      const yr = monthDayYear[3];
+      return `${yr}-${mon}-${day}`;
+    }
+  }
+
+  // 4. Numeric DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+  const dmyMatch = ocrNormalized.match(
+    /\b(0?[1-9]|[12]\d|3[01])\s*[-/.]\s*(0?[1-9]|1[0-2])\s*[-/.]\s*(20\d{2})\b/
+  );
+  if (dmyMatch) {
+    return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+  }
+
+  // 5. Numeric YYYY-MM-DD or YYYY/MM/DD
+  const ymdMatch = ocrNormalized.match(
+    /\b(20\d{2})\s*[-/.]\s*(0?[1-9]|1[0-2])\s*[-/.]\s*(0?[1-9]|[12]\d|3[01])\b/
+  );
+  if (ymdMatch) {
+    return `${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`;
+  }
+
+  // 6. Numeric DD/MM/YY (e.g., 27/01/26)
+  const dmyShort = ocrNormalized.match(
+    /\b(0?[1-9]|[12]\d|3[01])\s*[-/.]\s*(0?[1-9]|1[0-2])\s*[-/.]\s*(2[2-9])\b/
+  );
+  if (dmyShort) {
+    return `20${dmyShort[3]}-${dmyShort[2].padStart(2, '0')}-${dmyShort[1].padStart(2, '0')}`;
+  }
+
+  // 7. Month Range + Year (e.g., NPTEL "Jan-Apr 2025" or "Jul - Oct 2025") -> 1st of end month
+  const monthRangeYear = ocrNormalized.match(
+    new RegExp(`\\b(${monthPattern})\\s*(?:to|-|–|/)\\s*(${monthPattern})[\\s.,\\-]+(20\\d{2})\\b`, 'i')
+  );
+  if (monthRangeYear) {
+    const monKey = monthRangeYear[2].toLowerCase().slice(0, 3);
+    const mon = monthMap[monKey] || '04';
+    return `${monthRangeYear[3]}-${mon}-01`;
+  }
+
+  // 8. Standalone Month + Year (e.g., "January 2026")
+  const monthYearOnly = ocrNormalized.match(
+    new RegExp(`\\b(${monthPattern})[\\s.,\\-]+(20\\d{2})\\b`, 'i')
+  );
+  if (monthYearOnly) {
+    const monKey = monthYearOnly[1].toLowerCase().slice(0, 3);
+    const mon = monthMap[monKey] || '01';
+    return `${monthYearOnly[2]}-${mon}-01`;
+  }
+
+  return '';
+}
+
+/**
+ * Stage 4: Deterministic Field Parser & CBIT 24 MAR Category Classifier
+ * Strictly extracts only what is present inside the certificate text/QR payload without inventing defaults.
+ */
+export function parseStructuredFieldsFromText(
   rawText: string,
   qrSummary: QRScanSummary,
   options?: CertificatePipelineOptions
@@ -597,7 +984,8 @@ function parseStructuredFieldsFromText(
   suggestedPoints: number;
   keySkillsOrTopics: string[];
 } {
-  const cleanText = rawText.replace(/\r/g, '\n').replace(/[ \t]+/g, ' ').trim();
+  const docCheck = evaluateIsCertificateDocument(rawText, qrSummary);
+  const cleanText = (rawText || '').replace(/\r/g, '\n').replace(/[ \t]+/g, ' ').trim();
   const lines = cleanText
     .split('\n')
     .map((l) => l.trim())
@@ -612,37 +1000,82 @@ function parseStructuredFieldsFromText(
     const cleaned = u.replace(/[.,;:]+$/, '');
     if (!visibleUrls.includes(cleaned)) visibleUrls.push(cleaned);
   }
-
-  // Combine with QR URLs for primary verification URL
   const verificationUrl = qrSummary.qrUrls[0] || visibleUrls[0] || undefined;
 
-  // 2. Extract Recipient Name (Evidence-based: check presentation patterns + official student roster + submitting student)
+  // 2. Extract Recipient Name STRICTLY from the OCR text (generalized for ALL students)
   let recipientName = '';
 
-  // Check if the submitting student's name (or surname/initial variant) appears in the OCR text
-  const expectedName =
-    options?.studentName ||
-    (options?.studentRollNo ? OFFICIAL_STUDENT_ROSTER[options.studentRollNo] : '') ||
-    '';
+  // 2a. Explicit Certificate Presentation Phrases ("presented to", "certify that", "awarded to", etc.)
+  const presentationPatterns = [
+    /(?:this\s+certificate\s+is\s+(?:proudly\s+)?presented\s+to|this\s+is\s+to\s+certify\s+that|proudly\s+presented\s+to|certificate\s+is\s+awarded\s+to|awarded\s+to|conferred\s+upon|certifies\s+that|presented\s+to)\s*[:\-]?\s*\n?\s*([A-Z][A-Za-z.\s']{2,48}?)(?=\s*\n|\s+for\s+|\s+has\s+|\s+in\s+recognition|\s+of\s+b\.?tech|\s+bearing\s+|\s+from\s+|\s+who\s+|\s+on\s+|$)/i,
+    /(?:Name\s+of\s+(?:the\s+)?(?:Student|Participant|Candidate|Recipient)|Student\s+Name|Participant\s+Name|Awardee)\s*[:\-]\s*([A-Z][A-Za-z.\s']{2,45})(?:\n|$)/i,
+    /\b(?:Mr\.|Ms\.|Miss|Shri|Smt\.|Kum\.)\s+([A-Z][A-Za-z.\s']{2,42}?)(?=\s*\n|\s+for\s+|\s+has\s+|\s+of\s+|\s+from\s+|$)/i,
+  ];
 
-  if (expectedName) {
-    const expParts = expectedName
+  for (const pat of presentationPatterns) {
+    const m = cleanText.match(pat);
+    if (m && m[1]) {
+      const candidate = m[1]
+        .replace(/\b(for|has|have|participated|completed|attending|event|held|on)\b.*$/i, '')
+        .replace(/[^A-Za-z.\s']/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (
+        candidate.length >= 3 &&
+        candidate.length <= 48 &&
+        !/certificate|institute|technology|autonomous|department|university|college|hyderabad/i.test(candidate)
+      ) {
+        recipientName = candidate;
+        break;
+      }
+    }
+  }
+
+  // 2b. Line immediately preceding "for attending / for participating / has successfully completed"
+  if (!recipientName) {
+    for (let i = 1; i < lines.length; i++) {
+      if (
+        /^(?:for\s+(?:attending|participating|successfully|active|securing|winning)|has\s+(?:successfully\s+)?(?:participated|completed|attended)|in\s+recognition\s+of|of\s+B\.?Tech)/i.test(
+          lines[i]
+        )
+      ) {
+        const prevLine = lines[i - 1]
+          .replace(/^.*?(?:presented\s+to|certify\s+that|awarded\s+to|Mr\.|Ms\.|Miss)\s*/i, '')
+          .replace(/[^A-Za-z.\s']/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (
+          prevLine.length >= 3 &&
+          prevLine.length <= 45 &&
+          /^[A-Za-z.\s']+$/.test(prevLine) &&
+          !/certificate|participat|appreciation|achievement|merit|institute|technology|college/i.test(prevLine)
+        ) {
+          recipientName = prevLine;
+          break;
+        }
+      }
+    }
+  }
+
+  // 2c. Check if the submitting student's name (or surname initial + name) actually appears in the OCR text
+  if (!recipientName && options?.studentName) {
+    const expParts = options.studentName
       .toLowerCase()
       .split(/\s+/)
-      .filter((w) => w.length > 2);
-    // Look for any line containing the student's primary name token (e.g. "Amrutharaju", "Saleem", "Shraddha", "Aslam")
+      .filter((w) => w.length >= 3);
     for (const line of lines) {
       const lineLower = line.toLowerCase();
       if (expParts.some((part) => lineLower.includes(part))) {
-        // Clean common prefixes from that line
         const stripped = line
           .replace(
             /^.*?(?:presented\s+to|certify\s+that|awarded\s+to|conferred\s+upon|Mr\.|Ms\.|Miss|Shri|Smt\.)\s*/i,
             ''
           )
-          .replace(/\s+(?:for\s+attending|for\s+successfully|has\s+participated|bearing\s+roll|of\s+b\.?tech).*$/i, '')
+          .replace(/\s+(?:for\s+attending|for\s+participating|for\s+successfully|has\s+participated|bearing\s+roll|of\s+b\.?tech).*$/i, '')
+          .replace(/[^A-Za-z.\s']/g, ' ')
+          .replace(/\s+/g, ' ')
           .trim();
-        if (stripped.length >= 3 && stripped.length <= 55) {
+        if (stripped.length >= 3 && stripped.length <= 50) {
           recipientName = stripped;
           break;
         }
@@ -650,61 +1083,73 @@ function parseStructuredFieldsFromText(
     }
   }
 
-  // If not found via submitting student token, check all 67 official roster names in the text
+  // 2d. Check if ANY of the 67 official roster students' names appear in the OCR text
   if (!recipientName) {
     for (const [, rosterFullName] of Object.entries(OFFICIAL_STUDENT_ROSTER)) {
-      const tokens = rosterFullName.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
-      if (tokens.length > 0 && tokens.every((t) => lower.includes(t))) {
-        recipientName = rosterFullName;
+      const tokens = rosterFullName
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((t) => t.length >= 4);
+      // Match either all major tokens OR longest distinctive name token (>=6 chars)
+      const longestToken = tokens.slice().sort((a, b) => b.length - a.length)[0];
+      if (
+        (tokens.length > 0 && tokens.every((t) => lower.includes(t))) ||
+        (longestToken && longestToken.length >= 6 && lower.includes(longestToken))
+      ) {
+        // Find the exact line in OCR containing that token
+        const matchLine = lines.find((l) => l.toLowerCase().includes(longestToken));
+        if (matchLine) {
+          const cleanedLine = matchLine
+            .replace(/^.*?(?:presented\s+to|certify\s+that|awarded\s+to)\s*/i, '')
+            .replace(/\s+(?:for\s+attending|for\s+participating|has\s+completed).*$/i, '')
+            .trim();
+          recipientName = cleanedLine.length <= 48 ? cleanedLine : rosterFullName;
+        } else {
+          recipientName = rosterFullName;
+        }
         break;
       }
     }
   }
 
-  // If still not found, check standard certificate presentation phrases
-  if (!recipientName) {
-    const namePatterns = [
-      /(?:this\s+certificate\s+is\s+presented\s+to|this\s+is\s+to\s+certify\s+that|proudly\s+presented\s+to|awarded\s+to|certifies\s+that|presented\s+to)\s*[:\-]?\s*\n?\s*([A-Z][A-Za-z.\s]{2,45})(?:\n|for\s+|has\s+|in\s+|towards\s+|on\s+|bearing\s+)/i,
-      /(?:Name\s+of\s+(?:the\s+)?(?:Student|Participant|Candidate))\s*[:\-]\s*([A-Za-z.\s]{3,45})/i,
-    ];
-    for (const pat of namePatterns) {
-      const m = cleanText.match(pat);
-      if (m && m[1]) {
-        const candidate = m[1].replace(/\s+/g, ' ').trim();
-        if (
-          candidate.length >= 3 &&
-          !candidate.toLowerCase().includes('certificate') &&
-          !candidate.toLowerCase().includes('institute')
-        ) {
-          recipientName = candidate;
+  // 3. Extract Specific Event / Course / Competition Title STRICTLY from Certificate Text
+  let eventOrCourseTitle = '';
+  const eventPatterns = [
+    /(?:for\s+attending\s+the\s+event|participated\s+in\s+(?:the\s+)?(?:event\s+)?|in\s+the\s+event|event\s+titled|workshop\s+on|course\s+on|hackathon\s+on|competition\s+on|webinar\s+on|seminar\s+on|training\s+on|program\s+on|successfully\s+completed\s+(?:the\s+)?(?:course\s+)?)\s*["'“”]?([A-Z0-9][A-Za-z0-9\s:&,\-()]{2,65}?)["'“”]?(?=\s+organized\s+by|\s+conducted\s+by|\s+offered\s+by|\s+held\s+on|\s+during\s+|\s+from\s+\d|\s+on\s+\d|\s*\n|$)/i,
+    /(?:for\s+attending\s+the\s+event)\s*\n+\s*([A-Z0-9][A-Za-z0-9\s:&,\-()]{2,55})(?=\s*\n|$)/i,
+  ];
+
+  for (const pat of eventPatterns) {
+    const m = cleanText.match(pat);
+    if (m && m[1]) {
+      const candidate = m[1]
+        .replace(/\s+(?:organized|conducted|held|on|at|by).*$/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (candidate.length >= 2 && !/^the\s+event$/i.test(candidate)) {
+        eventOrCourseTitle = candidate;
+        break;
+      }
+    }
+  }
+
+  // Check if line after "for attending the event" or "participated in" holds the bold event name (like "ENCHANTE")
+  if (!eventOrCourseTitle) {
+    for (let i = 0; i < lines.length - 1; i++) {
+      if (/(?:attending\s+the\s+event|participated\s+in|completed\s+the\s+course|event\s+titled|workshop\s+on)$/i.test(lines[i])) {
+        const nextLine = lines[i + 1].replace(/\s+(?:organized\s+by|conducted\s+by|held\s+on).*$/i, '').trim();
+        if (nextLine.length >= 2 && nextLine.length <= 60) {
+          eventOrCourseTitle = nextLine;
           break;
         }
       }
     }
   }
 
-  if (!recipientName) {
-    recipientName = 'Uncertain / Unavailable in OCR';
-  }
-
-  // 3. Extract Certificate Title / Event Name
-  let certificateTitle = '';
-  const eventPatterns = [
-    /(?:for\s+attending\s+the\s+event|in\s+the\s+event|event\s+titled|workshop\s+on|course\s+on|hackathon\s+titled|participated\s+in)\s+["']?([A-Z0-9][A-Za-z0-9\s:&,\-]{2,60}?)["']?(?:\s+organized\s+by|\s+conducted\s+by|\s+held\s+on|\s+on\s+\d|\n|$)/i,
-    /(NPTEL\s+[A-Za-z0-9\s:&,\-]{4,60})/i,
-  ];
-  for (const pat of eventPatterns) {
-    const m = cleanText.match(pat);
-    if (m && m[1]) {
-      certificateTitle = m[1].trim();
-      break;
-    }
-  }
-
-  // Detect certificate type header
+  // Detect Certificate Header Type (e.g., Certificate of Participation, Certificate of Merit, etc.)
   let certTypeHeader = '';
   const typeMatch = cleanText.match(
-    /\b(CERTIFICATE\s+OF\s+(?:PARTICIPATION|MERIT|APPRECIATION|COMPLETION|ACHIEVEMENT|EXCELLENCE|RECOGNITION)|COURSE\s+COMPLETION\s+CERTIFICATE|INTERNSHIP\s+CERTIFICATE)\b/i
+    /\b(CERTIFICATE\s+OF\s+(?:PARTICIPATION|MERIT|APPRECIATION|COMPLETION|ACHIEVEMENT|EXCELLENCE|RECOGNITION)|COURSE\s+COMPLETION\s+CERTIFICATE|INTERNSHIP\s+CERTIFICATE|NPTEL\s+ONLINE\s+CERTIFICATION)\b/i
   );
   if (typeMatch && typeMatch[1]) {
     certTypeHeader = typeMatch[1]
@@ -712,40 +1157,50 @@ function parseStructuredFieldsFromText(
       .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
-  if (certificateTitle && certTypeHeader && !certificateTitle.toLowerCase().includes('certificate')) {
-    certificateTitle = `${certificateTitle} (${certTypeHeader})`;
-  } else if (!certificateTitle && certTypeHeader) {
-    // Look for prominent uppercase event title line
-    const eventLine = lines.find(
-      (l) =>
-        l.length >= 4 &&
-        l.length <= 45 &&
-        /^[A-Z0-9\s\-:&]+$/.test(l) &&
-        !l.includes('CERTIFICATE') &&
-        !l.includes('INSTITUTE') &&
-        !l.includes('TECHNOLOGY') &&
-        !l.includes('HYDERABAD') &&
-        !l.includes('AUTONOMOUS')
-    );
-    certificateTitle = eventLine ? `${eventLine} — ${certTypeHeader}` : certTypeHeader;
-  } else if (!certificateTitle) {
-    certificateTitle = 'Unavailable / Requires Manual Entry';
+  // If still no eventOrCourseTitle, scan for prominent standalone event/course title lines in the document
+  if (!eventOrCourseTitle) {
+    const boilerPlateRegex =
+      /certificate|certify|presented|awarded|chaitanya\s+bharathi|institute\s+of\s+technology|autonomous|affiliated|accredited|naac|nba|nirf|iso\s+9001|gandipet|hyderabad|telangana|principal|director|head\s+of|convenor|coordinator|signature|date|roll\s+no/i;
+
+    for (const line of lines) {
+      if (
+        line.length >= 4 &&
+        line.length <= 55 &&
+        !boilerPlateRegex.test(line) &&
+        (!recipientName || !line.toLowerCase().includes(recipientName.toLowerCase())) &&
+        /^[A-Z0-9][A-Za-z0-9\s:&,\-()]+$/.test(line)
+      ) {
+        eventOrCourseTitle = line;
+        break;
+      }
+    }
   }
 
-  // 4. Extract Issuing Organization / Organizer
+  let certificateTitle = '';
+  if (eventOrCourseTitle && certTypeHeader) {
+    certificateTitle = eventOrCourseTitle.toLowerCase().includes('certificate')
+      ? eventOrCourseTitle
+      : `${eventOrCourseTitle} — ${certTypeHeader}`;
+  } else if (eventOrCourseTitle) {
+    certificateTitle = eventOrCourseTitle;
+  } else if (certTypeHeader) {
+    certificateTitle = certTypeHeader;
+  }
+
+  // 4. Extract Issuing Organization / Organizer STRICTLY from text
   let issuingOrganization = '';
   const orgPatterns = [
-    /(?:organized\s+by|conducted\s+by|issued\s+by|hosted\s+by|in\s+association\s+with)\s+([A-Za-z0-9\s,&().\-]{3,75}?)(?:\s+on\s+\d|\s+from\s+\d|\s+at\s+|\n|$)/i,
+    /(?:organized\s+by|conducted\s+by|offered\s+by|issued\s+by|hosted\s+by|in\s+association\s+with)\s+([A-Za-z0-9\s,&().\-]{3,80}?)(?=\s+on\s+\d|\s+from\s+\d|\s+held\s+on|\s+during\s+|\s*\n|$)/i,
   ];
   for (const pat of orgPatterns) {
     const m = cleanText.match(pat);
     if (m && m[1]) {
-      issuingOrganization = m[1].trim();
+      issuingOrganization = m[1].replace(/\s+/g, ' ').trim();
       break;
     }
   }
 
-  if (lower.includes('chaitanya bharathi institute of technology') || lower.includes('cbit')) {
+  if (lower.includes('chaitanya bharathi institute of technology') || /\bcbit\b/.test(lower)) {
     if (issuingOrganization && !issuingOrganization.toLowerCase().includes('cbit')) {
       issuingOrganization = `${issuingOrganization}, Chaitanya Bharathi Institute of Technology (CBIT)`;
     } else if (!issuingOrganization) {
@@ -756,58 +1211,44 @@ function parseStructuredFieldsFromText(
       issuingOrganization = 'NPTEL / SWAYAM (Ministry of Education, Govt. of India)';
     } else if (lower.includes('coursera')) {
       issuingOrganization = 'Coursera';
+    } else if (lower.includes('udemy')) {
+      issuingOrganization = 'Udemy';
+    } else if (lower.includes('edx')) {
+      issuingOrganization = 'edX';
     } else if (lower.includes('ieee')) {
       issuingOrganization = 'IEEE';
+    } else if (lower.includes('acm')) {
+      issuingOrganization = 'Association for Computing Machinery (ACM)';
     } else if (lower.includes('infosys')) {
       issuingOrganization = 'Infosys Springboard';
     } else if (lower.includes('cisco')) {
       issuingOrganization = 'Cisco Networking Academy';
+    } else if (lower.includes('aws') || lower.includes('amazon web services')) {
+      issuingOrganization = 'Amazon Web Services (AWS)';
+    } else if (lower.includes('google')) {
+      issuingOrganization = 'Google Developer Groups / Google';
+    } else if (lower.includes('microsoft')) {
+      issuingOrganization = 'Microsoft';
     } else {
-      issuingOrganization = 'Unavailable / Not Explicitly Read';
+      // Look for any line containing University / Institute / College / Academy / Limited
+      const instLine = lines.find((l) =>
+        /\b(University|Institute|College|Academy|Corporation|Foundation|Society|Ministry|Technologies|Pvt\.?\s*Ltd)\b/i.test(l)
+      );
+      if (instLine) {
+        issuingOrganization = instLine.slice(0, 80);
+      }
     }
   }
 
-  // 5. Extract Date (YYYY-MM-DD)
-  let completionDate = '';
-  const monthMap: Record<string, string> = {
-    jan: '01', january: '01',
-    feb: '02', february: '02',
-    mar: '03', march: '03',
-    apr: '04', april: '04',
-    may: '05',
-    jun: '06', june: '06',
-    jul: '07', july: '07',
-    aug: '08', august: '08',
-    sep: '09', sept: '09', september: '09',
-    oct: '10', october: '10',
-    nov: '11', november: '11',
-    dec: '12', december: '12',
-  };
-
-  // Match "27th January 2026" or "January 27, 2026"
-  const textualDate = cleanText.match(
-    /\b(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,\s]+(20\d{2})\b/i
-  );
-  if (textualDate) {
-    const day = textualDate[1].padStart(2, '0');
-    const mon = monthMap[textualDate[2].toLowerCase()] || '01';
-    const yr = textualDate[3];
-    completionDate = `${yr}-${mon}-${day}`;
-  } else {
-    const isoDate = cleanText.match(/\b(20\d{2})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b/);
-    const dmyDate = cleanText.match(/\b(0?[1-9]|[12]\d|3[01])[-/.](0?[1-9]|1[0-2])[-/.](20\d{2})\b/);
-    if (isoDate) {
-      completionDate = `${isoDate[1]}-${isoDate[2]}-${isoDate[3]}`;
-    } else if (dmyDate) {
-      completionDate = `${dmyDate[3]}-${dmyDate[2].padStart(2, '0')}-${dmyDate[1].padStart(2, '0')}`;
-    }
-  }
+  // 5. Extract Completion Date STRICTLY from Certificate Text (NEVER today's date!)
+  const completionDate = extractCompletionDateFromText(cleanText);
 
   // 6. Extract Credential ID / Certificate Number
   let credentialId: string | undefined = undefined;
   const credPatterns = [
-    /(?:Certificate\s*(?:ID|No|Number)|Credential\s*ID|Roll\s*No|Registration\s*No|Ref\s*No|NPTEL\s*ID)\s*[:#\-]?\s*([A-Z0-9\/_-]{5,32})/i,
+    /(?:Certificate\s*(?:ID|No|Number)|Credential\s*ID|Verification\s*(?:ID|Code)|Ref(?:erence)?\s*No|Serial\s*No|NPTEL\s*ID)\s*[:#\-]?\s*([A-Z0-9\/_-]{5,36})/i,
     /\b(NPTEL\d{2}[A-Z]{2}\d+[A-Z0-9]+)\b/,
+    /\b(CBIT[-/][A-Z0-9\-/]{4,25})\b/i,
   ];
   for (const pat of credPatterns) {
     const m = cleanText.match(pat);
@@ -834,25 +1275,25 @@ function parseStructuredFieldsFromText(
   let matchedCategorySno = 2;
   let matchedSubType = 'Participant';
 
-  if (lower.includes('nptel') || lower.includes('swayam') || lower.includes('coursera') || lower.includes('mooc')) {
+  if (lower.includes('nptel') || lower.includes('swayam') || lower.includes('coursera') || lower.includes('mooc') || lower.includes('udemy') || lower.includes('infosys springboard')) {
     matchedCategorySno = 1;
-    matchedSubType = lower.includes('8 week') ? '8 weeks' : '12 weeks';
+    matchedSubType = lower.includes('8 week') ? '8 weeks' : lower.includes('4 week') ? '4 weeks' : '12 weeks';
+  } else if (lower.includes('first prize') || lower.includes('1st place') || lower.includes('winner') || lower.includes('first place')) {
+    matchedCategorySno = 2;
+    matchedSubType = 'Winner';
   } else if (lower.includes('organizer') || lower.includes('organizing') || lower.includes('coordinator') || lower.includes('volunteer')) {
     matchedCategorySno = 2;
     matchedSubType = 'Organizer';
-  } else if (lower.includes('blood') || lower.includes('nss') || lower.includes('ncc')) {
+  } else if (lower.includes('blood') || lower.includes('nss') || lower.includes('ncc') || lower.includes('social service')) {
     matchedCategorySno = 11;
     matchedSubType = 'General';
-  } else if (lower.includes('sport') || lower.includes('tournament') || lower.includes('athletic') || lower.includes('chess') || lower.includes('cricket')) {
+  } else if (lower.includes('sport') || lower.includes('tournament') || lower.includes('athletic') || lower.includes('chess') || lower.includes('cricket') || lower.includes('badminton')) {
     matchedCategorySno = 13;
     matchedSubType = lower.includes('national') ? 'National level' : lower.includes('university') ? 'University level' : 'College level';
-  } else if (lower.includes('cultural') || lower.includes('dance') || lower.includes('music') || lower.includes('enchante') || lower.includes('literary') || lower.includes('communicando')) {
-    matchedCategorySno = 2;
-    matchedSubType = 'Participant';
-  } else if (lower.includes('research') || lower.includes('journal') || lower.includes('scopus') || lower.includes('conference paper')) {
+  } else if (lower.includes('research') || lower.includes('journal') || lower.includes('scopus') || lower.includes('conference paper') || lower.includes('ieee xplore')) {
     matchedCategorySno = 9;
     matchedSubType = 'General';
-  } else if (lower.includes('internship') || lower.includes('innovation project')) {
+  } else if (lower.includes('internship') || lower.includes('intern ') || lower.includes('innovation project')) {
     matchedCategorySno = 10;
     matchedSubType = 'General';
   } else if (lower.includes('ieee') || lower.includes('acm') || lower.includes('csi') || lower.includes('professional society')) {
@@ -861,12 +1302,15 @@ function parseStructuredFieldsFromText(
   }
 
   const matchedCatObj =
-    CBIT_24_CATEGORIES.find((c) => c.sno === matchedCategorySno && (!c.sub_type || c.sub_type.toLowerCase() === matchedSubType.toLowerCase())) ||
+    CBIT_24_CATEGORIES.find(
+      (c) => c.sno === matchedCategorySno && (!c.sub_type || c.sub_type.toLowerCase() === matchedSubType.toLowerCase())
+    ) ||
     CBIT_24_CATEGORIES.find((c) => c.sno === matchedCategorySno) ||
     CBIT_24_CATEGORIES[1];
 
   return {
-    isDocument: true,
+    isDocument: docCheck.isDocument,
+    rejectionReason: docCheck.rejectionReason,
     certificateTitle,
     recipientName,
     issuingOrganization,
@@ -901,7 +1345,7 @@ export async function analyzeCertificateDocument(
   const buffer = Buffer.from(fileBufferBase64, 'base64');
   const isPdf = mimeType.toLowerCase().includes('pdf') || (fileName || '').toLowerCase().endsWith('.pdf');
 
-  // Execute OCR, QR Detection, and Visual Forensics in parallel
+  // Execute Multi-Pass OCR, QR Detection, and Visual Forensics in parallel
   const [ocrOutcome, visualMetrics] = await Promise.all([
     extractCertificateText(buffer, mimeType, options.clientOcrText),
     runVisualAnomalyAnalysis(buffer, isPdf),
@@ -916,7 +1360,26 @@ export async function analyzeCertificateDocument(
 
   const parsed = parseStructuredFieldsFromText(ocrOutcome.text, qrSummary, options);
 
-  // Cross-check recipient identity against submitting student
+  // STRICT DOCUMENT GATE: Reject non-document images (selfies, portraits, rooms, arbitrary photos)
+  if (!isPdf && !parsed.isDocument) {
+    return {
+      isDocument: false,
+      documentRejectionReason:
+        parsed.rejectionReason ||
+        'Non-Document Image Blocked: The uploaded image does not contain recognizable certificate structure or academic credential text.',
+      certificateTitle: '',
+      recipientName: '',
+      issuingOrganization: '',
+      completionDate: '',
+      matchedCategorySno: 2,
+      matchedCategoryName: 'Rejected Non-Document',
+      suggestedPoints: 0,
+      confidenceScore: 0,
+      summary: parsed.rejectionReason || 'Rejected: Non-document image.',
+    };
+  }
+
+  // Cross-check recipient identity against submitting student (Generalized for ALL students)
   const nameVerification = verifyStudentNameMatch(
     parsed.recipientName,
     options.studentName,
@@ -944,7 +1407,7 @@ export async function analyzeCertificateDocument(
     }
   }
 
-  // Compute Evidence-Based Anomaly Assessment (No hardcoded fake numbers!)
+  // Compute Evidence-Based Anomaly Assessment
   let riskPercentage = 4;
   let statusLabel: AITamperAnalysis['statusLabel'] = 'No obvious anomaly detected';
   let manipulationRisk: AITamperAnalysis['manipulationRisk'] = 'Low';
@@ -954,7 +1417,6 @@ export async function analyzeCertificateDocument(
   let edgeAlignment: AITamperAnalysis['edgeAlignment'] = 'Natural';
   let metadataCheck: AITamperAnalysis['metadataCheck'] = 'Passed';
 
-  // Adjust risk based on real measured signals
   if (visualMetrics.editingSoftwareDetected) {
     riskPercentage += 32;
     metadataCheck = 'Inconsistent';
@@ -971,7 +1433,6 @@ export async function analyzeCertificateDocument(
     manipulationRisk = 'Moderate';
     isSuspicious = true;
   } else {
-    // Add tiny natural variance from actual ELA measurement (between 2% and 7%)
     riskPercentage = Math.max(2, Math.min(9, Math.round(visualMetrics.elaGridVariance + 2)));
   }
 
@@ -981,8 +1442,8 @@ export async function analyzeCertificateDocument(
     manipulationRisk = 'High';
     isSuspicious = true;
     fontConsistency = 'Flagged';
-  } else if (nameVerification.status === 'unavailable' && ocrOutcome.text.length < 25) {
-    riskPercentage = Math.max(riskPercentage, 22);
+  } else if (nameVerification.status === 'unavailable') {
+    riskPercentage = Math.max(riskPercentage, 18);
     statusLabel = 'Requires manual verification';
     manipulationRisk = 'Moderate';
   }
@@ -1020,6 +1481,9 @@ export async function analyzeCertificateDocument(
     edgeAlignment,
     metadataCheck,
     elaVariance: visualMetrics.elaGridVariance,
+    qrStatus: qrSummary.status,
+    qrCodes: qrSummary.qrCodes,
+    externalVerificationNote: externalVerificationStatus,
     qrDetectionStatus: qrSummary.status,
     externalVerificationStatus,
     identityMatchStatus: nameVerification.explanation,
@@ -1030,12 +1494,9 @@ export async function analyzeCertificateDocument(
     isDocument: true,
     documentRejectionReason: undefined,
     certificateTitle: parsed.certificateTitle,
-    recipientName:
-      parsed.recipientName !== 'Uncertain / Unavailable in OCR'
-        ? parsed.recipientName
-        : options.studentName || 'Uncertain / Unavailable in OCR',
+    recipientName: parsed.recipientName,
     issuingOrganization: parsed.issuingOrganization,
-    completionDate: parsed.completionDate || new Date().toISOString().split('T')[0],
+    completionDate: parsed.completionDate,
     durationOrHours: parsed.durationOrHours,
     credentialId: parsed.credentialId,
     verificationUrl: parsed.verificationUrl,
@@ -1044,7 +1505,7 @@ export async function analyzeCertificateDocument(
     visibleUrls: parsed.visibleUrls,
     qrStatus: qrSummary.status,
     externalVerificationNote: externalVerificationStatus,
-    pipelineEngine: 'Pretrained LSTM OCR + jsQR + 64-Block ELA Computer Vision (Non-Gemini)',
+    pipelineEngine: 'Pretrained LSTM OCR + jsQR + 64-Block ELA Computer Vision',
     matchedCategorySno: parsed.matchedCategorySno,
     matchedCategoryName: parsed.matchedCategoryName,
     matchedSubType: parsed.matchedSubType,

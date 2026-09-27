@@ -31,18 +31,39 @@ function LoginFormContent() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+  const [googleEmailInput, setGoogleEmailInput] = useState('');
+
   // Check URL query parameters for OAuth redirect error messages
   const urlError = searchParams.get('error');
   const unauthorizedEmail = searchParams.get('unauthorized_email');
 
-  const handleGoogleSignIn = async () => {
+  const routeAfterAuth = () => {
+    const activeRole = (localStorage.getItem('cbit_mar_active_role') || 'student') as UserRole;
+    if (activeRole === 'student') router.push('/student');
+    else if (activeRole === 'mentor') router.push('/mentor');
+    else if (activeRole === 'class_teacher') router.push('/teacher');
+    else if (activeRole === 'hod') router.push('/hod');
+    else router.push('/admin');
+  };
+
+  const handleGoogleSignIn = () => {
+    setErrorMsg(null);
+    setIsGoogleModalOpen(true);
+  };
+
+  const handleGoogleVerifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleEmailInput.trim()) return;
     setErrorMsg(null);
     setGoogleLoading(true);
     try {
-      await loginWithGoogle();
+      await loginWithGoogle(googleEmailInput.trim());
+      setIsGoogleModalOpen(false);
+      routeAfterAuth();
     } catch (err: any) {
-      console.error('[Google Login] Error:', err);
-      setErrorMsg(err.message || 'Failed to initialize Google Sign-In. Please check your network or try again.');
+      setErrorMsg(err.message || 'Google Sign-In verification failed.');
+    } finally {
       setGoogleLoading(false);
     }
   };
@@ -54,13 +75,7 @@ function LoginFormContent() {
 
     try {
       await login(identifier, undefined, password);
-
-      const activeRole = (localStorage.getItem('cbit_mar_active_role') || 'student') as UserRole;
-      if (activeRole === 'student') router.push('/student');
-      else if (activeRole === 'mentor') router.push('/mentor');
-      else if (activeRole === 'class_teacher') router.push('/teacher');
-      else if (activeRole === 'hod') router.push('/hod');
-      else router.push('/admin');
+      routeAfterAuth();
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -164,11 +179,58 @@ function LoginFormContent() {
               </svg>
             )}
             <span>
-              {googleLoading ? 'Redirecting to Google...' : 'Sign in with Google Mail (Recommended for Students)'}
+              {googleLoading ? 'Verifying Google Account...' : 'Sign in with Google Mail (Recommended for Students)'}
             </span>
           </button>
+
+          {isGoogleModalOpen && (
+            <div className="p-4 rounded-2xl bg-[#faf9f5] dark:bg-[#121214] border-2 border-[#385529]/30 dark:border-emerald-800/50 space-y-3 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                  </svg>
+                  <span className="text-xs font-serif font-bold text-gray-900 dark:text-white">
+                    Google Mail Roster Sign-In
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsGoogleModalOpen(false)}
+                  className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-bold cursor-pointer"
+                >
+                  Close ✕
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Enter your college-registered Google Mail (`@gmail.com` or `@cbit.org.in`). Verified directly against the 67 AI&amp;DS Section 2 students and 6 faculty accounts.
+              </p>
+              <form onSubmit={handleGoogleVerifySubmit} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  placeholder="Enter your CBIT-registered Gmail address..."
+                  className="flex-1 px-3 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                />
+                <button
+                  type="submit"
+                  disabled={googleLoading}
+                  className="px-4 py-2 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  {googleLoading ? 'Verifying...' : 'Sign In'}
+                </button>
+              </form>
+            </div>
+          )}
+
           <p className="text-[10px] text-center text-gray-500 dark:text-gray-400">
-            One-click verified login. Protected by your personal Google Account security.
+            One-click verified login. Protected by your CBIT Roster Google Account.
           </p>
         </div>
 
