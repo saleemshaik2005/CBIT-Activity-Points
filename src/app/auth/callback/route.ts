@@ -11,7 +11,9 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error('[OAuth Callback] Error from provider:', error, errorDescription);
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorDescription || error)}`);
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`
+    );
   }
 
   if (code) {
@@ -37,25 +39,43 @@ export async function GET(request: Request) {
       }
     );
 
-    const { data: { session }, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    const {
+      data: { session },
+      error: exchangeError,
+    } = await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError || !session?.user?.email) {
       console.error('[OAuth Callback] Code exchange failed:', exchangeError);
-      return NextResponse.redirect(`${origin}/login?error=Authentication%20failed.%20Please%20try%20again.`);
+      return NextResponse.redirect(
+        `${origin}/login?error=Authentication%20failed.%20Please%20try%20again.`
+      );
     }
 
     const email = session.user.email.toLowerCase();
 
-    // Verify against our 67-student + faculty roster
+    // Verify strictly against our pre-authorized 67-student + 6-faculty roster
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('*, mentor:mentor_id(id, full_name, email, phone_number)')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
 
-    if (!profile) {
-      // User is authenticated by Google, but not in our official AI&DS class roster!
+    // A valid student MUST have an official CBIT roll_number (prevents auto-created trigger rows from bypassing whitelist)
+    const isUnauthorized =
+      !profile || (profile.role === 'student' && (!profile.roll_number || profile.roll_number.trim() === ''));
+
+    if (isUnauthorized) {
+      console.warn(`[OAuth Callback] Blocked unauthorized Google login attempt: ${email}`);
       await supabase.auth.signOut();
+
+      // Purge any auto-created auth.users / profiles row for this unauthorized Google account
+      try {
+        await supabaseAdmin.from('profiles').delete().eq('id', session.user.id);
+        await supabaseAdmin.auth.admin.deleteUser(session.user.id);
+      } catch (cleanupErr) {
+        console.warn('[OAuth Callback] Cleanup warning:', cleanupErr);
+      }
+
       return NextResponse.redirect(
         `${origin}/login?error=unauthorized_email&unauthorized_email=${encodeURIComponent(email)}`
       );
@@ -68,7 +88,6 @@ export async function GET(request: Request) {
     else if (profile.role === 'hod') redirectPath = '/hod';
     else if (profile.role === 'admin') redirectPath = '/admin';
 
-    // Successful authentication redirect
     return NextResponse.redirect(`${origin}${redirectPath}?auth_sync=true`);
   }
 

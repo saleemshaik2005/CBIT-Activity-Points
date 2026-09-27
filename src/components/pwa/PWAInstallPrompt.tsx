@@ -17,14 +17,14 @@ export const PWAInstallPrompt: React.FC = () => {
   const [installedSuccessfully, setInstalledSuccessfully] = useState(false);
 
   useEffect(() => {
-    // 1. Register Service Worker for PWA compliance
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((reg) => console.log('PWA ServiceWorker registered:', reg.scope))
-          .catch((err) => console.warn('PWA ServiceWorker registration failed:', err));
-      });
+    // 1. Register Service Worker immediately for offline PWA page caching
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          reg.update().catch(() => {});
+        })
+        .catch((err) => console.warn('PWA ServiceWorker registration failed:', err));
     }
 
     // 2. Check if already installed / running in standalone mode

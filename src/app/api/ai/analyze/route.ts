@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { analyzeCertificateDocument } from '@/lib/gemini';
+import { analyzeCertificateDocument } from '@/lib/certificate-intelligence';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -8,7 +8,20 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    const manualApiKey = formData.get('apiKey') as string | null;
+    const studentName = (formData.get('studentName') as string | null) || undefined;
+    const studentRollNo = (formData.get('studentRollNo') as string | null) || undefined;
+    const clientOcrText = (formData.get('clientOcrText') as string | null) || undefined;
+    const clientQrRaw = (formData.get('clientQrPayloads') as string | null) || undefined;
+
+    let clientQrPayloads: string[] | undefined = undefined;
+    if (clientQrRaw) {
+      try {
+        const parsed = JSON.parse(clientQrRaw);
+        if (Array.isArray(parsed)) clientQrPayloads = parsed;
+      } catch {
+        clientQrPayloads = [clientQrRaw];
+      }
+    }
 
     if (!file) {
       return NextResponse.json(
@@ -22,11 +35,16 @@ export async function POST(req: NextRequest) {
     const base64Data = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
 
-    // Call AI document intelligence extraction
+    // Run Non-Gemini Pretrained/Local Certificate Intelligence Pipeline
     const extraction = await analyzeCertificateDocument(
       base64Data,
       mimeType,
-      manualApiKey || undefined,
+      {
+        studentName,
+        studentRollNo,
+        clientOcrText,
+        clientQrPayloads,
+      },
       file.name
     );
 
@@ -34,7 +52,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: false,
         isDocument: false,
-        error: extraction.documentRejectionReason || 'The uploaded image is not recognized as an official certificate or document proof.',
+        error:
+          extraction.documentRejectionReason ||
+          'The uploaded file is not recognized as an official certificate or document proof.',
         data: extraction,
         fileName: file.name,
         fileSize: file.size,

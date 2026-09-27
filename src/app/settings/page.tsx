@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { fileToPermanentDataURL } from '@/lib/storage-db';
@@ -25,12 +25,28 @@ export default function SettingsPage() {
   const { currentUser, theme, toggleTheme, logout, updateUserAvatar, updateUserProfile } = useApp();
   const router = useRouter();
 
-  const [fullName, setFullName] = useState(currentUser.full_name);
+  const [fullName, setFullName] = useState(currentUser.full_name || '');
   const [phoneNumber, setPhoneNumber] = useState(currentUser.phone_number || '');
-  const [email, setEmail] = useState(currentUser.email);
+  const [email, setEmail] = useState(currentUser.email || '');
   const [resumeUrl, setResumeUrl] = useState(currentUser.resume_url || '');
   const [skillsInput, setSkillsInput] = useState((currentUser.skills || []).join(', '));
   const [profileSuccess, setProfileSuccess] = useState(false);
+
+  // Synchronize form fields whenever currentUser changes (fixes refresh reverting to default values)
+  useEffect(() => {
+    setFullName(currentUser.full_name || '');
+    setPhoneNumber(currentUser.phone_number || '');
+    setEmail(currentUser.email || '');
+    setResumeUrl(currentUser.resume_url || '');
+    setSkillsInput((currentUser.skills || []).join(', '));
+  }, [
+    currentUser.id,
+    currentUser.full_name,
+    currentUser.phone_number,
+    currentUser.email,
+    currentUser.resume_url,
+    currentUser.skills,
+  ]);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -210,10 +226,11 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                   <Hash className="w-3.5 h-3.5 text-gray-400" />
-                  <span>Roll / Faculty ID</span>
+                  <span>{currentUser.role === 'student' ? 'Roll Number' : 'Faculty / Staff ID'}</span>
                 </span>
                 <span className="font-mono font-bold text-gray-800 dark:text-gray-200">
-                  {currentUser.roll_number || '160122771045'}
+                  {currentUser.roll_number ||
+                    (currentUser.role === 'student' ? '160124771129' : 'AI&DS Faculty Counselor')}
                 </span>
               </div>
 

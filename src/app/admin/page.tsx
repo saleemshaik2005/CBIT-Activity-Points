@@ -81,11 +81,11 @@ export default function AdminHubPage() {
     {
       id: 'log-001',
       timestamp: new Date(Date.now() - 1000 * 60 * 15).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      action: 'AI Authenticity Verification',
-      user: 'Gemini 2.5 Forensics',
-      role: 'System AI',
+      action: 'Certificate Authenticity & OCR Verification',
+      user: 'Tesseract LSTM + jsQR + 64-Block ELA',
+      role: 'Document Intelligence',
       status: 'success',
-      details: 'Evaluated 12 student certificate uploads. 1 flagged with font inconsistency.',
+      details: 'Evaluated 12 student certificate uploads via 64-block spatial ELA & initial-aware recipient identity check.',
     },
     {
       id: 'log-002',
@@ -570,10 +570,10 @@ export default function AdminHubPage() {
             <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50/60 dark:bg-[#121214] border border-gray-200 dark:border-[#2c2d36]">
               <div>
                 <span className="text-xs font-bold text-gray-900 dark:text-white block">
-                  AI Forensic Strictness
+                  Document Forensics & ELA Strictness
                 </span>
                 <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  Gemini multimodal tamper and document filter sensitivity
+                  Pretrained LSTM OCR, jsQR, and 64-block Error Level Analysis sensitivity
                 </span>
               </div>
               <select

@@ -64,12 +64,27 @@ export interface AITamperAnalysis {
   isSuspicious: boolean;
   manipulationRisk: 'Low' | 'Moderate' | 'High';
   riskPercentage: number; // 0 to 100
-  statusLabel: 'Authentic & Legitimate' | 'Minor Inconsistency' | 'Suspicious / Potential Tampering' | 'High Tampering Risk';
+  statusLabel:
+    | 'No obvious anomaly detected'
+    | 'Possible anomaly detected'
+    | 'Requires manual verification'
+    | 'Authentic & Legitimate'
+    | 'Minor Inconsistency'
+    | 'Suspicious / Potential Tampering'
+    | 'High Tampering Risk';
   findings: string[];
   fontConsistency: 'Consistent' | 'Mismatched' | 'Flagged';
-  compressionArtifacts: 'Normal' | 'Anomalous' | 'Layered';
+  compressionArtifacts: 'Normal' | 'Minimal' | 'Anomalous' | 'Layered';
   edgeAlignment: 'Natural' | 'Irregular' | 'Pasted';
   metadataCheck: 'Passed' | 'Inconsistent' | 'Missing';
+  elaVariance?: number;
+  pipelineEngine?: string;
+  qrStatus?: string;
+  qrCodes?: string[];
+  externalVerificationNote?: string;
+  qrDetectionStatus?: string;
+  externalVerificationStatus?: string;
+  identityMatchStatus?: string;
   verifiedAt: string;
 }
 
@@ -118,6 +133,12 @@ export interface AIExtractionResult {
   durationOrHours?: string;
   credentialId?: string;
   verificationUrl?: string;
+  qrCodes?: string[];
+  qrUrls?: string[];
+  visibleUrls?: string[];
+  qrStatus?: string;
+  externalVerificationNote?: string;
+  pipelineEngine?: string;
   matchedCategorySno: number;
   matchedCategoryName: string;
   matchedSubType?: string;

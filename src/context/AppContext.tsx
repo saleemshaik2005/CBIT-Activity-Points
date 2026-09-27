@@ -162,8 +162,39 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   },
 ];
 
+export function sanitizeUserProfile(profile: UserProfile): UserProfile {
+  const cleaned = { ...profile };
+  // Faculty mentors and HODs should not carry the student mock roll number 160122771045
+  if (
+    (cleaned.role === 'mentor' || cleaned.role === 'hod') &&
+    (cleaned.roll_number === '160122771045' || cleaned.roll_number === '160124771129')
+  ) {
+    delete cleaned.roll_number;
+  }
+  // Never allow another student's profile to keep Shaik Saleem's email or default skills if their name isn't Shaik Saleem
+  const isSaleem =
+    (cleaned.full_name || '').toLowerCase().includes('saleem') ||
+    cleaned.roll_number === '160124771129';
+  if (!isSaleem) {
+    if (
+      cleaned.email === 'saleemshaik2005@gmail.com' ||
+      cleaned.email === 'saleemshaik2005@cbit.ac.in'
+    ) {
+      cleaned.email = cleaned.roll_number ? `${cleaned.roll_number}@cbit.ac.in` : '';
+    }
+    if (
+      Array.isArray(cleaned.skills) &&
+      cleaned.skills.includes('AI Document Intelligence')
+    ) {
+      cleaned.skills = [];
+    }
+  }
+  return cleaned;
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_CURRENT_USER);
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [submissions, setSubmissions] = useState<StudentSubmission[]>(MOCK_SUBMISSIONS);
@@ -183,6 +214,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [serverProfiles, setServerProfiles] = useState<Record<string, UserProfile>>({});
   const lastUpdatedRef = useRef<string>('');
 
+  const persistActiveUser = useCallback((user: UserProfile) => {
+    const clean = sanitizeUserProfile(user);
+    setCurrentUser(clean);
+    try {
+      localStorage.setItem('cbit_current_user', JSON.stringify(clean));
+      localStorage.setItem(`cbit_profile_${clean.role}`, JSON.stringify(clean));
+      localStorage.setItem('cbit_mar_active_role', clean.role);
+      localStorage.setItem('cbit_is_auth', 'true');
+    } catch (e) {}
+  }, []);
+
   // Sync state from server database
   const syncWithServer = useCallback(async () => {
     try {
@@ -200,7 +242,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         } = json.data;
 
         if (lastUpdated && lastUpdated === lastUpdatedRef.current) {
-          // No change on server
           return;
         }
         if (lastUpdated) {
@@ -237,18 +278,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (profiles) {
           setServerProfiles(profiles);
-          setCurrentUser((prev) => {
-            // NEVER clobber an authenticated student with another student's profile!
-            if (prev.role === 'student' && prev.roll_number && prev.roll_number !== profiles['student']?.roll_number) {
-              return prev;
-            }
-            const serverProfile = profiles[prev.role];
-            if (serverProfile && (!prev.id || prev.id === serverProfile.id)) {
-              const merged = { ...prev, ...serverProfile };
-              return merged;
-            }
-            return prev;
-          });
+          // Do NOT overwrite currentUser with generic role profiles from cbit_db.json!
+          // That was causing every student/mentor account to revert to Shaik Saleem's default values on refresh.
         }
       }
     } catch (err) {
@@ -314,8 +345,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (savedUserStr) {
         try {
           const parsedUser = JSON.parse(savedUserStr);
-          if (parsedUser && parsedUser.id) {
-            setCurrentUser(parsedUser);
+          if (parsedUser && (parsedUser.id || parsedUser.email)) {
+            const clean = sanitizeUserProfile(parsedUser);
+            setCurrentUser(clean);
+            localStorage.setItem('cbit_current_user', JSON.stringify(clean));
           }
         } catch (e) {}
       } else {
@@ -324,14 +357,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const baseUser = DEMO_USERS[savedRole];
           const savedCustomProfile = localStorage.getItem(`cbit_profile_${savedRole}`);
           if (savedCustomProfile) {
-            setCurrentUser({ ...baseUser, ...JSON.parse(savedCustomProfile) });
+            const merged = sanitizeUserProfile({ ...baseUser, ...JSON.parse(savedCustomProfile) });
+            setCurrentUser(merged);
+            localStorage.setItem('cbit_current_user', JSON.stringify(merged));
           } else {
-            setCurrentUser(baseUser);
+            const cleanBase = sanitizeUserProfile(baseUser);
+            setCurrentUser(cleanBase);
+            localStorage.setItem('cbit_current_user', JSON.stringify(cleanBase));
           }
         }
       }
     } catch (e) {
       console.warn("Could not load from localStorage:", e);
+    } finally {
+      setIsHydrated(true);
     }
 
     // Authoritative sync with server database on mount
@@ -349,32 +388,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             .eq('email', email)
             .maybeSingle();
 
-          if (profile) {
-            const authUser: UserProfile = {
-              id: profile.id,
-              email: profile.email,
-              full_name: profile.full_name,
-              role: profile.role,
-              roll_number: profile.roll_number || undefined,
-              department: profile.department || 'Artificial Intelligence and Data Science (AI&DS)',
-              section: profile.section || '2',
-              batch_year: profile.batch_year || '2024-2028 (5th Semester)',
-              is_lateral_entry: !!profile.is_lateral_entry,
-              mentor_id: profile.mentor_id || undefined,
-              mentor_name: profile.mentor?.full_name || undefined,
-              mentor_email: profile.mentor?.email || undefined,
-              avatar_url: profile.avatar_url || session.user.user_metadata?.avatar_url || undefined,
-              phone_number: profile.phone_number || undefined,
-            };
-            setCurrentUser(authUser);
-            setIsAuthenticated(true);
+          // Strict Roster Whitelist Verification:
+          // Reject if profile does not exist OR if role is student without an assigned CBIT roll_number
+          if (!profile || (profile.role === 'student' && !profile.roll_number)) {
+            await supabase.auth.signOut();
             try {
-              localStorage.setItem('cbit_is_auth', 'true');
-              localStorage.setItem('cbit_mar_active_role', authUser.role);
-              localStorage.setItem(`cbit_profile_${authUser.role}`, JSON.stringify(authUser));
-              localStorage.setItem('cbit_current_user', JSON.stringify(authUser));
+              localStorage.setItem('cbit_is_auth', 'false');
+              localStorage.removeItem('cbit_current_user');
             } catch (e) {}
+            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+              window.location.href = `/login?error=unauthorized_email&unauthorized_email=${encodeURIComponent(email)}`;
+            }
+            return;
           }
+
+          const authUser: UserProfile = sanitizeUserProfile({
+            id: profile.id,
+            email: profile.email,
+            full_name: profile.full_name,
+            role: profile.role,
+            roll_number: profile.roll_number || undefined,
+            department: profile.department || 'Artificial Intelligence and Data Science (AI&DS)',
+            section: profile.section || '2',
+            batch_year: profile.batch_year || '2024-2028 (5th Semester)',
+            is_lateral_entry: !!profile.is_lateral_entry,
+            mentor_id: profile.mentor_id || undefined,
+            mentor_name: profile.mentor?.full_name || undefined,
+            mentor_email: profile.mentor?.email || undefined,
+            avatar_url: profile.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+            phone_number: profile.phone_number || undefined,
+          });
+          persistActiveUser(authUser);
+          setIsAuthenticated(true);
         }
       });
     } catch (e) {
@@ -387,7 +432,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     window.addEventListener('focus', onFocus);
 
-    // Polling every 5 seconds ensures changes on one device are instantly seen on other devices
     const pollInterval = setInterval(() => {
       syncWithServer();
     }, 5000);
@@ -396,7 +440,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       window.removeEventListener('focus', onFocus);
       clearInterval(pollInterval);
     };
-  }, [syncWithServer]);
+  }, [syncWithServer, persistActiveUser]);
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -424,15 +468,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
         const json = await res.json();
         if (json.success && json.user) {
-          const authenticatedUser: UserProfile = json.user;
-          setCurrentUser(authenticatedUser);
+          const authenticatedUser: UserProfile = sanitizeUserProfile(json.user);
+          persistActiveUser(authenticatedUser);
           setIsAuthenticated(true);
-          try {
-            localStorage.setItem('cbit_is_auth', 'true');
-            localStorage.setItem('cbit_mar_active_role', authenticatedUser.role);
-            localStorage.setItem(`cbit_profile_${authenticatedUser.role}`, JSON.stringify(authenticatedUser));
-            localStorage.setItem('cbit_current_user', JSON.stringify(authenticatedUser));
-          } catch (e) {}
           return true;
         } else {
           throw new Error(json.error || 'Authentication failed. Please check your credentials.');
@@ -448,52 +486,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (role && DEMO_USERS[role]) {
       targetUser = DEMO_USERS[role];
     } else {
-      const match = Object.values(DEMO_USERS).find((u) => u.email.toLowerCase() === identifier.toLowerCase() || u.roll_number === identifier);
+      const match = Object.values(DEMO_USERS).find(
+        (u) => u.email.toLowerCase() === identifier.toLowerCase() || u.roll_number === identifier
+      );
       if (match) targetUser = match;
     }
 
-    try {
-      const savedCustomProfile = localStorage.getItem(`cbit_profile_${targetUser.role}`);
-      if (savedCustomProfile) {
-        targetUser = { ...targetUser, ...JSON.parse(savedCustomProfile) };
-      }
-    } catch (e) {}
-
-    setCurrentUser(targetUser);
+    const cleanTarget = sanitizeUserProfile(targetUser);
+    persistActiveUser(cleanTarget);
     setIsAuthenticated(true);
-    try {
-      localStorage.setItem('cbit_is_auth', 'true');
-      localStorage.setItem('cbit_mar_active_role', targetUser.role);
-    } catch (e) {}
     return true;
   };
 
-  const register = async (userData: Partial<UserProfile>): Promise<boolean> => {
-    const newUser: UserProfile = {
-      id: `usr-${Date.now()}`,
-      email: userData.email || 'student@cbit.ac.in',
-      full_name: userData.full_name || 'CBIT Student',
-      role: userData.role || 'student',
-      roll_number: userData.roll_number || '160124771129',
-      department: userData.department || 'Artificial Intelligence and Data Science (AI&DS)',
-      section: userData.section || '2',
-      batch_year: userData.batch_year || '2024-2028 (5th Semester)',
-      is_lateral_entry: !!userData.is_lateral_entry,
-      mentor_name: userData.mentor_name || 'Dr. Anireddy Srilakshmi',
-      mentor_id: userData.mentor_id || 'dd38a4de-c509-44dd-99c6-5d98f6bb29c4',
-      mentor_email: userData.mentor_email || 'srilakshmia_aids@cbit.ac.in',
-      mentor_history: userData.mentor_history || MOCK_CURRENT_USER.mentor_history,
-      phone_number: userData.phone_number || undefined,
-    };
-
-    setCurrentUser(newUser);
-    setIsAuthenticated(true);
-    try {
-      localStorage.setItem('cbit_is_auth', 'true');
-      localStorage.setItem('cbit_mar_active_role', newUser.role);
-      localStorage.setItem('cbit_current_user', JSON.stringify(newUser));
-    } catch (e) {}
-    return true;
+  const register = async (_userData: Partial<UserProfile>): Promise<boolean> => {
+    throw new Error(
+      'Public account registration is disabled. Only pre-registered CBIT AI&DS Section 2 students and faculty are permitted.'
+    );
   };
 
   const loginWithGoogle = async (): Promise<void> => {
@@ -551,20 +559,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const savedCustomProfile = localStorage.getItem(`cbit_profile_${role}`);
       if (savedCustomProfile) {
-        targetUser = { ...targetUser, ...JSON.parse(savedCustomProfile) };
+        const parsed = JSON.parse(savedCustomProfile);
+        if (parsed && parsed.role === role) {
+          targetUser = { ...targetUser, ...parsed };
+        }
       }
     } catch (e) {}
 
-    setCurrentUser(targetUser);
-    try {
-      localStorage.setItem('cbit_mar_active_role', role);
-    } catch (e) {}
+    persistActiveUser(sanitizeUserProfile(targetUser));
   };
 
   const updateUserAvatar = (avatarUrl: string) => {
     setCurrentUser((prev) => {
-      const updated = { ...prev, avatar_url: avatarUrl };
+      const updated = sanitizeUserProfile({ ...prev, avatar_url: avatarUrl });
       try {
+        localStorage.setItem('cbit_current_user', JSON.stringify(updated));
         localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(updated));
       } catch (e) {}
       return updated;
@@ -579,8 +588,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateUserProfile = (data: Partial<UserProfile>) => {
     setCurrentUser((prev) => {
-      const updated = { ...prev, ...data };
+      const updated = sanitizeUserProfile({ ...prev, ...data });
       try {
+        localStorage.setItem('cbit_current_user', JSON.stringify(updated));
         localStorage.setItem(`cbit_profile_${prev.role}`, JSON.stringify(updated));
       } catch (e) {}
       return updated;
@@ -1027,7 +1037,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNotification,
       }}
     >
-      {children}
+      {!isHydrated ? (
+        <div className="min-h-screen bg-[#faf9f5] dark:bg-[#121214] flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-10 h-10 rounded-full border-3 border-[#385529]/20 border-t-[#385529] animate-spin" />
+            <span className="text-xs font-serif font-bold text-[#385529] dark:text-emerald-400">
+              Loading CBIT Student Portfolio...
+            </span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </AppContext.Provider>
   );
 };

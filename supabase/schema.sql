@@ -201,28 +201,10 @@ CREATE POLICY "HOD, Class Teachers, Admins can view all submissions in dept" ON 
         )
     );
 
--- 7. FUNCTION: AUTO CREATE PROFILE ON USER SIGNUP
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.profiles (id, email, full_name, avatar_url, role)
-    VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-        NEW.raw_user_meta_data->>'avatar_url',
-        'student'
-    )
-    ON CONFLICT (id) DO NOTHING;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger for auth.users
+-- 7. STRICT ROSTER ENFORCEMENT: Do NOT auto-create profiles for unknown external Google accounts.
+-- Profiles are strictly provisioned by the CBIT AI&DS Section 2 roster seed (67 students + 6 faculty).
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+DROP FUNCTION IF EXISTS public.handle_new_user();
 
 -- 8. STORAGE BUCKET CONFIGURATION (For Certificate & Avatar uploads)
 INSERT INTO storage.buckets (id, name, public) 
