@@ -192,8 +192,19 @@ export function sanitizeUserProfile(profile: UserProfile): UserProfile {
   return cleaned;
 }
 
+export const GUEST_USER: UserProfile = {
+  id: '',
+  email: '',
+  full_name: '',
+  role: 'student',
+  department: 'Artificial Intelligence and Data Science (AI&DS)',
+  section: '2',
+  batch_year: '2024-2028',
+  is_lateral_entry: false,
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_CURRENT_USER);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(GUEST_USER);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
@@ -346,12 +357,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setCurrentUser(clean);
             setIsAuthenticated(true);
           } else {
+            setCurrentUser(GUEST_USER);
             setIsAuthenticated(false);
           }
         } catch (e) {
+          setCurrentUser(GUEST_USER);
           setIsAuthenticated(false);
         }
       } else {
+        setCurrentUser(GUEST_USER);
         setIsAuthenticated(false);
       }
     } catch (e) {
@@ -383,6 +397,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               localStorage.setItem('cbit_is_auth', 'false');
               localStorage.removeItem('cbit_current_user');
             } catch (e) {}
+            setCurrentUser(GUEST_USER);
+            setIsAuthenticated(false);
             if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
               window.location.href = `/login?error=unauthorized_email&unauthorized_email=${encodeURIComponent(email)}`;
             }
@@ -498,13 +514,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const isJwt = input.split('.').length === 3 && !input.includes('@');
+    if (!isJwt) {
+      throw new Error('Direct email entry is disabled. Please click "Sign in with Google" to authenticate.');
+    }
+
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode: 'google_oauth',
-        googleEmail: isJwt ? undefined : input,
-        googleCredential: isJwt ? input : undefined,
+        googleCredential: input,
       }),
     });
 
@@ -523,6 +542,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const logout = async () => {
     setIsAuthenticated(false);
+    setCurrentUser(GUEST_USER);
     try {
       localStorage.setItem('cbit_is_auth', 'false');
       localStorage.removeItem('cbit_current_user');

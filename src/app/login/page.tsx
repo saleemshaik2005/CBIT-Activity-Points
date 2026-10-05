@@ -109,20 +109,54 @@ function LoginFormContent() {
     }
   };
 
-  // Direct Google Whitelist Verification (Failsafe for mobile/tablet without OAuth popup)
-  const handleGoogleEmailVerify = async (e: React.FormEvent) => {
+  // Pre-check registered Google email with roster, then redirect to Google OAuth
+  const handleVerifyAndSignInWithGoogle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!googleEmailInput.trim()) return;
+    const cleanEmail = googleEmailInput.trim().toLowerCase();
+    if (!cleanEmail) {
+      setErrorMsg('Please enter your registered Google Mail address.');
+      return;
+    }
 
     setErrorMsg(null);
     setGoogleLoading(true);
 
     try {
-      await loginWithGoogle(googleEmailInput.trim());
-      routeAfterAuth();
+      // 1. Verify against official classroom roster
+      const checkRes = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const checkData = await checkRes.json();
+
+      if (!checkRes.ok || !checkData.registered) {
+        throw new Error(
+          checkData.error ||
+            `Access Denied: The Google account "${cleanEmail}" is not registered in the official CBIT AI&DS Section 2 classroom roster (67 Students & 6 Faculty).`
+        );
+      }
+
+      // 2. Pre-check passed! Initiate Google OAuth with login_hint
+      const supabase = createClient();
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            login_hint: cleanEmail,
+            prompt: 'select_account',
+          },
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google Sign-In failed. Please verify your registered email.');
-    } finally {
+      console.warn('[Google Sign-In Error]', err);
+      setErrorMsg(err.message || 'Google Sign-In could not be initiated.');
       setGoogleLoading(false);
     }
   };
@@ -177,20 +211,15 @@ function LoginFormContent() {
 
   return (
     <div className="min-h-[82vh] flex flex-col items-center justify-center px-4 py-8">
-      {/* College Identity Header */}
+      {/* Single Official College Logo */}
       <div className="text-center space-y-2 mb-6 flex flex-col items-center">
         <Link href="/" className="inline-flex items-center justify-center group mb-1">
           <img
-            src="/images/cbit-crest.png"
-            alt="CBIT Crest"
-            className="w-14 h-14 object-contain group-hover:scale-105 transition-transform"
+            src="/images/cbit-logo.png"
+            alt="Chaitanya Bharathi Institute of Technology (Autonomous)"
+            className="h-14 sm:h-20 w-auto object-contain dark:brightness-110 dark:contrast-125 group-hover:scale-102 transition-transform"
           />
         </Link>
-        <img
-          src="/images/cbit-name-logo.png"
-          alt="Chaitanya Bharathi Institute of Technology"
-          className="h-9 sm:h-11 w-auto object-contain dark:brightness-110 dark:contrast-125 drop-shadow-xs"
-        />
         <h1 className="text-xl sm:text-2xl font-serif font-black text-[#385529] dark:text-gray-100 tracking-tight">
           Student Portfolio Management System
         </h1>
@@ -290,22 +319,22 @@ function LoginFormContent() {
             <div className="relative flex items-center justify-center my-2">
               <div className="border-t border-gray-200 dark:border-[#2e3039] w-full"></div>
               <span className="bg-white dark:bg-[#1a1b20] px-3 text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">
-                or enter registered Google Mail
+                or verify registered email first
               </span>
             </div>
 
-            {/* Direct Google Verification Form */}
-            <form onSubmit={handleGoogleEmailVerify} className="space-y-3">
+            {/* Email Pre-check Form that launches Google OAuth */}
+            <form onSubmit={handleVerifyAndSignInWithGoogle} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
-                  CBIT Google Mail Address
+                  Registered CBIT Google Mail
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
                   <input
                     type="email"
                     required
-                    placeholder="ugs247..._ai@cbit.org.in or registered email"
+                    placeholder="e.g. yourname@gmail.com"
                     value={googleEmailInput}
                     onChange={(e) => setGoogleEmailInput(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50/50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] font-medium"
@@ -316,10 +345,10 @@ function LoginFormContent() {
               <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] space-y-1">
                 <div className="flex items-center space-x-1.5 text-[11px] font-bold text-[#385529] dark:text-emerald-400">
                   <Info className="w-3.5 h-3.5" />
-                  <span>Access Policy</span>
+                  <span>Strict Institutional Access</span>
                 </div>
                 <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Only verified CBIT AI&amp;DS Section 2 accounts (67 Students &amp; 6 Faculty) are authorized. Once authenticated, your session is securely kept in your role.
+                  Only registered CBIT AI&amp;DS Section 2 accounts (67 Students &amp; 6 Faculty) are authorized. Every user must authenticate through Google.
                 </p>
               </div>
 
@@ -328,7 +357,7 @@ function LoginFormContent() {
                 disabled={googleLoading}
                 className="w-full py-3 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 border-b-2 border-[#a16b15] dark:border-emerald-700 cursor-pointer disabled:opacity-50"
               >
-                <span>{googleLoading ? 'Verifying with Roster...' : 'Verify Google Account & Enter Portal'}</span>
+                <span>{googleLoading ? 'Verifying with Roster...' : 'Continue to Google Sign-In'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>

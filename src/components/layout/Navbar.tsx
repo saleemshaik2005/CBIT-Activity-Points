@@ -92,7 +92,8 @@ export const Navbar: React.FC = () => {
     admin: '/admin',
   };
 
-  const currentNav = isAuthenticated ? roleNavItems[currentUser.role] || roleNavItems.student : [];
+  const isUserLoggedIn = isAuthenticated && Boolean(currentUser?.id);
+  const currentNav = isUserLoggedIn ? roleNavItems[currentUser.role] || roleNavItems.student : [];
 
   const handleRoleSwitch = (r: UserRole) => {
     switchRole(r);
@@ -136,7 +137,7 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Center: Desktop Role Navigation */}
-            {isAuthenticated ? (
+            {isUserLoggedIn ? (
               <nav className="hidden lg:flex items-center space-x-1">
                 {currentNav.map((item) => {
                   const Icon = item.icon;
@@ -206,7 +207,7 @@ export const Navbar: React.FC = () => {
                 <Github className="w-4 h-4 text-gray-700 dark:text-gray-300" />
               </a>
 
-              {isAuthenticated ? (
+              {isUserLoggedIn ? (
                 <>
                   {/* Notification Bell */}
                   <Link

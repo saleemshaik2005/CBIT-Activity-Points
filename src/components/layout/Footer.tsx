@@ -1,103 +1,48 @@
 'use client';
 
 import React from 'react';
-import {
-  ExternalLink,
-  Github,
-  Heart,
-  Award,
-} from 'lucide-react';
+import { ExternalLink, Github } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#1c2718] dark:bg-[#14151a] text-[#e2ebd9] dark:text-gray-400 border-t-4 border-[#a16b15] dark:border-[#282932] mt-auto transition-colors">
-      
-      {/* Main Footer Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center justify-between">
+    <footer className="bg-[#1c2718] dark:bg-[#14151a] text-[#cad8c0] dark:text-gray-400 border-t-2 border-[#a16b15]/40 dark:border-[#282932] mt-auto transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           
-          {/* Column 1: CBIT Brand & System Mission */}
-          <div className="md:col-span-7 space-y-3">
-            <div className="flex items-center space-x-3">
-              <img
-                src="/images/cbit-crest.png"
-                alt="CBIT Emblem"
-                className="w-10 h-10 object-contain bg-white rounded-lg p-0.5"
-              />
-              <div>
-                <h3 className="font-serif font-bold text-sm sm:text-base text-white tracking-wide">
-                  CHAITANYA BHARATHI INSTITUTE OF TECHNOLOGY (AUTONOMOUS)
-                </h3>
-                <p className="text-xs text-[#dfa94b] dark:text-gray-300 font-medium">
-                  Student Portfolio Management System & AI Activity Verification Platform • Hyderabad-75
-                </p>
-              </div>
-            </div>
-
-            {/* Quote & 5th Semester Mini Project Attribution */}
-            <div className="p-4 rounded-2xl bg-[#273e1c]/90 dark:bg-[#1c1d22] border border-[#a16b15]/40 dark:border-[#2a2b33] space-y-2">
-              <p className="text-xs sm:text-sm text-[#fbf5eb] dark:text-gray-200 italic font-serif leading-relaxed">
-                “I began with an idea, not the complete knowledge to create it. AI gave me the answers, but curiosity gave me the questions—and somewhere between the two, an idea became real.”
-              </p>
-              <div className="flex items-center justify-between text-xs text-[#dfa94b] dark:text-amber-400 font-semibold pt-1 border-t border-white/10">
-                <span>— Saleem Shaik</span>
-                <span className="text-[11px] text-[#cad8c0] dark:text-gray-400">5th Semester Mini Project • AI&DS Dept</span>
-              </div>
-            </div>
-
-            <div className="pt-1">
-              <a
-                href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-bold text-white hover:text-[#dfa94b] dark:hover:text-gray-200 inline-flex items-center gap-1.5 bg-[#273e1c] dark:bg-[#1c1d22] px-3 py-1.5 rounded-lg border border-[#a16b15]/40 dark:border-[#2a2b33] transition-colors"
-              >
-                <Github className="w-4 h-4 text-[#dfa94b] dark:text-gray-300" />
-                <span>GitHub Repository & Source Code</span>
-                <ExternalLink className="w-3 h-3 ml-0.5" />
-              </a>
-            </div>
+          {/* Left: Department & System Info */}
+          <div className="text-center sm:text-left space-y-0.5">
+            <h3 className="font-serif font-bold text-xs sm:text-sm text-white tracking-wide">
+              Student Portfolio Management System (SPMS)
+            </h3>
+            <p className="text-[11px] text-[#8ea382] dark:text-gray-400">
+              Department of Artificial Intelligence and Data Science (AI&amp;DS)
+            </p>
           </div>
 
-          {/* Column 2: Project Development Attribution */}
-          <div className="md:col-span-5 space-y-2.5 bg-[#273e1c]/80 dark:bg-[#1c1d22] p-4 sm:p-5 rounded-2xl border border-[#a16b15]/40 dark:border-[#2a2b33]">
-            <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-[#dfa94b] dark:text-gray-200">
-              5th Semester Mini Project Development
-            </h4>
-
-            <div className="space-y-2 text-xs text-[#cad8c0] dark:text-gray-300">
-              <div>
-                <p className="text-white font-bold mb-1">Developed By (AI&DS Dept, Batch 2024-2028):</p>
-                <div className="grid grid-cols-2 gap-1 text-[11px] text-[#e2ebd9] dark:text-gray-300 font-medium pl-1">
-                  <span>• <strong>SHAIK SALEEM</strong></span>
-                  <span>• <strong>MD. ASLAM</strong></span>
-                  <span>• <strong>VEMURI PRANATHI</strong></span>
-                  <span>• <strong>AMRUTH RAJ</strong></span>
-                </div>
-              </div>
-              <p className="pt-1 border-t border-white/10 text-[11px]">
-                <strong className="text-white">Department:</strong> Department of Artificial Intelligence and Data Science (AI&DS), CBIT Autonomous Hyderabad.
-              </p>
-            </div>
+          {/* Right: Team & GitHub Link */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-right">
+            <span className="text-[11px] text-[#8ea382] dark:text-gray-400">
+              Developed by <strong className="text-[#e2ebd9] dark:text-gray-200">AI&amp;DS Team</strong> (Batch 2024–2028)
+            </span>
+            <a
+              href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-semibold text-white hover:text-[#dfa94b] dark:hover:text-amber-400 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#273e1c] dark:bg-[#1c1d22] border border-[#a16b15]/40 dark:border-[#2a2b33] transition-colors"
+            >
+              <Github className="w-3.5 h-3.5 text-[#dfa94b] dark:text-amber-400" />
+              <span>GitHub Repository</span>
+              <ExternalLink className="w-3 h-3 text-gray-400" />
+            </a>
           </div>
 
         </div>
-      </div>
 
-      {/* Bottom Copyright Bar */}
-      <div className="bg-[#121b0f] dark:bg-[#0f1014] border-t border-[#385529]/60 dark:border-[#23242c] px-4 py-3 text-xs text-[#8a9f7e] dark:text-gray-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <div>
-            © {new Date().getFullYear()} CBIT Student Portfolio Management System • CBIT (Autonomous), Gandipet, Hyderabad - 500075.
-          </div>
-          <div className="flex items-center space-x-1 text-[11px]">
-            <span>Developed by AI&DS Students with</span>
-            <Heart className="w-3 h-3 text-[#a71a1b] dark:text-rose-400 fill-current" />
-            <span>for CBIT Hyderabad</span>
-          </div>
+        {/* Bottom Thin Copyright Row */}
+        <div className="mt-4 pt-3 border-t border-[#385529]/40 dark:border-[#23242c] text-center text-[10.5px] text-[#718766] dark:text-gray-500">
+          © {new Date().getFullYear()} Chaitanya Bharathi Institute of Technology (Autonomous), Gandipet, Hyderabad - 500075. All rights reserved.
         </div>
       </div>
-
     </footer>
   );
 };

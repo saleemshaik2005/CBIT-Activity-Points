@@ -21,7 +21,7 @@ export const MobileNav: React.FC = () => {
   const { currentUser, isAuthenticated, unreadCount, submissions } = useApp();
   const pathname = usePathname();
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || !currentUser?.id) return null;
 
   const pendingMentorCount = submissions.filter((s) => s.status === 'pending_mentor').length;
 

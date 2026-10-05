@@ -27,7 +27,7 @@ import {
 import { AboutModal } from '@/components/modals/AboutModal';
 
 export default function HomePage() {
-  const { switchRole, isAuthenticated } = useApp();
+  const { switchRole, isAuthenticated, currentUser, logout } = useApp();
   const router = useRouter();
 
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -110,31 +110,14 @@ export default function HomePage() {
   return (
     <div className="space-y-12 py-4">
       {/* Hero Section */}
-      <section className="text-center space-y-5 max-w-3xl mx-auto pt-4">
-        {/* Official College Crest Banner */}
-        <div className="flex flex-col items-center justify-center space-y-3">
+      <section className="text-center space-y-5 max-w-3xl mx-auto pt-2">
+        {/* Single Official College Logo PNG */}
+        <div className="flex items-center justify-center py-2 px-4 max-w-2xl mx-auto">
           <img
-            src="/images/cbit-crest.png"
-            alt="CBIT Crest"
-            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
+            src="/images/cbit-logo.png"
+            alt="Chaitanya Bharathi Institute of Technology (Autonomous)"
+            className="h-16 sm:h-22 w-auto object-contain dark:brightness-110 dark:contrast-125 drop-shadow-xs"
           />
-
-          {/* Official College Name Logo PNG */}
-          <div className="py-1 px-4 max-w-xl flex items-center justify-center">
-            <img
-              src="/images/cbit-name-logo.png"
-              alt="Chaitanya Bharathi Institute of Technology"
-              className="h-12 sm:h-16 w-auto object-contain dark:brightness-110 dark:contrast-125 drop-shadow-xs"
-            />
-          </div>
-
-          {/* Official College Pill Badge */}
-          <div className="inline-flex items-center space-x-1.5 bg-[#fbf5eb] dark:bg-[#1a1b20] text-[#a16b15] dark:text-amber-400 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#a16b15]/40 dark:border-[#2c2d36] shadow-2xs">
-            <Award className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-            <span className="uppercase tracking-wide font-serif">
-              Chaitanya Bharathi Institute of Technology (Autonomous)
-            </span>
-          </div>
         </div>
 
         <h1 className="text-2xl sm:text-4xl font-serif font-extrabold text-[#385529] dark:text-gray-100 tracking-tight leading-tight">
@@ -146,6 +129,45 @@ export default function HomePage() {
         <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl mx-auto">
           AI-powered certificate verification, 100 AICTE activity points tracking, faculty mentor signoffs, and official graduation portfolios for the Department of AI &amp; DS.
         </p>
+
+        {/* If user is already authenticated, show direct resume dashboard banner */}
+        {isAuthenticated && currentUser?.id && (
+          <div className="max-w-xl mx-auto p-4 rounded-2xl bg-[#eef5ec] dark:bg-[#1f2026] border border-[#385529]/30 dark:border-emerald-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+            <div>
+              <p className="text-xs font-bold text-[#385529] dark:text-emerald-400">
+                Active Session: {currentUser.full_name}
+              </p>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 capitalize">
+                Signed in as {currentUser.role.replace('_', ' ')} ({currentUser.email})
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 shrink-0">
+              <Link
+                href={
+                  currentUser.role === 'mentor'
+                    ? '/mentor'
+                    : currentUser.role === 'class_teacher'
+                    ? '/teacher'
+                    : currentUser.role === 'hod'
+                    ? '/hod'
+                    : currentUser.role === 'admin'
+                    ? '/admin'
+                    : '/student'
+                }
+                className="px-3.5 py-1.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-xs flex items-center space-x-1"
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                onClick={logout}
+                className="px-2.5 py-1.5 border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-[#2a2b33] text-gray-600 dark:text-gray-300 text-xs font-semibold rounded-xl cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Dual Mode Entry Gateway Cards */}
         <div className="pt-4 max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">

@@ -6,11 +6,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { identifier, password, mode, googleEmail, googleCredential } = body;
 
-    // Handle Direct Google Sign-In & Strict Roster Whitelist Verification (Never redirects to localhost)
+    // Handle Direct Google Sign-In with Google Credential JWT
     if (mode === 'google_oauth') {
-      let verifiedEmail = (googleEmail || '').trim().toLowerCase();
+      let verifiedEmail = '';
 
-      // If a Google JWT credential token was returned by Google Identity Services, decode its email payload
+      // Google JWT credential token must be present and verified
       if (googleCredential && typeof googleCredential === 'string') {
         try {
           const parts = googleCredential.split('.');
@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
 
       if (!verifiedEmail || !verifiedEmail.includes('@')) {
         return NextResponse.json(
-          { success: false, error: 'Please enter or select your college-registered Google Mail address.' },
-          { status: 400 }
+          { success: false, error: 'Direct email login is disabled. You must authenticate through official Google Sign-In.' },
+          { status: 403 }
         );
       }
 
