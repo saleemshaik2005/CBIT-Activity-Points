@@ -88,7 +88,60 @@ export async function GET(request: Request) {
     else if (profile.role === 'hod') redirectPath = '/hod';
     else if (profile.role === 'admin') redirectPath = '/admin';
 
-    return NextResponse.redirect(`${origin}${redirectPath}?auth_sync=true`);
+    const userProfile = {
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.full_name,
+      role: profile.role,
+      roll_number: profile.roll_number || undefined,
+      department: profile.department || 'Artificial Intelligence and Data Science (AI&DS)',
+      section: profile.section || '2',
+      batch_year: profile.batch_year || '2024-2028 (5th Semester)',
+      is_lateral_entry: !!profile.is_lateral_entry,
+      mentor_id: profile.mentor_id || undefined,
+      mentor_name: (profile as any).mentor?.full_name || undefined,
+      mentor_email: (profile as any).mentor?.email || undefined,
+      mentor_phone: (profile as any).mentor?.phone_number || undefined,
+      avatar_url: profile.avatar_url || undefined,
+      phone_number: profile.phone_number || undefined,
+    };
+
+    const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Authenticating with CBIT SPMS...</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #faf9f5; }
+    .loader { text-align: center; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #e8e3d8; border-top-color: #385529; border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <h3 style="color:#1c2718;margin:0 0 8px;font-family:serif;font-weight:bold;">CBIT Student Portfolio</h3>
+    <p style="color:#666;font-size:13px;margin:0;">Verifying Two-Factor Authentication session...</p>
+  </div>
+  <script>
+    try {
+      var profile = ${JSON.stringify(userProfile)};
+      localStorage.setItem('cbit_is_auth', 'true');
+      localStorage.setItem('cbit_current_user', JSON.stringify(profile));
+      localStorage.setItem('cbit_mar_active_role', profile.role);
+      localStorage.setItem('cbit_spms_portal_mode', 'user');
+      window.location.replace('${redirectPath}');
+    } catch(e) {
+      window.location.replace('/login?error=' + encodeURIComponent('Failed to synchronize session'));
+    }
+  </script>
+</body>
+</html>`;
+
+    return new Response(htmlResponse, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
   }
 
   return NextResponse.redirect(`${origin}/login?error=Missing%20authorization%20code.`);

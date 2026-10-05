@@ -263,7 +263,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Entry Category</span>
                     <span className="font-bold text-[#a16b15] dark:text-amber-400">
-                      {currentUser.is_lateral_entry ? 'Lateral Entry (50 Pts)' : '4-Yr Regular (60 Pts)'}
+                      {currentUser.is_lateral_entry ? 'Lateral Entry (45 Pts)' : '4-Yr Regular (60 Pts)'}
                     </span>
                   </div>
                 </>

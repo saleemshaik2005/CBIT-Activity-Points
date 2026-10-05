@@ -109,6 +109,28 @@ export const VerificationCard: React.FC<Props> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [copiedField, setCopiedField] = useState<'phone' | 'email' | null>(null);
 
+  // Track read timestamps for student messages
+  const [mentorReadTimestamps, setMentorReadTimestamps] = useState<Record<string, number>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(`cbit_mentor_chat_read_${currentUser?.id || 'mentor'}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const handleOpenChat = () => {
+    setIsChatOpen(true);
+    setMentorReadTimestamps((prev) => {
+      const updated = { ...prev, [submission.id]: Date.now() };
+      try {
+        localStorage.setItem(`cbit_mentor_chat_read_${currentUser?.id || 'mentor'}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const handleCopyContact = (type: 'phone' | 'email', val: string) => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(val);
@@ -179,19 +201,31 @@ export const VerificationCard: React.FC<Props> = ({
 
           {/* Quick Action Badges & Contact Student Button */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsChatOpen(true)}
-              className="px-3 py-1.5 bg-[#eef5ec] hover:bg-[#ddead8] dark:bg-[#22232a] dark:hover:bg-[#2c2d36] text-[#385529] dark:text-emerald-400 text-xs font-bold rounded-xl border border-[#385529]/30 dark:border-[#2e3039] flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>Contact Student</span>
-              {submission.messages && submission.messages.length > 0 && (
-                <span className="bg-[#385529] dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full ml-0.5">
-                  {submission.messages.length}
-                </span>
-              )}
-            </button>
+            {(() => {
+              const lastReadChat = mentorReadTimestamps[submission.id] || 0;
+              const hasUnreadFromStudent = (submission.messages || []).some(
+                (m) => m.sender_role === 'student' && new Date(m.created_at).getTime() > lastReadChat
+              );
+
+              return (
+                <button
+                  type="button"
+                  onClick={handleOpenChat}
+                  className="relative px-3 py-1.5 bg-[#eef5ec] hover:bg-[#ddead8] dark:bg-[#22232a] dark:hover:bg-[#2c2d36] text-[#385529] dark:text-emerald-400 text-xs font-bold rounded-xl border border-[#385529]/30 dark:border-[#2e3039] flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Contact Student</span>
+                  {submission.messages && submission.messages.length > 0 && (
+                    <span className="bg-[#385529] dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full ml-0.5">
+                      {submission.messages.length}
+                    </span>
+                  )}
+                  {hasUnreadFromStudent && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse ring-2 ring-white dark:ring-[#1a1b20]" />
+                  )}
+                </button>
+              );
+            })()}
 
             <span className="text-xs bg-[#eef5ec] dark:bg-[#1a1b20] text-[#385529] dark:text-gray-300 font-bold px-2.5 py-1 rounded-lg border border-[#385529]/20 dark:border-[#2c2d36]">
               Category #{cat?.sno || 1}: {cat?.sub_type || 'General'}

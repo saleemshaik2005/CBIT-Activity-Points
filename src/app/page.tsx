@@ -112,13 +112,24 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="text-center space-y-5 max-w-3xl mx-auto pt-4">
         {/* Official College Crest Banner */}
-        <div className="flex flex-col items-center justify-center space-y-2">
+        <div className="flex flex-col items-center justify-center space-y-3">
           <img
             src="/images/cbit-crest.png"
             alt="CBIT Crest"
             className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
           />
-          <div className="inline-flex items-center space-x-1.5 bg-[#fbf5eb] dark:bg-[#1a1b20] text-[#a16b15] dark:text-amber-400 text-[11px] font-bold px-3 py-1 rounded-full border border-[#a16b15]/40 dark:border-[#2c2d36] shadow-2xs">
+
+          {/* Official College Name Logo PNG */}
+          <div className="py-1 px-4 max-w-xl flex items-center justify-center">
+            <img
+              src="/images/cbit-name-logo.png"
+              alt="Chaitanya Bharathi Institute of Technology"
+              className="h-12 sm:h-16 w-auto object-contain dark:brightness-110 dark:contrast-125 drop-shadow-xs"
+            />
+          </div>
+
+          {/* Official College Pill Badge */}
+          <div className="inline-flex items-center space-x-1.5 bg-[#fbf5eb] dark:bg-[#1a1b20] text-[#a16b15] dark:text-amber-400 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#a16b15]/40 dark:border-[#2c2d36] shadow-2xs">
             <Award className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
             <span className="uppercase tracking-wide font-serif">
               Chaitanya Bharathi Institute of Technology (Autonomous)
@@ -126,8 +137,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-[#385529] dark:text-gray-100 tracking-tight leading-tight">
-          CBIT Student Portfolio Management System
+        <h1 className="text-2xl sm:text-4xl font-serif font-extrabold text-[#385529] dark:text-gray-100 tracking-tight leading-tight">
+          Student Portfolio Management System (SPMS)
         </h1>
 
         <div className="w-20 h-1 bg-[#a16b15] dark:bg-amber-400 mx-auto rounded-full" />

@@ -39,6 +39,28 @@ export default function StudentHistoryPage() {
   const [chatSubmissionId, setChatSubmissionId] = useState<string | null>(null);
   const [chatReply, setChatReply] = useState<string>('');
 
+  // Track read timestamps for certificate inquiry messages
+  const [readChatTimestamps, setReadChatTimestamps] = useState<Record<string, number>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(`cbit_chat_read_${currentUser?.id || 'default'}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const handleOpenChat = (subId: string) => {
+    setChatSubmissionId(subId);
+    setReadChatTimestamps((prev) => {
+      const updated = { ...prev, [subId]: Date.now() };
+      try {
+        localStorage.setItem(`cbit_chat_read_${currentUser?.id || 'default'}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const mySubmissions = submissions.filter((s) => s.student_id === currentUser.id);
   const activeChatSubmission = submissions.find((s) => s.id === chatSubmissionId) || null;
 
@@ -218,7 +240,15 @@ export default function StudentHistoryPage() {
           {filtered.map((sub) => {
             const cat = categories.find((c) => c.id === sub.category_id);
             const isPdf = sub.file_type?.includes('pdf') || sub.certificate_url?.endsWith('.pdf');
-            const hasMessages = sub.messages && sub.messages.length > 0;
+            const hasAnyMessages = Array.isArray(sub.messages) && sub.messages.length > 0;
+            const lastReadTime = readChatTimestamps[sub.id] || 0;
+            const hasUnreadMessages =
+              hasAnyMessages &&
+              sub.messages!.some((m) => {
+                if (m.sender_role === 'student') return false;
+                const t = new Date(m.created_at).getTime();
+                return t > lastReadTime;
+              });
 
             return (
               <div
@@ -337,17 +367,19 @@ export default function StudentHistoryPage() {
                     {/* Contact / Message Mentor Button */}
                     <button
                       type="button"
-                      onClick={() => setChatSubmissionId(sub.id)}
+                      onClick={() => handleOpenChat(sub.id)}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer relative ${
-                        hasMessages
+                        hasUnreadMessages
+                          ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-400'
+                          : hasAnyMessages
                           ? 'bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-emerald-400 border border-[#385529]/30'
                           : 'text-gray-500 hover:text-[#385529] dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#22232a]'
                       }`}
                       title="View Mentor Messages & Discussion"
                     >
                       <MessageSquare className="w-4 h-4" />
-                      {hasMessages && (
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                      {hasUnreadMessages && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse ring-2 ring-white dark:ring-[#1a1b20]" />
                       )}
                     </button>
 

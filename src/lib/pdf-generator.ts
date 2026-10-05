@@ -148,6 +148,7 @@ export function generateOfficialCBITMARPDF(
     styles: {
       fontSize: 6.5,
       cellPadding: 1.2,
+      overflow: 'linebreak',
       lineColor: [0, 0, 0],
       lineWidth: 0.15,
       textColor: [20, 20, 20],
@@ -160,10 +161,10 @@ export function generateOfficialCBITMARPDF(
       halign: 'center',
     },
     columnStyles: {
-      0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 84 },
+      0: { cellWidth: 7, halign: 'center' },
+      1: { cellWidth: 81, overflow: 'linebreak' },
       2: { cellWidth: 10, halign: 'center' },
-      3: { cellWidth: 9, halign: 'center' },
+      3: { cellWidth: 10, halign: 'center' },
       4: { cellWidth: 8, halign: 'center' },
       5: { cellWidth: 8, halign: 'center' },
       6: { cellWidth: 8, halign: 'center' },
@@ -172,7 +173,7 @@ export function generateOfficialCBITMARPDF(
       9: { cellWidth: 8, halign: 'center' },
       10: { cellWidth: 8, halign: 'center' },
       11: { cellWidth: 8, halign: 'center' },
-      12: { cellWidth: 9, halign: 'center', fontStyle: 'bold' }
+      12: { cellWidth: 10, halign: 'center', fontStyle: 'bold' }
     },
     margin: { left: 14, right: 14, bottom: 12 },
   });
@@ -260,8 +261,9 @@ export function generateBatchMARReportPDF(
     body: tableRows,
     theme: 'grid',
     styles: {
-      fontSize: 8,
-      cellPadding: 1.8,
+      fontSize: 7.5,
+      cellPadding: 1.5,
+      overflow: 'linebreak',
       lineColor: [180, 180, 180],
       lineWidth: 0.1,
       textColor: [20, 20, 20],

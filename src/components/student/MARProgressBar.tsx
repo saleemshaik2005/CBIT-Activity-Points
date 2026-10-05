@@ -33,7 +33,7 @@ export const MARProgressBar: React.FC<Props> = ({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#385529] dark:text-gray-200 bg-[#eef5ec] dark:bg-[#22232a] px-3 py-1 rounded-full border border-[#385529]/20 dark:border-[#2e3039] flex items-center gap-1.5 font-serif">
               <Award className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
-              {isLateralEntry ? 'Lateral Entry (Min 50 Pts Target, Max 75 Pts)' : '4-Year B.Tech (Min 60 Pts Target, Max 100 Pts)'}
+              {isLateralEntry ? 'Lateral Entry (Min 45 Pts Target, Max 75 Pts)' : '4-Year B.Tech (Min 60 Pts Target, Max 100 Pts)'}
             </span>
             {progress.isCompleted ? (
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
