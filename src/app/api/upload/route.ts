@@ -51,16 +51,45 @@ async function compressImageBuffer(
   }
 }
 
+// In-memory sliding window upload tracker (max 50 certificates per student/IP per 24 hours)
+const uploadRateLimiter = new Map<string, number[]>();
+
+function checkDailyUploadQuota(key: string, limit = 50, windowMs = 24 * 60 * 60 * 1000): boolean {
+  const now = Date.now();
+  const timestamps = (uploadRateLimiter.get(key) || []).filter((t) => now - t < windowMs);
+  if (timestamps.length >= limit) {
+    uploadRateLimiter.set(key, timestamps);
+    return false;
+  }
+  timestamps.push(now);
+  uploadRateLimiter.set(key, timestamps);
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'anonymous';
 
     // 1. Handle Multipart Form Data
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const file = formData.get('file') as File | null;
+      const studentId = (formData.get('studentId') as string) || clientIp;
       const isAvatar = (formData.get('type') as string) === 'avatar';
       const subfolder = isAvatar ? 'avatars' : 'certificates';
+
+      if (!isAvatar && !checkDailyUploadQuota(studentId)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Daily upload quota reached (maximum 50 certificates per student per 24 hours). Bulk uploads are restricted to protect system integrity.',
+            dailyLimitReached: true,
+          },
+          { status: 429 }
+        );
+      }
 
       if (!file) {
         return NextResponse.json(
@@ -131,13 +160,27 @@ export async function POST(req: NextRequest) {
     // 2. Handle JSON Base64 Data URL Payload
     if (contentType.includes('application/json')) {
       const body = await req.json();
-      const { dataUrl, filename, type } = body;
+      const { dataUrl, filename, type, studentId } = body;
 
       if (!dataUrl || typeof dataUrl !== 'string') {
         return NextResponse.json({ success: false, error: 'Invalid dataUrl payload' }, { status: 400 });
       }
 
       const isAvatar = type === 'avatar';
+      const quotaKey = studentId || clientIp;
+
+      if (!isAvatar && !checkDailyUploadQuota(quotaKey)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Daily upload quota reached (maximum 50 certificates per student per 24 hours). Bulk uploads are restricted to protect system integrity.',
+            dailyLimitReached: true,
+          },
+          { status: 429 }
+        );
+      }
+
       const subfolder = isAvatar ? 'avatars' : 'certificates';
       const bucket = isAvatar ? 'avatars' : 'certificates';
       const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);

@@ -44,6 +44,16 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isTeamMode, setIsTeamMode] = useState(false);
+
+  React.useEffect(() => {
+    fetch('/api/auth/team-gate')
+      .then((res) => res.json())
+      .then((data) => {
+        setIsTeamMode(!!data.isTeamAuthenticated);
+      })
+      .catch(() => setIsTeamMode(false));
+  }, []);
 
   const roleNavItems: Record<UserRole, { label: string; href: string; icon: React.ElementType }[]> = {
     student: [
@@ -249,23 +259,25 @@ export const Navbar: React.FC = () => {
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{currentUser.email}</p>
                         </div>
 
-                        <div className="py-1">
-                          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                            Switch Active Role
+                        {isTeamMode && (
+                          <div className="py-1">
+                            <div className="px-3 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              ⚡ Team Sandbox: Switch Role
+                            </div>
+                            {(['student', 'mentor', 'class_teacher', 'hod', 'admin'] as UserRole[]).map((r) => (
+                              <button
+                                key={r}
+                                onClick={() => handleRoleSwitch(r)}
+                                className={`w-full text-left px-3.5 py-1.5 text-xs font-medium capitalize flex items-center justify-between hover:bg-[#faf7f2] dark:hover:bg-[#22232a] transition-colors cursor-pointer ${
+                                  currentUser.role === r ? 'text-[#385529] dark:text-white font-bold bg-[#eef5ec] dark:bg-[#22232a]' : 'text-gray-700 dark:text-gray-300'
+                                }`}
+                              >
+                                <span>{r.replace('_', ' ')}</span>
+                                {currentUser.role === r && <span className="w-1.5 h-1.5 rounded-full bg-[#385529] dark:bg-emerald-400" />}
+                              </button>
+                            ))}
                           </div>
-                          {(['student', 'mentor', 'class_teacher', 'hod', 'admin'] as UserRole[]).map((r) => (
-                            <button
-                              key={r}
-                              onClick={() => handleRoleSwitch(r)}
-                              className={`w-full text-left px-3.5 py-1.5 text-xs font-medium capitalize flex items-center justify-between hover:bg-[#faf7f2] dark:hover:bg-[#22232a] transition-colors cursor-pointer ${
-                                currentUser.role === r ? 'text-[#385529] dark:text-white font-bold bg-[#eef5ec] dark:bg-[#22232a]' : 'text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <span>{r.replace('_', ' ')}</span>
-                              {currentUser.role === r && <span className="w-1.5 h-1.5 rounded-full bg-[#385529] dark:bg-emerald-400" />}
-                            </button>
-                          ))}
-                        </div>
+                        )}
 
                         <div className="pt-1 border-t border-gray-100 dark:border-[#2a2b33] space-y-0.5">
                           <Link

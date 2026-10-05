@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import jsQR from 'jsqr';
 import { useApp } from '@/context/AppContext';
 import { AIExtractionResult } from '@/types';
@@ -359,10 +359,29 @@ function buildOfflineCertificateExtraction(
 }
 
 export const CertificateUploader: React.FC = () => {
-  const { currentUser, categories, settings, addSubmission } = useApp();
+  const { currentUser, categories, settings, addSubmission, submissions } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<BatchUploadItem[]>([]);
   const [submissionSuccessMsg, setSubmissionSuccessMsg] = useState<string | null>(null);
+
+  // Daily Upload Quota (max 50 certificates per student per 24 hours)
+  const DAILY_UPLOAD_LIMIT = 50;
+  const studentUploadsLast24h = useMemo(() => {
+    if (!currentUser?.id || !Array.isArray(submissions)) return 0;
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    return submissions.filter((s) => {
+      const isOwner =
+        s.student_id === currentUser.id ||
+        (s.student_roll_no && s.student_roll_no === currentUser.roll_number) ||
+        (s.student_name && s.student_name === currentUser.full_name);
+      if (!isOwner) return false;
+      const t = new Date(s.created_at || Date.now()).getTime();
+      return !isNaN(t) && t >= cutoff;
+    }).length;
+  }, [submissions, currentUser]);
+
+  const uploadsRemainingToday = Math.max(0, DAILY_UPLOAD_LIMIT - studentUploadsLast24h);
+  const isDailyLimitReached = studentUploadsLast24h >= DAILY_UPLOAD_LIMIT;
 
   // Lightbox preview for full-screen inspection
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -496,9 +515,20 @@ export const CertificateUploader: React.FC = () => {
       }
     });
 
-    if (rejectedBySize.length > 0) {
-      alert(`The following files exceed the 25MB limit:\n${rejectedBySize.join(', ')}`);
+    if (isDailyLimitReached) {
+      alert(
+        'Daily upload quota reached (maximum 50 certificates per student per 24 hours). Bulk uploads are restricted to protect system resources. Please wait until tomorrow or contact your faculty mentor.'
+      );
+      return;
     }
+
+    if (validFiles.length > uploadsRemainingToday) {
+      alert(
+        `You have ${uploadsRemainingToday} upload(s) remaining today (daily limit: 50). You selected ${validFiles.length} files. Please select ${uploadsRemainingToday} or fewer files.`
+      );
+      return;
+    }
+
     if (!validFiles.length) return;
 
     const newItems: BatchUploadItem[] = validFiles.map((file, idx) => ({
@@ -855,16 +885,43 @@ export const CertificateUploader: React.FC = () => {
         </div>
       )}
 
+      {/* Daily Submission Quota Indicator */}
+      <div
+        className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all ${
+          isDailyLimitReached
+            ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-300'
+            : 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300'
+        }`}
+      >
+        <div className="flex items-center space-x-2.5">
+          <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <div>
+            <span className="font-bold">Daily Upload Quota: </span>
+            <span>
+              {isDailyLimitReached
+                ? 'Limit reached (50/50 certificates submitted in the last 24h). Bulk uploads paused to protect system integrity.'
+                : `${uploadsRemainingToday} of ${DAILY_UPLOAD_LIMIT} uploads remaining today`}
+            </span>
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full bg-white dark:bg-[#1a1b20] border border-gray-200 dark:border-[#2e3039] text-[10.5px] font-mono font-bold self-start sm:self-auto">
+          {studentUploadsLast24h} / {DAILY_UPLOAD_LIMIT} Submitted Today
+        </span>
+      </div>
+
       {/* Drag and Drop + Live Camera Box */}
       <div
         onDragOver={(e) => {
+          if (isDailyLimitReached) return;
           e.preventDefault();
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
+        onDrop={isDailyLimitReached ? undefined : handleDrop}
         className={`relative border-2 border-dashed rounded-3xl p-6 sm:p-8 text-center transition-all bg-white dark:bg-[#1a1b20] ${
-          isDragging
+          isDailyLimitReached
+            ? 'opacity-60 border-red-300 dark:border-red-800 cursor-not-allowed'
+            : isDragging
             ? 'border-[#385529] dark:border-gray-400 bg-[#eef5ec]/50 dark:bg-[#22232a] scale-[1.01]'
             : 'border-[#e8e3d8] dark:border-[#2c2d36] hover:border-gray-400 dark:hover:border-gray-500'
         }`}
@@ -879,7 +936,9 @@ export const CertificateUploader: React.FC = () => {
               Upload Certificates or Scan with Live Camera
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
-              Upload certificate files (PDF, JPG, PNG) or take a live memory-safe camera photo. Images are automatically compressed (~85% smaller) before saving to Supabase.
+              {isDailyLimitReached
+                ? 'Daily quota reached. Please wait until tomorrow or contact your faculty mentor.'
+                : 'Upload certificate files (PDF, JPG, PNG) or take a live memory-safe camera photo. Images are automatically compressed (~85% smaller) before saving to Supabase.'}
             </p>
           </div>
 
@@ -888,6 +947,7 @@ export const CertificateUploader: React.FC = () => {
             ref={fileInputRef}
             type="file"
             multiple
+            disabled={isDailyLimitReached}
             accept="image/png, image/jpeg, image/jpg, image/webp, application/pdf"
             onChange={handleFileChange}
             className="hidden"
@@ -895,6 +955,7 @@ export const CertificateUploader: React.FC = () => {
           <input
             ref={nativeCameraInputRef}
             type="file"
+            disabled={isDailyLimitReached}
             accept="image/jpeg, image/png"
             capture="environment"
             onChange={handleFileChange}
@@ -905,17 +966,21 @@ export const CertificateUploader: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center pt-2 gap-3">
             <button
               type="button"
+              disabled={isDailyLimitReached}
               onClick={() => fileInputRef.current?.click()}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FileText className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
-              <span>Choose Files (PDF / JPG / PNG)</span>
+              <span>
+                {isDailyLimitReached ? 'Daily Limit Reached (50/50)' : 'Choose Files (PDF / JPG / PNG)'}
+              </span>
             </button>
 
             <button
               type="button"
+              disabled={isDailyLimitReached}
               onClick={() => startLiveCamera('environment')}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#faf9f5] hover:bg-[#eef5ec] dark:bg-[#22232a] dark:hover:bg-[#2c2e38] text-[#385529] dark:text-emerald-400 text-xs font-bold shadow-sm transition-all flex items-center justify-center space-x-2 border-2 border-[#385529]/30 dark:border-emerald-500/30 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#faf9f5] hover:bg-[#eef5ec] dark:bg-[#22232a] dark:hover:bg-[#2c2e38] text-[#385529] dark:text-emerald-400 text-xs font-bold shadow-sm transition-all flex items-center justify-center space-x-2 border-2 border-[#385529]/30 dark:border-emerald-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Camera className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
               <span>Take Live Camera Photo</span>

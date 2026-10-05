@@ -566,6 +566,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchRole = (role: UserRole) => {
+    // Prevent client-side role escalation in User Mode
+    const portalMode = typeof window !== 'undefined' ? localStorage.getItem('cbit_spms_portal_mode') : 'user';
+    if (portalMode === 'user') {
+      console.warn('[Security] Role switching is disabled in User Mode.');
+      return;
+    }
+
     let targetUser = DEMO_USERS[role] || MOCK_CURRENT_USER;
     try {
       const savedCustomProfile = localStorage.getItem(`cbit_profile_${role}`);

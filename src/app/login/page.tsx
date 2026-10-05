@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp, DEMO_USERS } from '@/context/AppContext';
@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Sparkles,
   Info,
+  ShieldAlert,
+  LogOut,
+  X,
 } from 'lucide-react';
 
 function LoginFormContent() {
@@ -31,12 +34,38 @@ function LoginFormContent() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Dual-mode state
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [isCheckingMode, setIsCheckingMode] = useState(true);
+
+  // Google Modal states
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [googleEmailInput, setGoogleEmailInput] = useState('');
+  const [googlePasswordInput, setGooglePasswordInput] = useState('');
 
   // Check URL query parameters for OAuth redirect error messages
   const urlError = searchParams.get('error');
   const unauthorizedEmail = searchParams.get('unauthorized_email');
+  const modeParam = searchParams.get('mode');
+
+  useEffect(() => {
+    // Verify server-side if user is authenticated for Test Mode
+    fetch('/api/auth/team-gate')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.isTeamAuthenticated && modeParam === 'test') {
+          setIsTestMode(true);
+        } else {
+          setIsTestMode(false);
+        }
+      })
+      .catch(() => {
+        setIsTestMode(false);
+      })
+      .finally(() => {
+        setIsCheckingMode(false);
+      });
+  }, [modeParam]);
 
   const routeAfterAuth = () => {
     const activeRole = (localStorage.getItem('cbit_mar_active_role') || 'student') as UserRole;
@@ -49,6 +78,8 @@ function LoginFormContent() {
 
   const handleGoogleSignIn = () => {
     setErrorMsg(null);
+    setGoogleEmailInput('');
+    setGooglePasswordInput('');
     setIsGoogleModalOpen(true);
   };
 
@@ -57,8 +88,19 @@ function LoginFormContent() {
     if (!googleEmailInput.trim()) return;
     setErrorMsg(null);
     setGoogleLoading(true);
+
     try {
-      await loginWithGoogle(googleEmailInput.trim());
+      if (!isTestMode && !googlePasswordInput.trim()) {
+        throw new Error('Please enter your portal password to verify your account.');
+      }
+
+      // In User Mode, authenticate with both Google Email and Password to prevent unauthorized account takeover
+      if (!isTestMode) {
+        await login(googleEmailInput.trim(), undefined, googlePasswordInput.trim());
+      } else {
+        await loginWithGoogle(googleEmailInput.trim());
+      }
+
       setIsGoogleModalOpen(false);
       routeAfterAuth();
     } catch (err: any) {
@@ -84,6 +126,7 @@ function LoginFormContent() {
   };
 
   const handleQuickUser = async (userIdentifier: string, userPassword?: string, fallbackRole?: UserRole) => {
+    if (!isTestMode) return; // Disallow in user mode
     setErrorMsg(null);
     setIdentifier(userIdentifier);
     setPassword(userPassword || '••••••••');
@@ -108,6 +151,15 @@ function LoginFormContent() {
     }
   };
 
+  const handleExitTestMode = async () => {
+    try {
+      await fetch('/api/auth/team-gate', { method: 'DELETE' });
+      localStorage.setItem('cbit_spms_portal_mode', 'user');
+    } catch (e) {}
+    setIsTestMode(false);
+    router.push('/login?mode=user');
+  };
+
   return (
     <div className="min-h-[82vh] flex flex-col items-center justify-center px-4 py-8">
       {/* Header */}
@@ -123,13 +175,31 @@ function LoginFormContent() {
           CBIT Student Portfolio System
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Chaitanya Bharathi Institute of Technology (Autonomous) | Dept. of AI&DS
+          Chaitanya Bharathi Institute of Technology (Autonomous) | Dept. of AI&amp;DS
         </p>
       </div>
 
+      {/* Test Mode Active Banner (Only shown when server-verified in Test Mode) */}
+      {isTestMode && (
+        <div className="w-full max-w-md mb-4 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
+              🧪 Team Test Mode Active
+            </span>
+          </div>
+          <button
+            onClick={handleExitTestMode}
+            className="text-[11px] font-semibold text-gray-500 hover:text-red-600 dark:text-gray-400 flex items-center space-x-1"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Exit Test Mode</span>
+          </button>
+        </div>
+      )}
+
       {/* Main Login Card */}
       <div className="w-full max-w-md bg-white dark:bg-[#1a1b20] rounded-3xl p-6 sm:p-8 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xl space-y-5">
-        
         {/* Error Notification Alert */}
         {(errorMsg || urlError) && (
           <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-start space-x-2.5 text-xs text-red-700 dark:text-red-300">
@@ -139,7 +209,7 @@ function LoginFormContent() {
                 errorMsg
               ) : urlError === 'unauthorized_email' ? (
                 <span>
-                  <strong>Access Restricted:</strong> The Google account (<strong>{unauthorizedEmail}</strong>) is not registered in the official CBIT AI&DS Section 2 classroom roster. Please sign in with your college-registered Google Mail.
+                  <strong>Access Restricted:</strong> The Google account (<strong>{unauthorizedEmail}</strong>) is not registered in the official CBIT AI&amp;DS roster. Please sign in with your college-registered Google Mail.
                 </span>
               ) : (
                 urlError
@@ -178,73 +248,20 @@ function LoginFormContent() {
                 />
               </svg>
             )}
-            <span>
-              {googleLoading ? 'Verifying Google Account...' : 'Sign in with Google Mail (Recommended for Students)'}
-            </span>
+            <span>Sign in with Google Mail</span>
           </button>
-
-          {isGoogleModalOpen && (
-            <div className="p-4 rounded-2xl bg-[#faf9f5] dark:bg-[#121214] border-2 border-[#385529]/30 dark:border-emerald-800/50 space-y-3 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
-                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
-                  </svg>
-                  <span className="text-xs font-serif font-bold text-gray-900 dark:text-white">
-                    Google Mail Roster Sign-In
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsGoogleModalOpen(false)}
-                  className="text-[11px] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-bold cursor-pointer"
-                >
-                  Close ✕
-                </button>
-              </div>
-              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                Enter your college-registered Google Mail (`@gmail.com` or `@cbit.org.in`). Verified directly against the 67 AI&amp;DS Section 2 students and 6 faculty accounts.
-              </p>
-              <form onSubmit={handleGoogleVerifySubmit} className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  required
-                  autoFocus
-                  value={googleEmailInput}
-                  onChange={(e) => setGoogleEmailInput(e.target.value)}
-                  placeholder="Enter your CBIT-registered Gmail address..."
-                  className="flex-1 px-3 py-2 text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] bg-white dark:bg-[#1a1b20] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
-                />
-                <button
-                  type="submit"
-                  disabled={googleLoading}
-                  className="px-4 py-2 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
-                >
-                  {googleLoading ? 'Verifying...' : 'Sign In'}
-                </button>
-              </form>
-            </div>
-          )}
-
-          <p className="text-[10px] text-center text-gray-500 dark:text-gray-400">
-            One-click verified login. Protected by your CBIT Roster Google Account.
-          </p>
         </div>
 
         {/* Divider */}
-        <div className="relative flex items-center justify-center my-1">
-          <div className="border-t border-gray-200 dark:border-[#2a2b33] w-full"></div>
-          <span className="bg-white dark:bg-[#1a1b20] px-3 text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold shrink-0">
-            Or sign in with Roll Number / Password
+        <div className="relative flex items-center justify-center my-3">
+          <div className="border-t border-gray-200 dark:border-[#2e3039] w-full"></div>
+          <span className="bg-white dark:bg-[#1a1b20] px-3 text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">
+            or login with password
           </span>
-          <div className="border-t border-gray-200 dark:border-[#2a2b33] w-full"></div>
         </div>
 
-        {/* 2. Manual Form: Roll Number / Email + Password */}
-        <form onSubmit={handleSignIn} className="space-y-4">
+        {/* 2. Roll Number & Password Form */}
+        <form onSubmit={handleSignIn} className="space-y-3.5">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
               Roll Number or Email
@@ -285,13 +302,13 @@ function LoginFormContent() {
           <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] space-y-1.5">
             <div className="flex items-center space-x-1.5 text-[11px] font-bold text-[#385529] dark:text-emerald-400">
               <Info className="w-3.5 h-3.5" />
-              <span>Login Instructions for Class</span>
+              <span>Login Instructions</span>
             </div>
             <p className="text-[10.5px] text-gray-600 dark:text-gray-300 leading-relaxed">
-              <strong>Students:</strong> Log in with Google above or enter Roll Number &amp; initial formula <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono text-[10px]">Cbit@&lt;last3digits&gt;</code> (e.g. <span className="font-semibold text-[#a16b15]">Cbit@310</span>).
+              <strong>Students:</strong> Sign in with verified Google account or enter Roll Number &amp; password.
             </p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400">
-              <strong>Faculty:</strong> Log in with institutional email &amp; issued faculty password.
+              <strong>Faculty:</strong> Sign in with institutional email &amp; assigned faculty password.
             </p>
           </div>
 
@@ -305,91 +322,193 @@ function LoginFormContent() {
           </button>
         </form>
 
-        {/* 3. Quick Test Role Switcher (For Developer & Faculty Testing) */}
-        <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-[#2a2b33]">
-          <div className="text-center">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-              Quick Role Preview (Developer &amp; Testing Mode)
-            </span>
+        {/* 3. Quick Test Role Switcher (ONLY Rendered in Server-Verified Test Mode) */}
+        {isTestMode && (
+          <div className="space-y-3 pt-3 border-t border-amber-500/20">
+            <div className="text-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                ⚡ Team Sandbox: Multi-Role Quick Switcher
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickUser('160124771129', 'Cbit@129', 'student')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Saleem (129)</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Student 1</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickUser('160124771310', 'Cbit@310', 'student')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Aslam (310)</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Student 2</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickUser('shobarani_aids@cbit.ac.in', 'Cbit@facultyM1', 'mentor')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fbf5eb] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 1</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Faculty Review</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickUser('srilakshmia_aids@cbit.ac.in', 'Cbit@facultyM3', 'mentor')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fbf5eb] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 3</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Faculty Review</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickUser('saisreetalla_aids@cbit.ac.in', 'Cbit@facultyCT', 'class_teacher')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#f0f9ff] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Class Coordinator</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Teacher Analytics</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickUser('kradhika_aids@cbit.ac.in', 'Cbit@facultyHOD', 'hod')}
+                className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fdf2f2] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+              >
+                <Award className="w-4 h-4 text-[#a71a1b] dark:text-rose-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Head of Dept (HOD)</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">Department Signoff</span>
+              </button>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickUser('160124771129', 'Cbit@129', 'student')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Saleem (129)</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Mentor: Dr. Anireddy Srilakshmi</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickUser('160124771310', 'Cbit@310', 'student')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <GraduationCap className="w-4 h-4 text-[#385529] dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Aslam (310)</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Mentor: Dr. Anireddy Srilakshmi</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickUser('shobarani_aids@cbit.ac.in', 'Cbit@facultyM1', 'mentor')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fbf5eb] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 1</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. Shobarani (071-093)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickUser('srilakshmia_aids@cbit.ac.in', 'Cbit@facultyM3', 'mentor')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fbf5eb] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 3</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. Srilakshmi (118-313)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickUser('saisreetalla_aids@cbit.ac.in', 'Cbit@facultyCT', 'class_teacher')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#f0f9ff] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Class Coordinator</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Ms. Talla Sai Sree (11628)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickUser('kradhika_aids@cbit.ac.in', 'Cbit@facultyHOD', 'hod')}
-              className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fdf2f2] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
-            >
-              <Award className="w-4 h-4 text-[#a71a1b] dark:text-rose-400 group-hover:scale-110 transition-transform mb-1" />
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Head of Dept (HOD)</span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. K. Radhika</span>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Protected Class Footer */}
         <div className="text-center pt-2 border-t border-gray-100 dark:border-[#2a2b33]">
-          <p className="text-[10px] text-gray-400 dark:text-gray-500">
-            Internal Academic Portal | AI&amp;DS Section 2 | For login assistance, contact Class Coordinator or System Administrator.
+          <p className="text-[10.5px] text-gray-400 dark:text-gray-500">
+            Official Portal for B.E. AI&amp;DS (2024-2028). Unauthorized access is strictly logged and audited.
           </p>
         </div>
       </div>
+
+      {/* Google Mail Institutional Modal */}
+      {isGoogleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-sm bg-white dark:bg-[#1a1b20] rounded-2xl shadow-2xl border border-[#e8e3d8] dark:border-[#2c2d36] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                  Google Account Sign-In
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsGoogleModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              Enter your registered CBIT student or faculty Google account email and your portal password.
+            </p>
+
+            <form onSubmit={handleGoogleVerifySubmit} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
+                  Google Mail Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  placeholder="e.g. ugs24748053_ai@cbit.org.in or gmail"
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
+                />
+              </div>
+
+              {!isTestMode && (
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1">
+                    Portal Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter your portal password"
+                    value={googlePasswordInput}
+                    onChange={(e) => setGooglePasswordInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-gray-50 dark:bg-[#121214] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-gray-400"
+                  />
+                </div>
+              )}
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsGoogleModalOpen(false)}
+                  className="flex-1 py-2 px-3 rounded-xl border border-gray-300 dark:border-[#2e3039] text-gray-700 dark:text-gray-300 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-[#22232a]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={googleLoading}
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1 disabled:opacity-50"
+                >
+                  <span>{googleLoading ? 'Verifying...' : 'Sign In'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-[82vh] flex items-center justify-center">Loading login portal...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-[82vh] flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[#385529] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
       <LoginFormContent />
     </Suspense>
   );
