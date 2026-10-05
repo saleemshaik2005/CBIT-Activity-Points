@@ -195,7 +195,7 @@ export function sanitizeUserProfile(profile: UserProfile): UserProfile {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_CURRENT_USER);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [submissions, setSubmissions] = useState<StudentSubmission[]>(MOCK_SUBMISSIONS);
   const [categories, setCategories] = useState<ActivityCategory[]>(CBIT_24_CATEGORIES);
@@ -319,11 +319,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      const savedAuth = localStorage.getItem('cbit_is_auth');
-      if (savedAuth !== null) {
-        setIsAuthenticated(savedAuth === 'true');
-      }
-
       const savedSubmissions = localStorage.getItem('cbit_mar_submissions');
       if (savedSubmissions) {
         const parsed = JSON.parse(savedSubmissions);
@@ -341,31 +336,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const savedNotifs = localStorage.getItem('cbit_notifications');
       if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
 
+      const savedAuth = localStorage.getItem('cbit_is_auth');
       const savedUserStr = localStorage.getItem('cbit_current_user');
-      if (savedUserStr) {
+      if (savedAuth === 'true' && savedUserStr) {
         try {
           const parsedUser = JSON.parse(savedUserStr);
           if (parsedUser && (parsedUser.id || parsedUser.email)) {
             const clean = sanitizeUserProfile(parsedUser);
             setCurrentUser(clean);
-            localStorage.setItem('cbit_current_user', JSON.stringify(clean));
-          }
-        } catch (e) {}
-      } else {
-        const savedRole = localStorage.getItem('cbit_mar_active_role') as UserRole;
-        if (savedRole && DEMO_USERS[savedRole]) {
-          const baseUser = DEMO_USERS[savedRole];
-          const savedCustomProfile = localStorage.getItem(`cbit_profile_${savedRole}`);
-          if (savedCustomProfile) {
-            const merged = sanitizeUserProfile({ ...baseUser, ...JSON.parse(savedCustomProfile) });
-            setCurrentUser(merged);
-            localStorage.setItem('cbit_current_user', JSON.stringify(merged));
+            setIsAuthenticated(true);
           } else {
-            const cleanBase = sanitizeUserProfile(baseUser);
-            setCurrentUser(cleanBase);
-            localStorage.setItem('cbit_current_user', JSON.stringify(cleanBase));
+            setIsAuthenticated(false);
           }
+        } catch (e) {
+          setIsAuthenticated(false);
         }
+      } else {
+        setIsAuthenticated(false);
       }
     } catch (e) {
       console.warn("Could not load from localStorage:", e);

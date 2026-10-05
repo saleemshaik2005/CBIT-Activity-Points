@@ -29,14 +29,18 @@ export const RouteGuard: React.FC<{ children: React.ReactNode }> = ({ children }
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
     // Check if the current route is one of the role-protected prefixes
     const matchingProtectedPrefix = PROTECTED_PREFIXES.find((prefix) =>
       pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
 
     if (matchingProtectedPrefix) {
+      if (!isAuthenticated) {
+        // Protect all academic dashboards from unauthenticated access
+        router.replace('/login');
+        return;
+      }
+
       const allowedPrefixes = ROLE_ALLOWED_PREFIXES[currentUser.role] || [];
       const isAllowed = allowedPrefixes.some((prefix) =>
         pathname === prefix || pathname.startsWith(`${prefix}/`)

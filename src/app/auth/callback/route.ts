@@ -5,6 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+  const appOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin;
+
   const code = searchParams.get('code');
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
@@ -12,7 +16,7 @@ export async function GET(request: Request) {
   if (error) {
     console.error('[OAuth Callback] Error from provider:', error, errorDescription);
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`
+      `${appOrigin}/login?error=${encodeURIComponent(errorDescription || error)}`
     );
   }
 
@@ -47,7 +51,7 @@ export async function GET(request: Request) {
     if (exchangeError || !session?.user?.email) {
       console.error('[OAuth Callback] Code exchange failed:', exchangeError);
       return NextResponse.redirect(
-        `${origin}/login?error=Authentication%20failed.%20Please%20try%20again.`
+        `${appOrigin}/login?error=Authentication%20failed.%20Please%20try%20again.`
       );
     }
 
@@ -77,7 +81,7 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.redirect(
-        `${origin}/login?error=unauthorized_email&unauthorized_email=${encodeURIComponent(email)}`
+        `${appOrigin}/login?error=unauthorized_email&unauthorized_email=${encodeURIComponent(email)}`
       );
     }
 
@@ -144,5 +148,5 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.redirect(`${origin}/login?error=Missing%20authorization%20code.`);
+  return NextResponse.redirect(`${appOrigin}/login?error=Missing%20authorization%20code.`);
 }

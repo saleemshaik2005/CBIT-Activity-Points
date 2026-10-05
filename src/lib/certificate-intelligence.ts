@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import jsQR from 'jsqr';
-import { extractText, getDocumentProxy } from 'unpdf';
+import { extractText, getDocumentProxy, extractImages } from 'unpdf';
 import { AIExtractionResult, AITamperAnalysis } from '@/types';
 import { CBIT_24_CATEGORIES } from './mar-constants';
 
@@ -744,20 +744,52 @@ async function extractCertificateText(
   clientOcrText?: string
 ): Promise<{ text: string; pageCount: number; source: string }> {
   const isPdf = mimeType.toLowerCase().includes('pdf');
+  let pdfImageBuffer: Buffer | null = null;
+  let pdfPageCount = 1;
 
-  // 1. If PDF, extract full embedded text across all pages using unpdf
+  // 1. If PDF, extract full embedded digital text across all pages using unpdf
   if (isPdf) {
     try {
       const uint8 = new Uint8Array(buffer);
       const pdfProxy = await getDocumentProxy(uint8);
       const { text, totalPages } = await extractText(pdfProxy, { mergePages: true });
+      pdfPageCount = totalPages || 1;
       const combinedPdfText = [text || '', clientOcrText || ''].join('\n').trim();
-      if (combinedPdfText.length > 15) {
+
+      // If PDF has sufficient digital text layer, return it immediately
+      if (combinedPdfText.length > 25) {
         return {
           text: combinedPdfText,
-          pageCount: totalPages || 1,
-          source: `PDF Digital Text Layer (${totalPages || 1} page${(totalPages || 1) > 1 ? 's' : ''})`,
+          pageCount: pdfPageCount,
+          source: `PDF Digital Text Layer (${pdfPageCount} page${pdfPageCount > 1 ? 's' : ''})`,
         };
+      }
+
+      // If PDF is a scanned certificate or image wrapped in PDF (sparse/empty digital text):
+      // Extract the scanned image from page 1 so we can run multi-pass Tesseract OCR on it!
+      try {
+        const rawImages = await extractImages(uint8, 1);
+        if (rawImages && rawImages.length > 0) {
+          let largest = rawImages[0];
+          for (const img of rawImages) {
+            if (img.width * img.height > largest.width * largest.height) {
+              largest = img;
+            }
+          }
+          if (largest && largest.data && largest.width > 80 && largest.height > 80) {
+            pdfImageBuffer = await sharp(Buffer.from(largest.data), {
+              raw: {
+                width: largest.width,
+                height: largest.height,
+                channels: (largest.channels as any) || 3,
+              },
+            })
+              .png()
+              .toBuffer();
+          }
+        }
+      } catch (extractImgErr) {
+        console.warn('[CertificateIntelligence] PDF raster extraction warning:', extractImgErr);
       }
     } catch (pdfErr) {
       console.warn('[CertificateIntelligence] unpdf extraction warning:', pdfErr);
@@ -769,19 +801,20 @@ async function extractCertificateText(
     collectedTexts.push(clientOcrText.trim());
   }
 
-  // 2. Always run Server-Side Pretrained Tesseract.js LSTM Neural OCR on sharp-enhanced image
-  // if clientOcrText is missing or doesn't yet contain rich certificate text
+  // 2. Pretrained Tesseract.js LSTM Neural OCR
+  // Target buffer: Use pdfImageBuffer for scanned PDFs, or original buffer for image uploads
+  const targetImageBuffer = pdfImageBuffer || (!isPdf ? buffer : null);
   const clientHasCertKeywords =
     clientOcrText &&
     CERTIFICATE_DOMAIN_KEYWORDS.filter((k) => clientOcrText.toLowerCase().includes(k)).length >= 3;
 
-  if (!isPdf && !clientHasCertKeywords) {
+  if (targetImageBuffer && !clientHasCertKeywords) {
     try {
       const TesseractMod = await import('tesseract.js');
       const Tesseract = (TesseractMod as any).default || TesseractMod;
 
       // Pass A: High-resolution normalized grayscale + sharpened text strokes
-      const passABuffer = await sharp(buffer)
+      const passABuffer = await sharp(targetImageBuffer)
         .rotate()
         .resize({ width: 1800, withoutEnlargement: false })
         .grayscale()
@@ -798,7 +831,7 @@ async function extractCertificateText(
       // If Pass A yielded sparse text, run Pass B with contrast boost for decorative/light certificates
       const combinedSoFar = collectedTexts.join('\n');
       if (combinedSoFar.split(/\s+/).length < 15) {
-        const passBBuffer = await sharp(buffer)
+        const passBBuffer = await sharp(targetImageBuffer)
           .rotate()
           .resize({ width: 1800, withoutEnlargement: false })
           .grayscale()
@@ -821,11 +854,12 @@ async function extractCertificateText(
 
   return {
     text: mergedText,
-    pageCount: 1,
-    source:
-      mergedText.length > 0
-        ? 'Pretrained Tesseract LSTM Neural OCR Engine'
-        : 'Visual & Structural Document Scanner',
+    pageCount: pdfPageCount,
+    source: pdfImageBuffer
+      ? 'Scanned PDF Raster Extraction + Pretrained Tesseract LSTM OCR'
+      : mergedText.length > 0
+      ? 'Pretrained Tesseract LSTM Neural OCR Engine'
+      : 'Visual & Structural Document Scanner',
   };
 }
 
