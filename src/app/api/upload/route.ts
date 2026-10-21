@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import sharp from 'sharp';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getAuthenticatedUser } from '@/lib/supabase/server';
 import { saveServerUploadedFile } from '@/lib/server-db';
 
 export const runtime = 'nodejs';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lnowcdmmkycujdfafqbl.supabase.co';
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY);
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB max
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'application/pdf',
+]);
 
 /**
  * Compresses certificate and avatar images using `sharp` (MozJPEG)
@@ -51,7 +57,7 @@ async function compressImageBuffer(
   }
 }
 
-// In-memory sliding window upload tracker (max 50 certificates per student/IP per 24 hours)
+// Sliding window upload tracker (max 50 certificates per student/IP per 24 hours)
 const uploadRateLimiter = new Map<string, number[]>();
 
 function checkDailyUploadQuota(key: string, limit = 50, windowMs = 24 * 60 * 60 * 1000): boolean {
@@ -70,16 +76,42 @@ export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'anonymous';
+    const { user } = await getAuthenticatedUser();
 
     // 1. Handle Multipart Form Data
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const file = formData.get('file') as File | null;
-      const studentId = (formData.get('studentId') as string) || clientIp;
+      const callerStudentId = (formData.get('studentId') as string) || '';
+      const effectiveUserId = user?.id || callerStudentId || clientIp;
       const isAvatar = (formData.get('type') as string) === 'avatar';
-      const subfolder = isAvatar ? 'avatars' : 'certificates';
+      const bucket = isAvatar ? 'avatars' : 'certificates';
 
-      if (!isAvatar && !checkDailyUploadQuota(studentId)) {
+      if (!file) {
+        return NextResponse.json(
+          { success: false, error: 'No file provided in form data' },
+          { status: 400 }
+        );
+      }
+
+      // Explicit file size limit check
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { success: false, error: 'File size exceeds maximum 20MB limit.' },
+          { status: 413 }
+        );
+      }
+
+      // Explicit MIME type verification
+      const rawMime = file.type || 'image/jpeg';
+      if (!ALLOWED_MIME_TYPES.has(rawMime.toLowerCase())) {
+        return NextResponse.json(
+          { success: false, error: `Unsupported file type (${rawMime}). Only JPG, PNG, WEBP, and PDF files are allowed.` },
+          { status: 415 }
+        );
+      }
+
+      if (!isAvatar && !checkDailyUploadQuota(effectiveUserId)) {
         return NextResponse.json(
           {
             success: false,
@@ -91,13 +123,6 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (!file) {
-        return NextResponse.json(
-          { success: false, error: 'No file provided in form data' },
-          { status: 400 }
-        );
-      }
-
       const bytes = await file.arrayBuffer();
       const rawBuffer = Buffer.from(bytes);
       const originalSize = rawBuffer.byteLength;
@@ -105,18 +130,20 @@ export async function POST(req: NextRequest) {
       // Compress image before storing in Supabase
       const { buffer, contentType: outMime, ext } = await compressImageBuffer(
         rawBuffer,
-        file.type || 'image/jpeg',
+        rawMime,
         isAvatar
       );
 
-      const bucket = isAvatar ? 'avatars' : 'certificates';
-      const safeFilename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const safeFilename = `${Date.now()}_${randomSuffix}.${ext}`;
+      // Partition by student/user ID
+      const objectStoragePath = `${effectiveUserId}/${safeFilename}`;
 
       // Primary: Upload compressed buffer to Supabase Cloud Storage Bucket
       try {
         const { data: uploadData, error: uploadErr } = await supabaseAdmin.storage
           .from(bucket)
-          .upload(safeFilename, buffer, {
+          .upload(objectStoragePath, buffer, {
             contentType: outMime,
             upsert: true,
           });
@@ -126,6 +153,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({
             success: true,
             url: urlData.publicUrl,
+            storagePath: uploadData.path,
+            bucket,
             filename: file.name,
             originalSize,
             size: buffer.byteLength,
@@ -142,7 +171,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Fallback: Local Server File Save
-      const result = saveServerUploadedFile(buffer, safeFilename, subfolder);
+      const result = saveServerUploadedFile(buffer, safeFilename, bucket);
       if (!result.success) {
         return NextResponse.json({ success: false, error: 'Failed to save file' }, { status: 500 });
       }
@@ -150,92 +179,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         url: result.url,
+        storagePath: safeFilename,
+        bucket,
         filename: file.name,
-        originalSize,
-        size: buffer.byteLength,
-        storage: 'local',
-      });
-    }
-
-    // 2. Handle JSON Base64 Data URL Payload
-    if (contentType.includes('application/json')) {
-      const body = await req.json();
-      const { dataUrl, filename, type, studentId } = body;
-
-      if (!dataUrl || typeof dataUrl !== 'string') {
-        return NextResponse.json({ success: false, error: 'Invalid dataUrl payload' }, { status: 400 });
-      }
-
-      const isAvatar = type === 'avatar';
-      const quotaKey = studentId || clientIp;
-
-      if (!isAvatar && !checkDailyUploadQuota(quotaKey)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              'Daily upload quota reached (maximum 50 certificates per student per 24 hours). Bulk uploads are restricted to protect system integrity.',
-            dailyLimitReached: true,
-          },
-          { status: 429 }
-        );
-      }
-
-      const subfolder = isAvatar ? 'avatars' : 'certificates';
-      const bucket = isAvatar ? 'avatars' : 'certificates';
-      const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-
-      let rawBuffer: Buffer;
-      let inMime = 'image/jpeg';
-
-      if (matches && matches.length === 3) {
-        inMime = matches[1];
-        rawBuffer = Buffer.from(matches[2], 'base64');
-      } else {
-        rawBuffer = Buffer.from(dataUrl, 'base64');
-      }
-
-      const originalSize = rawBuffer.byteLength;
-      const { buffer, contentType: outMime, ext } = await compressImageBuffer(
-        rawBuffer,
-        inMime,
-        isAvatar
-      );
-
-      const safeFilename =
-        (filename ? filename.replace(/\.[^/.]+$/, '') : `upload_${Date.now()}`) + `.${ext}`;
-
-      try {
-        const storagePath = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const { data: uploadData, error: uploadErr } = await supabaseAdmin.storage
-          .from(bucket)
-          .upload(storagePath, buffer, {
-            contentType: outMime,
-            upsert: true,
-          });
-
-        if (!uploadErr && uploadData?.path) {
-          const { data: urlData } = supabaseAdmin.storage.from(bucket).getPublicUrl(uploadData.path);
-          return NextResponse.json({
-            success: true,
-            url: urlData.publicUrl,
-            originalSize,
-            size: buffer.byteLength,
-            storage: 'supabase',
-          });
-        }
-      } catch (storageErr) {
-        console.warn('[Upload API] Supabase base64 upload failed, falling back:', storageErr);
-      }
-
-      const result = saveServerUploadedFile(buffer, safeFilename, subfolder);
-      if (!result.success) {
-        return NextResponse.json({ success: false, error: 'Failed to save base64 file' }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        url: result.url,
         originalSize,
         size: buffer.byteLength,
         storage: 'local',

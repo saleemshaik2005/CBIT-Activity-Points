@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
     college_name TEXT NOT NULL DEFAULT 'Chaitanya Bharathi Institute of Technology (Autonomous)',
     college_code TEXT NOT NULL DEFAULT 'CBIT - HYDERABAD-75',
     regular_target_points INTEGER NOT NULL DEFAULT 60,
-    lateral_entry_target_points INTEGER NOT NULL DEFAULT 50,
+    lateral_entry_target_points INTEGER NOT NULL DEFAULT 45,
     academic_year TEXT NOT NULL DEFAULT '2025-2026',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 
 -- Insert default system settings if empty
 INSERT INTO public.system_settings (id, college_name, college_code, regular_target_points, lateral_entry_target_points)
-VALUES (1, 'Chaitanya Bharathi Institute of Technology (Autonomous)', 'CBIT - HYDERABAD-75', 60, 50)
+VALUES (1, 'Chaitanya Bharathi Institute of Technology (Autonomous)', 'CBIT - HYDERABAD-75', 60, 45)
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. PROFILES TABLE (Users & Roles)
@@ -63,15 +63,16 @@ CREATE TABLE IF NOT EXISTS public.activity_categories (
     id SERIAL PRIMARY KEY,
     sno INTEGER NOT NULL,
     name TEXT NOT NULL,
-    sub_type TEXT,
+    sub_type TEXT NOT NULL DEFAULT 'General',
     default_points INTEGER NOT NULL,
     max_points_allowed INTEGER NOT NULL,
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_activity_category_sno_subtype UNIQUE (sno, sub_type)
 );
 
--- Seed all 24 Official CBIT MAR Categories
+-- Seed all 24 Official CBIT MAR Categories (Idempotent Upsert)
 INSERT INTO public.activity_categories (sno, name, sub_type, default_points, max_points_allowed, description)
 VALUES
     (1, 'MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)', '12 weeks', 20, 40, 'MOOC courses of 12 weeks duration or equivalent'),
@@ -105,7 +106,11 @@ VALUES
     (22, 'Training to under privileged Physically challenged', 'General', 10, 20, 'Social training service for underprivileged or disabled'),
     (23, 'Community Service & Allied Activities', 'General', 10, 20, 'Community welfare service and allied social initiatives'),
     (24, 'Class Representative', 'General', 5, 10, 'Elected Class Representative service for academic year')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (sno, sub_type) DO UPDATE SET
+    name = EXCLUDED.name,
+    default_points = EXCLUDED.default_points,
+    max_points_allowed = EXCLUDED.max_points_allowed,
+    description = EXCLUDED.description;
 
 -- 5. STUDENT SUBMISSIONS TABLE
 CREATE TABLE IF NOT EXISTS public.student_submissions (
@@ -120,6 +125,8 @@ CREATE TABLE IF NOT EXISTS public.student_submissions (
     claimed_points INTEGER NOT NULL,
     awarded_points INTEGER DEFAULT 0,
     certificate_url TEXT NOT NULL,
+    storage_bucket TEXT DEFAULT 'certificates',
+    storage_path TEXT,
     file_type TEXT,
     ai_extracted_data JSONB,
     status submission_status NOT NULL DEFAULT 'pending_mentor',
@@ -206,25 +213,53 @@ CREATE POLICY "HOD, Class Teachers, Admins can view all submissions in dept" ON 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 
--- 8. STORAGE BUCKET CONFIGURATION (For Certificate & Avatar uploads)
+-- 8. STORAGE BUCKET CONFIGURATION
+-- Certificates are PRIVATE (access via authenticated policies / signed URLs).
+-- Avatars are PUBLIC for user profile pictures.
 INSERT INTO storage.buckets (id, name, public) 
 VALUES 
-    ('certificates', 'certificates', true),
+    ('certificates', 'certificates', false),
     ('avatars', 'avatars', true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
 
-DROP POLICY IF EXISTS "Public Read Access for Certificates" ON storage.objects;
-CREATE POLICY "Public Read Access for Certificates" 
+-- Avatar Policies (Public Read, Authenticated Upload)
+DROP POLICY IF EXISTS "Public Read Avatars" ON storage.objects;
+CREATE POLICY "Public Read Avatars" 
 ON storage.objects FOR SELECT 
-USING (bucket_id IN ('certificates', 'avatars'));
+USING (bucket_id = 'avatars');
 
-DROP POLICY IF EXISTS "Upload Certificates and Avatars" ON storage.objects;
-CREATE POLICY "Upload Certificates and Avatars" 
+DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
+CREATE POLICY "Authenticated Upload Avatars" 
 ON storage.objects FOR INSERT 
-WITH CHECK (bucket_id IN ('certificates', 'avatars'));
+WITH CHECK (bucket_id = 'avatars' AND auth.uid() IS NOT NULL);
 
-DROP POLICY IF EXISTS "Update Certificates and Avatars" ON storage.objects;
-CREATE POLICY "Update Certificates and Avatars" 
-ON storage.objects FOR UPDATE 
-USING (bucket_id IN ('certificates', 'avatars'));
+-- Certificate Policies (Owner & Mentor Only Read, Authenticated Student Upload)
+DROP POLICY IF EXISTS "Owner and Mentor Read Certificates" ON storage.objects;
+CREATE POLICY "Owner and Mentor Read Certificates" 
+ON storage.objects FOR SELECT 
+USING (
+    bucket_id = 'certificates' AND (
+        auth.uid() IS NOT NULL AND (
+            (storage.foldername(name))[1] = auth.uid()::text
+            OR EXISTS (
+                SELECT 1 FROM public.student_submissions sub
+                JOIN public.profiles s ON s.id = sub.student_id
+                WHERE sub.storage_path = name AND (
+                    sub.student_id = auth.uid()
+                    OR s.mentor_id = auth.uid()
+                    OR public.get_my_role() IN ('class_teacher', 'hod', 'admin')
+                )
+            )
+            OR public.get_my_role() = 'admin'
+        )
+    )
+);
+
+DROP POLICY IF EXISTS "Authenticated Student Upload Certificates" ON storage.objects;
+CREATE POLICY "Authenticated Student Upload Certificates" 
+ON storage.objects FOR INSERT 
+WITH CHECK (
+    bucket_id = 'certificates' 
+    AND auth.uid() IS NOT NULL
+);
 

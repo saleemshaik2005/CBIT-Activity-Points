@@ -19,8 +19,6 @@ import {
   Github,
   ChevronDown,
   Bell,
-  Sun,
-  Moon,
   LogOut,
   LogIn,
 } from 'lucide-react';
@@ -31,8 +29,6 @@ export const Navbar: React.FC = () => {
   const {
     currentUser,
     switchRole,
-    theme,
-    toggleTheme,
     isAuthenticated,
     logout,
     unreadCount,
@@ -168,22 +164,8 @@ export const Navbar: React.FC = () => {
               </nav>
             ) : null}
 
-            {/* Right: Theme Toggle, Notifications, Guide, GitHub & User Menu */}
+            {/* Right: Notifications, Guide, GitHub & User Menu */}
             <div className="flex items-center space-x-1.5 sm:space-x-2.5">
-              
-              {/* Theme Toggle Button */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
-                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-4 h-4 text-amber-400" />
-                ) : (
-                  <Moon className="w-4 h-4 text-gray-700" />
-                )}
-              </button>
 
               {/* About & Guide Modal Button */}
               <button

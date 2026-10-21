@@ -59,30 +59,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // 1. Offline-safe caching for /api/sync GET so AppContext works offline
-  if (url.pathname === '/api/sync') {
-    event.respondWith(
-      fetch(request)
-        .then((res) => {
-          if (res && res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(request, clone));
-          }
-          return res;
-        })
-        .catch(async () => {
-          const cached = await caches.match(request);
-          if (cached) return cached;
-          return new Response(JSON.stringify({ offline: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        })
-    );
-    return;
-  }
-
-  // Let other API endpoints go to network
+  // Never cache dynamic API endpoints containing student records or sessions
   if (url.pathname.startsWith('/api/')) {
     return;
   }

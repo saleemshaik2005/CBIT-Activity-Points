@@ -10,24 +10,44 @@ export async function POST(req: NextRequest) {
     if (mode === 'google_oauth') {
       let verifiedEmail = '';
 
-      // Google JWT credential token must be present and verified
-      if (googleCredential && typeof googleCredential === 'string') {
-        try {
-          const parts = googleCredential.split('.');
-          if (parts.length === 3) {
-            const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-            if (payload.email) {
-              verifiedEmail = String(payload.email).toLowerCase();
-            }
-          }
-        } catch (jwtErr) {
-          console.warn('[Google Login API] JWT decode warning:', jwtErr);
+      if (!googleCredential || typeof googleCredential !== 'string') {
+        return NextResponse.json(
+          { success: false, error: 'Direct email login is disabled. You must authenticate through official Google Sign-In.' },
+          { status: 403 }
+        );
+      }
+
+      // Verify ID token cryptographically using Google OAuth2 tokeninfo API
+      try {
+        const tokenRes = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(googleCredential.trim())}`
+        );
+
+        if (!tokenRes.ok) {
+          return NextResponse.json(
+            { success: false, error: 'Google authentication failed or token expired. Please try signing in again.' },
+            { status: 401 }
+          );
         }
+
+        const tokenData = await tokenRes.json();
+        if (
+          tokenData.email &&
+          (tokenData.email_verified === 'true' || tokenData.email_verified === true)
+        ) {
+          verifiedEmail = String(tokenData.email).toLowerCase();
+        }
+      } catch (jwtErr) {
+        console.error('[Google Login API] Token validation error:', jwtErr);
+        return NextResponse.json(
+          { success: false, error: 'Failed to verify Google token with authentication provider.' },
+          { status: 500 }
+        );
       }
 
       if (!verifiedEmail || !verifiedEmail.includes('@')) {
         return NextResponse.json(
-          { success: false, error: 'Direct email login is disabled. You must authenticate through official Google Sign-In.' },
+          { success: false, error: 'Unverified Google email. Sign-in rejected.' },
           { status: 403 }
         );
       }

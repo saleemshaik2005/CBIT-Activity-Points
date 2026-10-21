@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getAuthenticatedUser } from '@/lib/supabase/server';
+import { verifySessionToken } from '@/app/api/auth/team-gate/route';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const { user, profile } = await getAuthenticatedUser();
+    const teamCookie = req.cookies.get('cbit_spms_team_session')?.value;
+    const isTeamAuth = verifySessionToken(teamCookie);
+
+    if (!user && !isTeamAuth) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required.' },
+        { status: 401 }
+      );
+    }
+
+    const callerRole = isTeamAuth ? 'admin' : profile?.role || 'student';
     const { searchParams } = new URL(req.url);
     const mentorId = searchParams.get('mentor_id');
     const role = searchParams.get('role');
@@ -14,14 +28,20 @@ export async function GET(req: NextRequest) {
       .select('id, full_name, roll_number, email, phone_number, department, section, batch_year, is_lateral_entry, role, mentor_id, avatar_url, mentor:mentor_id(id, full_name, email)')
       .order('roll_number', { ascending: true });
 
-    if (role && role !== 'all') {
-      query = query.eq('role', role);
-    } else if (!role) {
-      query = query.eq('role', 'student');
-    }
+    if (callerRole === 'mentor' && user?.id) {
+      query = query.eq('mentor_id', user.id);
+    } else if (callerRole === 'student' && user?.id) {
+      query = query.eq('id', user.id);
+    } else {
+      if (role && role !== 'all') {
+        query = query.eq('role', role);
+      } else if (!role) {
+        query = query.eq('role', 'student');
+      }
 
-    if (mentorId) {
-      query = query.eq('mentor_id', mentorId);
+      if (mentorId) {
+        query = query.eq('mentor_id', mentorId);
+      }
     }
 
     const { data: students, error } = await query;
@@ -37,7 +57,7 @@ export async function GET(req: NextRequest) {
       full_name: s.full_name,
       roll_number: s.roll_number,
       email: s.email,
-      phone_number: s.phone_number || undefined,
+      phone_number: callerRole !== 'student' ? s.phone_number : undefined,
       role: s.role || 'student',
       department: s.department || 'Artificial Intelligence and Data Science (AI&DS)',
       section: s.section || '2',

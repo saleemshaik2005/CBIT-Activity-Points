@@ -169,77 +169,33 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Dual Mode Entry Gateway Cards */}
-        <div className="pt-4 max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-          
-          {/* Card 1: USER MODE (Official Academic Portal) */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#1a1b20] border-2 border-[#385529] dark:border-emerald-600 shadow-md hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[#385529] dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1">
-                  <GraduationCap className="w-3 h-3 mr-1" />
-                  <span>Official Portal</span>
-                </span>
-                <span className="text-[10px] font-semibold text-gray-400">Class Mode</span>
-              </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                User Mode
-              </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                Standard access for all <strong>Students &amp; Faculty</strong>. Clean institutional login, certificate uploading (up to 50/day), mentor approvals, and AICTE point records.
-              </p>
-            </div>
-
-            <button
-              onClick={handleEnterUserMode}
-              className="w-full py-2.5 px-4 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2 cursor-pointer"
-            >
-              <span>Enter User Mode</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Card 2: TEST MODE (Project Team Sandbox) */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#1a1b20] border-2 border-[#a16b15] dark:border-amber-500/80 shadow-md hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-[#a16b15] dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1">
-                  <Lock className="w-3 h-3 mr-1" />
-                  <span>Team Only</span>
-                </span>
-                {isTeamUnlocked && (
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                    Unlocked ✓
-                  </span>
-                )}
-              </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                Test Mode
-              </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                Reserved for the <strong>4-Member Project Team</strong>. Protected by team passcode. Enables rapid multi-role switching, OCR debugger, and system audit logs.
-              </p>
-            </div>
-
-            <button
-              onClick={handleOpenTestModeModal}
-              className="w-full py-2.5 px-4 bg-[#a16b15] hover:bg-[#85550e] dark:bg-amber-600 dark:hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2 cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>{isTeamUnlocked ? 'Open Test Mode →' : 'Unlock Test Mode'}</span>
-            </button>
-          </div>
-
-        </div>
-
-        {/* System Guide Action */}
-        <div className="pt-2">
+        {/* Primary Action Buttons */}
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/login"
+            className="w-full sm:w-auto px-6 py-3.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Sign In to Academic Portal</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
           <button
             onClick={() => setIsAboutOpen(true)}
-            className="inline-flex items-center space-x-2 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-[#385529] dark:hover:text-emerald-400 transition-colors"
+            className="w-full sm:w-auto px-5 py-3.5 bg-white dark:bg-[#1a1b20] hover:bg-gray-50 dark:hover:bg-[#22232a] text-gray-700 dark:text-gray-200 border border-[#e8e3d8] dark:border-[#2e3039] font-bold text-sm rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer"
           >
-            <HelpCircle className="w-4 h-4" />
-            <span>Read AICTE Guidelines &amp; System Overview</span>
+            <HelpCircle className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
+            <span>MAR Guidelines & Regulations</span>
+          </button>
+        </div>
+
+        {/* Developer Sandbox trigger (Discreet, development only) */}
+        <div className="pt-2">
+          <button
+            onClick={handleOpenTestModeModal}
+            className="inline-flex items-center space-x-1.5 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <Lock className="w-3 h-3" />
+            <span>Developer Sandbox & Diagnostics</span>
           </button>
         </div>
       </section>

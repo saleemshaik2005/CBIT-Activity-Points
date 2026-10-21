@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// Expected SHA-256 hash of team password
-// Note: Plain text is never stored in server code or sent to client
-const EXPECTED_HASH =
-  process.env.SPMS_TEAM_PASS_HASH ||
-  'dc86ec8e09a354b5a050c03669add4805a0b26c369e4496e3a91647e1203c265';
-
 // In-memory rate limiting for brute-force protection
 const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
 
@@ -18,8 +12,9 @@ function getClientIp(req: NextRequest): string {
   return '127.0.0.1';
 }
 
-function generateSessionToken(): string {
-  const secret = process.env.SPMS_SECRET || 'cbit-spms-team-salt-2026';
+export function generateSessionToken(): string | null {
+  const secret = process.env.SPMS_SECRET;
+  if (!secret) return null;
   const timestamp = Date.now().toString();
   const signature = crypto
     .createHmac('sha256', secret)
@@ -28,7 +23,7 @@ function generateSessionToken(): string {
   return `team_${timestamp}_${signature}`;
 }
 
-function verifySessionToken(token: string): boolean {
+export function verifySessionToken(token?: string | null): boolean {
   if (!token || !token.startsWith('team_')) return false;
   const parts = token.split('_');
   if (parts.length !== 3) return false;
@@ -38,21 +33,41 @@ function verifySessionToken(token: string): boolean {
   const time = parseInt(timestamp, 10);
   if (isNaN(time) || Date.now() - time > 1000 * 60 * 60 * 24) return false;
 
-  const secret = process.env.SPMS_SECRET || 'cbit-spms-team-salt-2026';
+  const secret = process.env.SPMS_SECRET;
+  // Fail closed if server secret is not configured
+  if (!secret) return false;
+
   const expectedSignature = crypto
     .createHmac('sha256', secret)
     .update(`team-session-${timestamp}`)
     .digest('hex');
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature, 'utf8'),
-    Buffer.from(expectedSignature, 'utf8')
-  );
+  if (signature.length !== expectedSignature.length) return false;
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'utf8'),
+      Buffer.from(expectedSignature, 'utf8')
+    );
+  } catch {
+    return false;
+  }
 }
 
 // POST: Verify Team Passcode and set secure HTTP-only cookie
 export async function POST(req: NextRequest) {
   try {
+    const expectedHash = process.env.SPMS_TEAM_PASS_HASH;
+    if (!expectedHash) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Team test access is disabled on this deployment. Configure SPMS_TEAM_PASS_HASH to enable.',
+        },
+        { status: 403 }
+      );
+    }
+
     const ip = getClientIp(req);
     const now = Date.now();
 
@@ -79,81 +94,96 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const inputHash = crypto.createHash('sha256').update(passcode.trim()).digest('hex');
+    // Compute SHA-256 of submitted passcode
+    const submittedHash = crypto
+      .createHash('sha256')
+      .update(passcode.trim())
+      .digest('hex');
 
-    // Constant-time hash comparison
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(inputHash, 'utf8'),
-      Buffer.from(EXPECTED_HASH, 'utf8')
-    );
+    const isMatch =
+      submittedHash.length === expectedHash.length &&
+      crypto.timingSafeEqual(
+        Buffer.from(submittedHash, 'utf8'),
+        Buffer.from(expectedHash, 'utf8')
+      );
 
     if (!isMatch) {
-      const currentCount = (attempt ? attempt.count : 0) + 1;
+      const count = (attempt?.count || 0) + 1;
       let lockedUntil = 0;
-      if (currentCount >= 5) {
-        lockedUntil = now + 15 * 60 * 1000; // 15-minute lockout
+      if (count >= 5) {
+        lockedUntil = now + 15 * 60 * 1000; // 15 min lock
+      } else if (count >= 3) {
+        lockedUntil = now + 60 * 1000; // 1 min lock
       }
-      failedAttempts.set(ip, { count: currentCount, lockedUntil });
+      failedAttempts.set(ip, { count, lockedUntil });
 
       return NextResponse.json(
         {
           success: false,
-          error:
-            currentCount >= 5
-              ? 'Too many failed attempts. Locked for 15 minutes.'
-              : `Invalid team passcode. ${5 - currentCount} attempts remaining.`,
+          error: count >= 5 ? 'Account locked for 15 minutes.' : 'Invalid team passcode.',
         },
         { status: 401 }
       );
     }
 
-    // Success: clear failed attempts
+    // Reset failed attempts on success
     failedAttempts.delete(ip);
 
     const token = generateSessionToken();
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Server configuration error: SPMS_SECRET is missing.' },
+        { status: 500 }
+      );
+    }
+
     const response = NextResponse.json({
       success: true,
-      message: 'Team test mode successfully unlocked.',
-      mode: 'test',
+      message: 'Team access verified.',
     });
 
-    // Set secure, HTTP-only cookie
     response.cookies.set('cbit_spms_team_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/',
       maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
     });
 
     return response;
-  } catch (error: any) {
+  } catch (err: any) {
+    console.error('[Team Gate] Error:', err);
     return NextResponse.json(
-      { success: false, error: 'Authentication service error.' },
+      { success: false, error: 'Internal server error.' },
       { status: 500 }
     );
   }
 }
 
-// GET: Check if current request has an active valid team session
+// GET: Check if active team session cookie is valid
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('cbit_spms_team_session')?.value;
-  const isAuth = !!token && verifySessionToken(token);
+  const isValid = verifySessionToken(token);
 
   return NextResponse.json({
-    isTeamAuthenticated: isAuth,
-    mode: isAuth ? 'test' : 'user',
+    isTeamAuthenticated: isValid,
   });
 }
 
-// DELETE: Exit team test mode
+// DELETE: Sign out of team mode
 export async function DELETE() {
   const response = NextResponse.json({
     success: true,
-    message: 'Exited team test mode.',
-    mode: 'user',
+    message: 'Signed out of team mode.',
   });
 
-  response.cookies.delete('cbit_spms_team_session');
+  response.cookies.set('cbit_spms_team_session', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
+
   return response;
 }
