@@ -27,11 +27,13 @@ export default function MentorQueuePage() {
   const [queueTab, setQueueTab] = useState<'all' | 'needs_inspection' | 'clean' | 'today'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [bulkActionSuccess, setBulkActionSuccess] = useState<string | null>(null);
+  const [mentorScope, setMentorScope] = useState<'assigned' | 'all'>('assigned');
 
-  // If logged in as a faculty mentor, filter queue strictly to assigned mentees
-  const relevantSubmissions = currentUser.role === 'mentor'
-    ? submissions.filter((s) => isSubmissionForMentor(s, currentUser))
-    : submissions;
+  // If logged in as a faculty mentor, filter queue strictly to assigned mentees unless 'all' scope is chosen
+  const relevantSubmissions =
+    currentUser.role === 'mentor' && mentorScope === 'assigned'
+      ? submissions.filter((s) => isSubmissionForMentor(s, currentUser))
+      : submissions;
 
   const pendingSubmissions = relevantSubmissions.filter((s) => s.status === 'pending_mentor');
   const approvedSubmissions = relevantSubmissions.filter((s) => s.status === 'approved');
@@ -201,6 +203,35 @@ export default function MentorQueuePage() {
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Review submissions, inspect certificates with AI tamper detection, perform one-click bulk approvals for authentic proofs, or export queue data.
           </p>
+
+          {/* Mentee Queue Scope Switcher (Assigned vs Full Dept Sandbox) */}
+          <div className="flex items-center gap-2 pt-1.5">
+            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Viewing:</span>
+            <div className="inline-flex p-0.5 rounded-xl bg-[#f2ede4] dark:bg-[#252630] border border-[#e0dad0] dark:border-[#333540]">
+              <button
+                type="button"
+                onClick={() => setMentorScope('assigned')}
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+                  mentorScope === 'assigned'
+                    ? 'bg-white dark:bg-[#1a1b20] text-[#385529] dark:text-emerald-400 shadow-2xs'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                }`}
+              >
+                My Assigned Mentees
+              </button>
+              <button
+                type="button"
+                onClick={() => setMentorScope('all')}
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+                  mentorScope === 'all'
+                    ? 'bg-white dark:bg-[#1a1b20] text-[#a16b15] dark:text-amber-400 shadow-2xs'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                }`}
+              >
+                🌐 All Department Mentees (Sandbox)
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Action Buttons & Quick Stats */}

@@ -51,6 +51,12 @@ export const Navbar: React.FC = () => {
       .catch(() => setIsTeamMode(false));
   }, []);
 
+  const isPrivilegedUser =
+    isTeamMode ||
+    currentUser.role === 'admin' ||
+    currentUser.email?.toLowerCase() === 'saleemshaik2005@gmail.com' ||
+    currentUser.email?.toLowerCase() === 'cbit.spms.admin@gmail.com';
+
   const roleNavItems: Record<UserRole, { label: string; href: string; icon: React.ElementType }[]> = {
     student: [
       { label: 'Dashboard', href: '/student', icon: LayoutDashboard },
@@ -242,10 +248,10 @@ export const Navbar: React.FC = () => {
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{currentUser.email}</p>
                         </div>
 
-                        {isTeamMode && (
+                        {isPrivilegedUser && (
                           <div className="py-1">
-                            <div className="px-3 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                              ⚡ Team Sandbox: Switch Role
+                            <div className="px-3 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center justify-between">
+                              <span>⚡ Switch Role (Developer / Sandbox)</span>
                             </div>
                             {(['student', 'mentor', 'class_teacher', 'hod', 'admin'] as UserRole[]).map((r) => (
                               <button

@@ -4,6 +4,10 @@ import crypto from 'crypto';
 // In-memory rate limiting for brute-force protection
 const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
 
+// Default fallback values: SHA-256 hash for 'cbit-team-2026' and fallback salt
+const DEFAULT_PASS_HASH = 'e39ab1373129bab68c3a91717145e50fa5e4c3941749895f92ae9c814a3cf5e2';
+const DEFAULT_SECRET = 'cbit-spms-team-salt-2026';
+
 function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
@@ -13,8 +17,7 @@ function getClientIp(req: NextRequest): string {
 }
 
 export function generateSessionToken(): string | null {
-  const secret = process.env.SPMS_SECRET;
-  if (!secret) return null;
+  const secret = process.env.SPMS_SECRET || DEFAULT_SECRET;
   const timestamp = Date.now().toString();
   const signature = crypto
     .createHmac('sha256', secret)
@@ -33,9 +36,7 @@ export function verifySessionToken(token?: string | null): boolean {
   const time = parseInt(timestamp, 10);
   if (isNaN(time) || Date.now() - time > 1000 * 60 * 60 * 24) return false;
 
-  const secret = process.env.SPMS_SECRET;
-  // Fail closed if server secret is not configured
-  if (!secret) return false;
+  const secret = process.env.SPMS_SECRET || DEFAULT_SECRET;
 
   const expectedSignature = crypto
     .createHmac('sha256', secret)
@@ -57,16 +58,7 @@ export function verifySessionToken(token?: string | null): boolean {
 // POST: Verify Team Passcode and set secure HTTP-only cookie
 export async function POST(req: NextRequest) {
   try {
-    const expectedHash = process.env.SPMS_TEAM_PASS_HASH;
-    if (!expectedHash) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Team test access is disabled on this deployment. Configure SPMS_TEAM_PASS_HASH to enable.',
-        },
-        { status: 403 }
-      );
-    }
+    const expectedHash = process.env.SPMS_TEAM_PASS_HASH || DEFAULT_PASS_HASH;
 
     const ip = getClientIp(req);
     const now = Date.now();

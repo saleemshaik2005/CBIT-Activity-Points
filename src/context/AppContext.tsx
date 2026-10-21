@@ -573,11 +573,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchRole = (role: UserRole) => {
-    // Prevent client-side role escalation in User Mode
+    // Prevent client-side role escalation in User Mode unless privileged maintainer/admin
+    const isPrivilegedUser =
+      currentUser.role === 'admin' ||
+      currentUser.email?.toLowerCase() === 'saleemshaik2005@gmail.com' ||
+      currentUser.email?.toLowerCase() === 'cbit.spms.admin@gmail.com';
+
     const portalMode = typeof window !== 'undefined' ? localStorage.getItem('cbit_spms_portal_mode') : 'user';
-    if (portalMode === 'user') {
+    if (portalMode === 'user' && !isPrivilegedUser) {
       console.warn('[Security] Role switching is disabled in User Mode.');
       return;
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cbit_spms_portal_mode', 'test');
     }
 
     let targetUser = DEMO_USERS[role] || MOCK_CURRENT_USER;
