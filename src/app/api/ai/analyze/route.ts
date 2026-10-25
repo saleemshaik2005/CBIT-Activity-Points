@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { analyzeCertificateDocument } from '@/lib/certificate-intelligence';
+import { analyzeCertificateDocument } from '@/lib/gemini';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const base64Data = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
 
-    // Run Non-Gemini Pretrained/Local Certificate Intelligence Pipeline
+    // Run Institutional Gemini AI Document Intelligence & Forensics Pipeline
     const extraction = await analyzeCertificateDocument(
       base64Data,
       mimeType,
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
         studentRollNo,
         clientOcrText,
         clientQrPayloads,
+        fileName: file.name,
       },
       file.name
     );

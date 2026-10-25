@@ -82,7 +82,7 @@ export default function AdminHubPage() {
       id: 'log-001',
       timestamp: new Date(Date.now() - 1000 * 60 * 15).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       action: 'Certificate Authenticity & OCR Verification',
-      user: 'Tesseract LSTM + jsQR + 64-Block ELA',
+      user: 'CBIT Neural Vision & Document Forensics Engine',
       role: 'Document Intelligence',
       status: 'success',
       details: 'Evaluated 12 student certificate uploads via 64-block spatial ELA & initial-aware recipient identity check.',

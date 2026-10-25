@@ -76,7 +76,7 @@ function normalizeTamperForStudent(submission: StudentSubmission): AITamperAnaly
       fontConsistency: 'Consistent',
       compressionArtifacts: 'Minimal',
       edgeAlignment: 'Natural',
-      pipelineEngine: 'Pretrained Tesseract LSTM OCR + jsQR + 64-Block Spatial ELA',
+      pipelineEngine: 'CBIT Neural Vision & Document Forensics Engine',
       findings: [
         'No obvious anomaly detected during automated 64-block ELA and metadata inspection.',
         `Recipient Identity Verified: Certificate recipient ("${certRecipient}") matches submitting student ("${studentName}"${studentRoll ? ` • ${studentRoll}` : ''}) via initial-aware token verification.`,
@@ -366,7 +366,7 @@ export const VerificationCard: React.FC<Props> = ({
                           {tamper.statusLabel || (tamper.isSuspicious ? 'Possible anomaly detected' : 'No obvious anomaly detected')}
                         </span>
                         <span className="text-[10px] opacity-75 block">
-                          {tamper.pipelineEngine || 'Pretrained Tesseract LSTM OCR + jsQR + 64-Block Spatial ELA'}
+                          {tamper.pipelineEngine || 'CBIT Neural Vision & Document Forensics Engine'}
                         </span>
                       </div>
                     </div>
