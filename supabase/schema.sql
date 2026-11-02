@@ -263,3 +263,117 @@ WITH CHECK (
     AND auth.uid() IS NOT NULL
 );
 
+-- ==============================================================================
+-- 9. ASYNCHRONOUS EVENT-DRIVEN PROCESSING & IDEMPOTENT QUEUE
+-- ==============================================================================
+
+-- Add document binary hash column to student_submissions for deduplication
+ALTER TABLE public.student_submissions ADD COLUMN IF NOT EXISTS file_hash TEXT;
+CREATE INDEX IF NOT EXISTS idx_submissions_file_hash ON public.student_submissions(file_hash);
+CREATE INDEX IF NOT EXISTS idx_submissions_student_hash ON public.student_submissions(student_id, file_hash);
+
+-- Explicit Processing State Enum
+DO $$ BEGIN
+    CREATE TYPE processing_job_status AS ENUM (
+        'UPLOADED',
+        'QUEUED',
+        'PROCESSING',
+        'PARSED',
+        'MANUAL_REVIEW_REQUIRED',
+        'FAILED_RETRYABLE',
+        'FAILED_FATAL'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Background AI Processing Jobs Table
+CREATE TABLE IF NOT EXISTS public.certificate_processing_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    submission_id UUID REFERENCES public.student_submissions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    file_url TEXT NOT NULL,
+    storage_path TEXT NOT NULL,
+    file_hash TEXT NOT NULL,
+    status processing_job_status NOT NULL DEFAULT 'QUEUED',
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    max_retries INTEGER NOT NULL DEFAULT 3,
+    error_message TEXT,
+    circuit_breaker_status TEXT DEFAULT 'CLOSED',
+    extraction_result JSONB,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_jobs_status ON public.certificate_processing_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_jobs_student ON public.certificate_processing_jobs(student_id);
+CREATE INDEX IF NOT EXISTS idx_jobs_submission ON public.certificate_processing_jobs(submission_id);
+CREATE INDEX IF NOT EXISTS idx_jobs_hash ON public.certificate_processing_jobs(file_hash);
+
+ALTER TABLE public.certificate_processing_jobs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own processing jobs" ON public.certificate_processing_jobs
+    FOR SELECT USING (student_id = auth.uid() OR public.get_my_role() IN ('mentor', 'class_teacher', 'hod', 'admin'));
+
+CREATE POLICY "Service and Students can insert jobs" ON public.certificate_processing_jobs
+    FOR INSERT WITH CHECK (student_id = auth.uid() OR public.get_my_role() = 'admin');
+
+CREATE POLICY "Service and Admins can update jobs" ON public.certificate_processing_jobs
+    FOR UPDATE USING (student_id = auth.uid() OR public.get_my_role() = 'admin');
+
+-- ==============================================================================
+-- 10. IMPRINTED AUDIT LEDGER (Immutable Append-Only Audit Trail)
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.activity_point_audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    actor_role user_role,
+    target_submission_id UUID REFERENCES public.student_submissions(id) ON DELETE CASCADE,
+    student_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    previous_status TEXT,
+    new_status TEXT,
+    previous_points INTEGER,
+    new_points INTEGER,
+    reason_code TEXT,
+    remarks TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    ip_address TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexing for rapid audit discovery and compliance reporting
+CREATE INDEX IF NOT EXISTS idx_audit_target_sub ON public.activity_point_audit_logs(target_submission_id);
+CREATE INDEX IF NOT EXISTS idx_audit_student ON public.activity_point_audit_logs(student_id);
+CREATE INDEX IF NOT EXISTS idx_audit_actor ON public.activity_point_audit_logs(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON public.activity_point_audit_logs(created_at DESC);
+
+ALTER TABLE public.activity_point_audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Read policies: Users can view their relevant audit trails; Admins view all
+CREATE POLICY "Admins have full view on audit logs" ON public.activity_point_audit_logs
+    FOR SELECT USING (public.get_my_role() = 'admin');
+
+CREATE POLICY "Faculty can view relevant mentee audit logs" ON public.activity_point_audit_logs
+    FOR SELECT USING (
+        actor_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM public.profiles s 
+            WHERE s.id = activity_point_audit_logs.student_id AND s.mentor_id = auth.uid()
+        )
+        OR public.get_my_role() IN ('class_teacher', 'hod')
+    );
+
+CREATE POLICY "Students can view audit logs for own submissions" ON public.activity_point_audit_logs
+    FOR SELECT USING (student_id = auth.uid());
+
+CREATE POLICY "Authenticated users and service can insert audit logs" ON public.activity_point_audit_logs
+    FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Strict Immutability: NO UPDATE OR DELETE policies are created for activity_point_audit_logs.
+-- Attempts to update or delete rows from this table will fail by default under RLS.
+
+

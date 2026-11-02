@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { readServerDB, writeServerDB } from '@/lib/server-db';
 import { StudentSubmission, UserProfile, NotificationItem, SystemSettings, ActivityCategory } from '@/types';
 import { getAuthenticatedUser } from '@/lib/supabase/server';
 import { verifySessionToken } from '@/app/api/auth/team-gate/route';
+import { getCachedCategories, getCachedSettings, invalidateCategoriesCache, invalidateSettingsCache } from '@/lib/cached-reference-data';
+import { recordAuditLog } from '@/lib/audit/audit-ledger';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -20,23 +21,11 @@ export async function GET(req: NextRequest) {
     const teamCookie = req.cookies.get('cbit_spms_team_session')?.value;
     const isTeamAuth = verifySessionToken(teamCookie);
 
-    // Fetch public categories and settings (always safe)
-    const [catsRes, settingsRes] = await Promise.all([
-      supabaseAdmin
-        .from('activity_categories')
-        .select('*')
-        .order('sno', { ascending: true })
-        .order('id', { ascending: true }),
-
-      supabaseAdmin
-        .from('system_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle(),
+    // Accelerated Edge Reference Data (Next.js Cache Tagged)
+    const [categories, settings] = await Promise.all([
+      getCachedCategories(),
+      getCachedSettings(),
     ]);
-
-    const categories = catsRes.data || [];
-    const settings = settingsRes.data || null;
 
     // If caller is NOT authenticated (and not in team sandbox), return only public rules without private records
     if (!user && !isTeamAuth) {
@@ -241,16 +230,17 @@ export async function POST(req: NextRequest) {
           : 'pending_mentor';
 
         if (isValidUUID(id)) {
+          // Fetch existing state for audit before-and-after
+          const { data: existingSub } = await supabaseAdmin
+            .from('student_submissions')
+            .select('id, status, awarded_points, student_id, student:profiles!student_id(mentor_id)')
+            .eq('id', id)
+            .maybeSingle();
+
           // IDOR Defense: If caller is a mentor, verify this submission belongs to their assigned mentee
           if (callerRole === 'mentor' && user?.id) {
-            const { data: subCheck } = await supabaseAdmin
-              .from('student_submissions')
-              .select('id, student:profiles!student_id(mentor_id)')
-              .eq('id', id)
-              .maybeSingle();
-
-            const studentMentorId = (subCheck?.student as any)?.mentor_id;
-            if (!subCheck || studentMentorId !== user.id) {
+            const studentMentorId = (existingSub?.student as any)?.mentor_id;
+            if (!existingSub || studentMentorId !== user.id) {
               return NextResponse.json(
                 { success: false, error: 'Forbidden: You can only evaluate submissions belonging to your assigned mentees.' },
                 { status: 403 }
@@ -258,10 +248,12 @@ export async function POST(req: NextRequest) {
             }
           }
 
+          const targetAwardedPoints = status === 'approved' && awardedPoints !== undefined ? Math.max(0, Math.min(100, Number(awardedPoints) || 0)) : 0;
+
           const updatePayload: any = {
             status: validStatus,
             mentor_remarks: remarks !== undefined ? String(remarks).slice(0, 1000) : null,
-            awarded_points: status === 'approved' && awardedPoints !== undefined ? Math.max(0, Math.min(100, Number(awardedPoints) || 0)) : 0,
+            awarded_points: targetAwardedPoints,
             approved_by: status === 'approved' ? callerId : null,
             approved_at: status === 'approved' ? new Date().toISOString() : null,
             updated_at: new Date().toISOString(),
@@ -271,6 +263,20 @@ export async function POST(req: NextRequest) {
             .from('student_submissions')
             .update(updatePayload)
             .eq('id', id);
+
+          // Imprinted Audit Ledger Record
+          await recordAuditLog({
+            actorId: callerId,
+            actorRole: callerRole,
+            targetSubmissionId: id,
+            studentId: existingSub?.student_id,
+            action: status === 'approved' ? 'MENTOR_APPROVED' : status === 'rejected' ? 'MENTOR_REJECTED' : 'STATUS_CHANGED',
+            previousStatus: existingSub?.status,
+            newStatus: validStatus,
+            previousPoints: existingSub?.awarded_points || 0,
+            newPoints: targetAwardedPoints,
+            remarks: remarks ? String(remarks).slice(0, 500) : (status === 'approved' ? 'Approved by faculty mentor' : 'Status updated'),
+          });
         }
         break;
       }
@@ -316,6 +322,19 @@ export async function POST(req: NextRequest) {
               updated_at: new Date().toISOString(),
             })
             .in('id', validIds);
+
+          // Audit record for each bulk approved submission
+          for (const subId of validIds) {
+            await recordAuditLog({
+              actorId: callerId,
+              actorRole: callerRole,
+              targetSubmissionId: subId,
+              action: 'MENTOR_APPROVED',
+              previousStatus: 'pending_mentor',
+              newStatus: 'approved',
+              remarks: remarks ? String(remarks).slice(0, 500) : 'Bulk approval by faculty mentor',
+            });
+          }
         }
         break;
       }
@@ -324,11 +343,18 @@ export async function POST(req: NextRequest) {
         const { id } = payload;
         if (isValidUUID(id)) {
           let deleteQuery = supabaseAdmin.from('student_submissions').delete().eq('id', id);
-          // Students can only delete their own submissions
           if (callerRole === 'student' && user?.id) {
             deleteQuery = deleteQuery.eq('student_id', user.id);
           }
           await deleteQuery;
+
+          await recordAuditLog({
+            actorId: callerId,
+            actorRole: callerRole,
+            targetSubmissionId: id,
+            action: 'SUBMISSION_DELETED',
+            remarks: 'Submission deleted by authorized owner/admin',
+          });
         }
         break;
       }
@@ -342,6 +368,14 @@ export async function POST(req: NextRequest) {
         }
         const newSettings: Partial<SystemSettings> = payload;
         await supabaseAdmin.from('system_settings').update(newSettings).eq('id', 1);
+        await invalidateSettingsCache();
+        await recordAuditLog({
+          actorId: callerId,
+          actorRole: callerRole,
+          action: 'SYSTEM_SETTINGS_UPDATED',
+          remarks: 'System settings updated by administrator',
+          metadata: newSettings,
+        });
         break;
       }
 
@@ -363,6 +397,14 @@ export async function POST(req: NextRequest) {
               is_active: cat.is_active,
             })
             .eq('id', cat.id);
+          await invalidateCategoriesCache();
+          await recordAuditLog({
+            actorId: callerId,
+            actorRole: callerRole,
+            action: 'CATEGORY_UPDATED',
+            remarks: `Activity category SNo ${cat.sno} updated`,
+            metadata: { sno: cat.sno, sub_type: cat.sub_type, default_points: cat.default_points },
+          });
         }
         break;
       }

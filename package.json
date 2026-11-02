@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:security": "node tests/security.test.mjs",
+    "test:architecture": "node tests/architecture.test.mjs",
+    "test:all": "node tests/run-all-tests.mjs",
     "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {

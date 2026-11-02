@@ -58,6 +58,17 @@ interface UploadContextType {
 
 const UploadContext = createContext<UploadContextType | undefined>(undefined);
 
+async function computeFileSha256(file: File): Promise<string> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  }
+}
+
 export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser, categories, settings, addSubmission, submissions } = useApp();
   const [uploadQueue, setUploadQueue] = useState<BatchUploadItem[]>([]);
@@ -164,32 +175,56 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
           // 1. Image compression + client jsQR detection
           const { optimizedFile, qrPayloads } = await prepareOptimizedFileAndScanQR(item.file);
+          const fileHash = await computeFileSha256(optimizedFile);
 
-          // 2. Upload compressed image to /api/upload
+          // 2. Direct Cloud Storage Presigned URL Upload Flow
+          let storagePath = '';
           let serverUrl = '';
           let finalCompressedBytes = optimizedFile.size;
+
           if (typeof navigator === 'undefined' || navigator.onLine) {
             try {
-              const uploadForm = new FormData();
-              uploadForm.append('file', optimizedFile);
-              uploadForm.append('type', 'certificate');
-              const uploadRes = await fetch('/api/upload', {
+              const presignRes = await fetch('/api/storage/presigned-url', {
                 method: 'POST',
-                body: uploadForm,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  filename: optimizedFile.name,
+                  fileType: optimizedFile.type || 'image/jpeg',
+                  fileSize: optimizedFile.size,
+                  bucket: 'certificates',
+                }),
               });
-              if (uploadRes.ok) {
-                const uploadJson = await uploadRes.json();
-                if (uploadJson.success && uploadJson.url) {
-                  serverUrl = uploadJson.url;
-                  if (uploadJson.size) finalCompressedBytes = uploadJson.size;
+
+              if (presignRes.ok) {
+                const presignData = await presignRes.json();
+                if (presignData.success && presignData.signedUrl) {
+                  // Direct binary upload to Cloud Storage
+                  const directUploadRes = await fetch(presignData.signedUrl, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': optimizedFile.type || 'image/jpeg',
+                    },
+                    body: optimizedFile,
+                  });
+
+                  if (directUploadRes.ok) {
+                    storagePath = presignData.storagePath;
+                    serverUrl = presignData.publicUrl;
+                  }
+                } else if (presignData.publicUrl) {
+                  storagePath = presignData.storagePath;
+                  serverUrl = presignData.publicUrl;
                 }
               }
             } catch (uploadErr) {
-              console.warn('[Upload] Server upload failed, using client data URL:', uploadErr);
+              console.warn('[Direct Upload] Presigned storage upload warning:', uploadErr);
             }
           }
 
           const previewUrl = serverUrl || (await fileToPermanentDataURL(optimizedFile));
+          if (!storagePath) {
+            storagePath = `${currentUser?.id || 'anonymous'}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
+          }
 
           setUploadQueue((prev) =>
             prev.map((q) =>
@@ -198,7 +233,7 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     ...q,
                     previewUrl,
                     fileSize: finalCompressedBytes,
-                    progressText: 'Running Neural OCR, QR Decoding & Authenticity Forensics...',
+                    progressText: 'Queued for Asynchronous Neural OCR & Authenticity Forensics...',
                   }
                 : q
             )
@@ -207,41 +242,113 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           // 3. Run client-side Tesseract OCR on contrast-enhanced canvas
           const clientOcrText = await runClientTesseractOCR(optimizedFile);
 
-          // 4. Call Certificate Intelligence Pipeline (/api/ai/analyze)
+          // 4. Register Upload Completion & Trigger Asynchronous AI Pipeline
           let extractionResult: AIExtractionResult | null = null;
           let isRejected = false;
           let rejectionMessage = '';
+          let sseStreamUrl = '';
 
           if (typeof navigator === 'undefined' || navigator.onLine) {
             try {
-              const formData = new FormData();
-              formData.append('file', optimizedFile);
-              formData.append('studentName', currentUser?.full_name || '');
-              formData.append('studentRollNo', currentUser?.roll_number || '');
-              if (clientOcrText) formData.append('clientOcrText', clientOcrText);
-              if (qrPayloads.length > 0) {
-                formData.append('clientQrPayloads', JSON.stringify(qrPayloads));
-              }
-
-              const res = await fetch('/api/ai/analyze', {
+              const notifyRes = await fetch('/api/submissions/upload-complete', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storagePath,
+                  publicUrl: previewUrl,
+                  fileHash,
+                  fileName: optimizedFile.name,
+                  fileSize: finalCompressedBytes,
+                  clientOcrText,
+                  clientQrPayloads: qrPayloads,
+                  studentName: currentUser?.full_name || '',
+                  studentRollNo: currentUser?.roll_number || '',
+                }),
               });
 
-              if (res.ok) {
-                const json = await res.json();
-                if (json.isDocument === false || json.success === false) {
+              const notifyData = await notifyRes.json();
+
+              if (!notifyRes.ok) {
+                if (notifyRes.status === 409) {
                   isRejected = true;
                   rejectionMessage =
-                    json.error ||
-                    json.data?.documentRejectionReason ||
-                    'Non-Document Image Blocked: The uploaded file is not recognized as an official certificate or document proof.';
-                } else if (json.data) {
-                  extractionResult = json.data;
+                    notifyData.error ||
+                    'Duplicate Certificate: You have already submitted this identical document proof.';
+                } else {
+                  console.warn('[Upload Complete] Notification status:', notifyRes.status, notifyData.error);
+                }
+              } else if (notifyData.success) {
+                if (notifyData.isCached && notifyData.status === 'PARSED') {
+                  extractionResult = notifyData.aiData || null;
+                } else if (notifyData.sseStreamUrl) {
+                  sseStreamUrl = notifyData.sseStreamUrl;
                 }
               }
             } catch (networkErr) {
-              console.warn('[Analyze] Offline or server error, using fallback pipeline:', networkErr);
+              console.warn('[Notify Complete] Network exception:', networkErr);
+            }
+          }
+
+          // 5. Real-Time Asynchronous Feedback Loop (Server-Sent Events)
+          if (!isRejected && !extractionResult && sseStreamUrl && typeof EventSource !== 'undefined') {
+            try {
+              const sse = new EventSource(sseStreamUrl);
+              await new Promise<void>((resolve) => {
+                const timeoutTimer = setTimeout(() => {
+                  try {
+                    sse.close();
+                  } catch {}
+                  resolve();
+                }, 35000);
+
+                sse.addEventListener('status', (e: MessageEvent) => {
+                  try {
+                    const data = JSON.parse(e.data);
+                    if (data.status === 'PROCESSING') {
+                      setUploadQueue((prev) =>
+                        prev.map((q) =>
+                          q.id === item.id
+                            ? { ...q, progressText: 'Processing with Neural OCR & AI Forensics...' }
+                            : q
+                        )
+                      );
+                    } else if (data.status === 'PARSED') {
+                      clearTimeout(timeoutTimer);
+                      sse.close();
+                      if (data.aiData) extractionResult = data.aiData;
+                      resolve();
+                    } else if (data.status === 'MANUAL_REVIEW_REQUIRED') {
+                      clearTimeout(timeoutTimer);
+                      sse.close();
+                      extractionResult =
+                        data.aiData ||
+                        buildOfflineCertificateExtraction(
+                          clientOcrText,
+                          qrPayloads,
+                          currentUser?.full_name || '',
+                          item.fileName
+                        );
+                      resolve();
+                    } else if (data.status === 'FAILED_FATAL') {
+                      clearTimeout(timeoutTimer);
+                      sse.close();
+                      isRejected = true;
+                      rejectionMessage = data.message || 'Document verification failed.';
+                      resolve();
+                    }
+                  } catch {}
+                });
+
+                sse.onerror = () => {
+                  clearTimeout(timeoutTimer);
+                  try {
+                    sse.close();
+                  } catch {}
+                  resolve();
+                };
+              });
+            } catch (sseErr) {
+              console.warn('[SSE Stream] Connection exception:', sseErr);
             }
           }
 
