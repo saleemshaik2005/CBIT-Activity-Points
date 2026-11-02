@@ -84,30 +84,31 @@ export default function ClassTeacherPage() {
           These final-year students have earned fewer than 30 activity points and require prompt mentor notification to satisfy graduation requirements.
         </p>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-[#a71a1b]/20 dark:border-[#2e3039] max-h-96">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#fdf2f2] dark:bg-[#22232a] border-b border-[#a71a1b]/20 dark:border-[#2e3039] text-[#a71a1b] dark:text-rose-300 font-serif font-bold uppercase tracking-wider">
+            <thead className="sticky top-0 z-10 bg-[#fdf2f2] dark:bg-[#22232a] border-b border-[#a71a1b]/20 dark:border-[#2e3039] text-[#a71a1b] dark:text-rose-300 font-serif font-bold uppercase tracking-wider">
               <tr>
-                <th className="py-3 px-4">Roll Number</th>
-                <th className="py-3 px-3">Student Name</th>
-                <th className="py-3 px-3">Current Points</th>
-                <th className="py-3 px-3">Points Needed</th>
-                <th className="py-3 px-3">Assigned Faculty Mentor</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 whitespace-nowrap">Roll Number</th>
+                <th className="py-3 px-3 whitespace-nowrap">Student Name</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">Current Points</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">Points Needed</th>
+                <th className="py-3 px-3 whitespace-nowrap">Assigned Faculty Mentor</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#2c2d36]">
               {atRiskStudents.map((s) => (
                 <tr key={s.roll} className="hover:bg-[#faf9f5] dark:hover:bg-[#22232a] transition-colors">
-                  <td className="py-3 px-4 font-bold text-[#1c2718] dark:text-white">{s.roll}</td>
+                  <td className="py-3 px-4 font-bold text-[#1c2718] dark:text-white font-mono">{s.roll}</td>
                   <td className="py-3 px-3 font-semibold text-gray-800 dark:text-gray-200">{s.name}</td>
-                  <td className="py-3 px-3 font-extrabold text-[#a71a1b] dark:text-rose-400">{s.points} pts</td>
-                  <td className="py-3 px-3 font-bold text-gray-700 dark:text-gray-300">{s.needed} pts</td>
+                  <td className="py-3 px-3 font-extrabold text-[#a71a1b] dark:text-rose-400 text-center">{s.points} pts</td>
+                  <td className="py-3 px-3 font-bold text-gray-700 dark:text-gray-300 text-center">{s.needed} pts</td>
                   <td className="py-3 px-3 text-gray-600 dark:text-gray-400">{s.mentor}</td>
                   <td className="py-3 px-4 text-right">
                     <button
                       onClick={() => alert(`Reminder notification sent to ${s.name} and mentor ${s.mentor}`)}
-                      className="px-2.5 py-1 bg-[#fdf2f2] dark:bg-rose-950/40 text-[#a71a1b] dark:text-rose-300 hover:bg-[#a71a1b] hover:text-white rounded-md font-bold text-[11px] border border-[#a71a1b]/30 dark:border-rose-800/40 transition-colors cursor-pointer"
+                      aria-label={`Send reminder notification to ${s.name} and mentor ${s.mentor}`}
+                      className="px-2.5 py-1 bg-[#fdf2f2] dark:bg-rose-950/40 text-[#a71a1b] dark:text-rose-300 hover:bg-[#a71a1b] hover:text-white rounded-md font-bold text-[11px] border border-[#a71a1b]/30 dark:border-rose-800/40 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#a71a1b]"
                     >
                       Notify Mentor
                     </button>

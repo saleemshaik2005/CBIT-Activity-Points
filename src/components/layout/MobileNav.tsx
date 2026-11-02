@@ -63,7 +63,10 @@ export const MobileNav: React.FC = () => {
   const items = roleNavItems[currentUser.role] || roleNavItems.student;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#18191e]/95 backdrop-blur-md border-t border-[#e8e3d8] dark:border-[#282932] shadow-xl px-2 py-1.5 pb-safe transition-colors">
+    <nav
+      aria-label="Mobile Navigation"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#18191e]/95 backdrop-blur-md border-t border-[#e8e3d8] dark:border-[#282932] shadow-xl px-2 py-1 pb-safe transition-colors"
+    >
       <div className="flex items-center justify-around">
         {items.map((item) => {
           const Icon = item.icon;
@@ -75,7 +78,9 @@ export const MobileNav: React.FC = () => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+              aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex flex-col items-center justify-center min-h-[48px] min-w-[48px] py-1 px-2 rounded-xl transition-all relative focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500 ${
                 isActive
                   ? 'text-[#385529] dark:text-white font-bold'
                   : 'text-gray-500 dark:text-gray-400 hover:text-[#a71a1b] dark:hover:text-gray-200'
@@ -94,7 +99,7 @@ export const MobileNav: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className="text-[10px] mt-0.5">{item.label}</span>
+              <span className="text-[10px] mt-0.5 font-medium leading-none">{item.label}</span>
             </Link>
           );
         })}

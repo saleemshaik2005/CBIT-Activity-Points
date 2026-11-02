@@ -79,7 +79,8 @@ export default function StudentDashboardPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleDownloadPDF}
-            className="px-4 py-2.5 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all flex items-center space-x-2 cursor-pointer"
+            aria-label="Download Official MAR Sheet as PDF"
+            className="px-4 py-2.5 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all flex items-center space-x-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
           >
             <Download className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
             <span>Download MAR Sheet (PDF)</span>
@@ -87,7 +88,8 @@ export default function StudentDashboardPage() {
 
           <Link
             href="/student/upload"
-            className="px-5 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15] dark:border-[#383a45]"
+            aria-label="Navigate to AI Certificate Upload"
+            className="px-5 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center space-x-2 border-b-2 border-[#a16b15] dark:border-[#383a45] focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
           >
             <Sparkles className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
             <span>AI Upload Certificate</span>
@@ -105,7 +107,7 @@ export default function StudentDashboardPage() {
       />
 
       {/* Two Column Layout: Recent Submissions & Action Banner */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <section aria-label="Recent Activity and Quick Upload" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Recent Submissions Feed */}
         <div className="lg:col-span-7 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
@@ -130,7 +132,8 @@ export default function StudentDashboardPage() {
                   key={y.key}
                   type="button"
                   onClick={() => setDashYearFilter(y.key as any)}
-                  className={`px-2 py-0.5 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
+                  aria-pressed={dashYearFilter === y.key}
+                  className={`px-2 py-0.5 text-[11px] font-bold rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500 ${
                     dashYearFilter === y.key
                       ? 'bg-[#385529] text-white shadow-2xs'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#22232a]'
@@ -267,7 +270,7 @@ export default function StudentDashboardPage() {
           </Link>
         </div>
 
-      </div>
+      </section>
 
       {/* 24 Activity Categories & Cap Tracker */}
       <CategoryBreakdown categories={categories} submissions={mySubmissions} />

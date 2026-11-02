@@ -441,15 +441,15 @@ export default function AdminUsersPage() {
             <p className="text-[11px] text-gray-400">Try adjusting your search criteria or clearing filters.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#f5f2ea] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-[#385529] dark:text-gray-300 font-serif font-bold uppercase tracking-wider">
+              <thead className="sticky top-0 z-10 bg-[#f5f2ea] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-[#385529] dark:text-gray-300 font-serif font-bold uppercase tracking-wider shadow-2xs">
                 <tr>
-                  <th className="py-3 px-4">Student / User</th>
-                  <th className="py-3 px-3">Roll No / ID</th>
-                  <th className="py-3 px-3">Role</th>
-                  <th className="py-3 px-3">Admission Type</th>
-                  <th className="py-3 px-3">Assigned Faculty Mentor</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Student / User</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Roll No / ID</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Role</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Admission Type</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Assigned Faculty Mentor</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#2c2d36]">
@@ -468,7 +468,7 @@ export default function AdminUsersPage() {
                           <div className="font-bold text-[#1c2718] dark:text-white flex items-center space-x-1.5">
                             <span>{user.full_name}</span>
                             {user.role === 'admin' && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#a71a1b] text-white">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-[#a71a1b] text-white">
                                 ADMIN
                               </span>
                             )}

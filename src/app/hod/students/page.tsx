@@ -229,19 +229,19 @@ export default function HODStudentsDirectoryPage() {
 
       {/* Students Table */}
       <div className="bg-white dark:bg-[#1a1b20] rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#faf9f5] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-[#385529] dark:text-gray-300 font-serif font-bold uppercase tracking-wider">
+            <thead className="sticky top-0 z-10 bg-[#faf9f5] dark:bg-[#22232a] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-[#385529] dark:text-gray-300 font-serif font-bold uppercase tracking-wider shadow-2xs">
               <tr>
-                <th className="py-3.5 px-4">Student & Roll No</th>
-                <th className="py-3.5 px-3">Section</th>
-                <th className="py-3.5 px-3">Faculty Mentor</th>
-                <th className="py-3.5 px-3">Highlights</th>
-                <th className="py-3.5 px-3">Entry Type</th>
-                <th className="py-3.5 px-3 text-center">Approved Points</th>
-                <th className="py-3.5 px-3 w-36">Progress</th>
-                <th className="py-3.5 px-3 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Student & Roll No</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Section</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Faculty Mentor</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Highlights</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Entry Type</th>
+                <th className="py-3.5 px-3 text-center whitespace-nowrap">Approved Points</th>
+                <th className="py-3.5 px-3 w-36 whitespace-nowrap">Progress</th>
+                <th className="py-3.5 px-3 text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#2c2d36]">

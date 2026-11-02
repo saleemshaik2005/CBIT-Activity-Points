@@ -59,7 +59,7 @@ export const UploadScanFloater: React.FC = () => {
                 AI Scanning In Background
               </p>
               {analyzingCount > 1 && (
-                <span className="text-[10px] bg-amber-400/20 text-amber-200 px-1.5 py-0.2 rounded-full font-bold">
+                <span className="text-[10px] bg-amber-400/20 text-amber-200 px-1.5 py-0.5 rounded-full font-bold">
                   +{analyzingCount - 1} more
                 </span>
               )}

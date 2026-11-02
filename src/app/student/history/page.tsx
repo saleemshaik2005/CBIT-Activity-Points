@@ -38,6 +38,7 @@ export default function StudentHistoryPage() {
   const [editingSubmission, setEditingSubmission] = useState<StudentSubmission | null>(null);
   const [chatSubmissionId, setChatSubmissionId] = useState<string | null>(null);
   const [chatReply, setChatReply] = useState<string>('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Track read timestamps for certificate inquiry messages
   const [readChatTimestamps, setReadChatTimestamps] = useState<Record<string, number>>(() => {
@@ -406,13 +407,38 @@ export default function StudentHistoryPage() {
                     </button>
 
                     {sub.status !== 'approved' && (
-                      <button
-                        onClick={() => deleteSubmission(sub.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Submission"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      confirmDeleteId === sub.id ? (
+                        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-900/50 animate-in fade-in">
+                          <span className="text-[10px] font-bold text-red-700 dark:text-rose-400 pl-1">Delete?</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              deleteSubmission(sub.id);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded cursor-pointer"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-2 py-0.5 bg-gray-200 dark:bg-[#22232a] text-gray-700 dark:text-gray-300 text-[10px] font-bold rounded cursor-pointer"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(sub.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                          title="Delete Submission"
+                          aria-label={`Delete submission ${sub.activity_title}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )
                     )}
                   </div>
                 </div>

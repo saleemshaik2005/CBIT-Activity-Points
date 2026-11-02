@@ -364,19 +364,19 @@ export default function TeacherReportsPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#faf9f5] dark:bg-[#18191e] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-gray-600 dark:text-gray-300 font-serif font-bold uppercase tracking-wider text-[11px]">
+            <thead className="sticky top-0 z-10 bg-[#faf9f5] dark:bg-[#18191e] border-b border-[#e8e3d8] dark:border-[#2c2d36] text-gray-600 dark:text-gray-300 font-serif font-bold uppercase tracking-wider text-[11px] shadow-2xs">
               <tr>
-                <th className="py-3 px-4 text-center">S.No</th>
-                <th className="py-3 px-4">Roll Number</th>
-                <th className="py-3 px-4">Student Name</th>
-                <th className="py-3 px-3 text-center">Section</th>
-                <th className="py-3 px-3">Admission</th>
-                <th className="py-3 px-4">Assigned Mentor</th>
-                <th className="py-3 px-4 text-center">Approved Points</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">S.No</th>
+                <th className="py-3 px-4 whitespace-nowrap">Roll Number</th>
+                <th className="py-3 px-4 whitespace-nowrap">Student Name</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">Section</th>
+                <th className="py-3 px-3 whitespace-nowrap">Admission</th>
+                <th className="py-3 px-4 whitespace-nowrap">Assigned Mentor</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">Approved Points</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
 

@@ -453,7 +453,9 @@ export const VerificationCard: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setShowRejectBox(!showRejectBox)}
-                  className="px-4 py-2 rounded-xl border border-red-300 dark:border-red-900/50 text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer"
+                  aria-expanded={showRejectBox}
+                  aria-label="Reject submission with feedback"
+                  className="px-4 py-2 rounded-xl border border-red-300 dark:border-red-900/50 text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   <X className="w-4 h-4" />
                   <span>Reject</span>
@@ -462,7 +464,8 @@ export const VerificationCard: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={handleApprove}
-                  className="px-5 py-2 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-xs hover:shadow transition-all flex items-center space-x-1.5 cursor-pointer"
+                  aria-label={`Approve submission and award ${adjustedPoints} points`}
+                  className="px-5 py-2 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-xs hover:shadow transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
                 >
                   <Check className="w-4 h-4 text-[#dfa94b] dark:text-emerald-400" />
                   <span>Approve ({adjustedPoints} Pts)</span>

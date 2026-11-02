@@ -267,20 +267,33 @@ export const CertificateUploader: React.FC = () => {
             : 'border-[#e8e3d8] dark:border-[#2c2d36] hover:border-gray-400 dark:hover:border-gray-500'
         }`}
       >
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-xl mx-auto">
           <div className="w-16 h-16 bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-gray-300 rounded-2xl flex items-center justify-center mx-auto border border-[#385529]/20 dark:border-[#2e3039] shadow-xs">
             <UploadCloud className="w-8 h-8" />
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <h3 className="text-lg font-serif font-bold text-[#385529] dark:text-gray-100">
               Upload Certificates or Scan with Live Camera
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
               {isDailyLimitReached
                 ? 'Daily quota reached. Please wait until tomorrow or contact your faculty mentor.'
-                : 'Upload certificate files (PDF, JPG, PNG) or take a live memory-safe camera photo. Images are automatically compressed (~85% smaller) before saving to Supabase.'}
+                : 'Drag and drop your academic documents here, choose files, or use the camera scanner.'}
             </p>
+          </div>
+
+          {/* Format & Size Limits Structural Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] text-gray-600 dark:text-gray-300 font-medium">
+              Formats: <strong>PDF, JPG, PNG, WEBP</strong>
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#faf9f5] dark:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] text-gray-600 dark:text-gray-300 font-medium">
+              Max Size: <strong>15 MB per file</strong>
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#eef5ec] dark:bg-[#22232a] border border-[#385529]/20 dark:border-[#2e3039] text-[#385529] dark:text-emerald-400 font-bold">
+              Auto-Compression Enabled (~85% lighter)
+            </span>
           </div>
 
           {/* Hidden File Inputs */}
@@ -309,7 +322,7 @@ export const CertificateUploader: React.FC = () => {
               type="button"
               disabled={isDailyLimitReached}
               onClick={() => fileInputRef.current?.click()}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#385529]"
             >
               <FileText className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
               <span>
@@ -321,7 +334,7 @@ export const CertificateUploader: React.FC = () => {
               type="button"
               disabled={isDailyLimitReached}
               onClick={() => startLiveCamera('environment')}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#faf9f5] hover:bg-[#eef5ec] dark:bg-[#22232a] dark:hover:bg-[#2c2e38] text-[#385529] dark:text-emerald-400 text-xs font-bold shadow-sm transition-all flex items-center justify-center space-x-2 border-2 border-[#385529]/30 dark:border-emerald-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#faf9f5] hover:bg-[#eef5ec] dark:bg-[#22232a] dark:hover:bg-[#2c2e38] text-[#385529] dark:text-emerald-400 text-xs font-bold shadow-sm transition-all flex items-center justify-center space-x-2 border-2 border-[#385529]/30 dark:border-emerald-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#385529]"
             >
               <Camera className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
               <span>Take Live Camera Photo</span>
@@ -572,13 +585,109 @@ export const CertificateUploader: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Analyzing Status Indicator */}
+                  {/* Analyzing Status Skeleton Loader & Progress Feedback */}
                   {item.status === 'analyzing' && (
-                    <div className="p-6 text-center space-y-2">
-                      <Loader2 className="w-6 h-6 text-[#385529] dark:text-emerald-400 animate-spin mx-auto" />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                        {item.progressText || 'Scanning document and extracting metadata...'}
-                      </p>
+                    <div className="p-5 sm:p-6 bg-[#faf9f5]/50 dark:bg-[#121214]/50 space-y-4">
+                      <div className="flex items-center justify-between gap-3 pb-2 border-b border-gray-100 dark:border-[#2a2b33]">
+                        <div className="flex items-center space-x-2.5">
+                          <Loader2 className="w-4 h-4 text-[#385529] dark:text-emerald-400 animate-spin" />
+                          <span className="text-xs font-serif font-bold text-gray-800 dark:text-gray-200">
+                            {item.progressText || 'Scanning document and extracting metadata...'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 animate-pulse">
+                          Asynchronous Pipeline Active
+                        </span>
+                      </div>
+
+                      {/* Skeleton Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 animate-pulse">
+                        {/* Shimmer Preview Thumbnail */}
+                        <div className="md:col-span-4 h-36 rounded-xl bg-gray-200/70 dark:bg-[#22232a] relative overflow-hidden flex items-center justify-center">
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent animate-[shimmer_1.5s_infinite]" />
+                          <FileText className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+                        </div>
+
+                        {/* Shimmer Placeholder Fields */}
+                        <div className="md:col-span-8 space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <div className="h-3 w-24 bg-gray-200/70 dark:bg-[#22232a] rounded" />
+                              <div className="h-8 w-full bg-gray-200/50 dark:bg-[#22232a]/60 rounded-xl" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <div className="h-3 w-28 bg-gray-200/70 dark:bg-[#22232a] rounded" />
+                              <div className="h-8 w-full bg-gray-200/50 dark:bg-[#22232a]/60 rounded-xl" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <div className="h-3 w-32 bg-gray-200/70 dark:bg-[#22232a] rounded" />
+                              <div className="h-8 w-full bg-gray-200/50 dark:bg-[#22232a]/60 rounded-xl" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <div className="h-3 w-20 bg-gray-200/70 dark:bg-[#22232a] rounded" />
+                              <div className="h-8 w-full bg-gray-200/50 dark:bg-[#22232a]/60 rounded-xl" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Rejected Error State with Explicit Inline Recovery Advice */}
+                  {item.status === 'rejected' && (
+                    <div className="p-5 bg-red-50/70 dark:bg-rose-950/20 border-t border-red-200 dark:border-rose-900/40 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-xl bg-red-100 dark:bg-rose-900/40 text-red-700 dark:text-rose-400 flex-shrink-0">
+                          <ShieldAlert className="w-5 h-5" />
+                        </div>
+                        <div className="space-y-1 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h5 className="text-xs font-serif font-bold text-red-900 dark:text-rose-300">
+                              Verification Blocked: Document Not Accepted
+                            </h5>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-rose-900/50 text-red-700 dark:text-rose-300 border border-red-200 dark:border-rose-800">
+                              Action Required
+                            </span>
+                          </div>
+                          <p className="text-xs text-red-800 dark:text-rose-200 font-medium">
+                            {item.rejectionReason ||
+                              'The uploaded file is not recognized as an official academic certificate or is a duplicate.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Friendly Recovery Advice Box */}
+                      <div className="p-3.5 rounded-xl bg-white/80 dark:bg-[#1a1b20] border border-red-200/80 dark:border-rose-900/30 text-xs text-gray-700 dark:text-gray-300 space-y-1.5">
+                        <span className="font-bold text-gray-900 dark:text-gray-100 block">
+                          Suggested Recovery Steps:
+                        </span>
+                        <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-600 dark:text-gray-400">
+                          <li>Check that the certificate is right-side up with legible text, student name, and issuing authority.</li>
+                          <li>If the photo is blurry, take a clean scan using good lighting or use the Live Camera Scanner.</li>
+                          <li>If duplicate: this certificate was already submitted. Check your History tab for its evaluation status.</li>
+                          <li>If this is an official proof that was incorrectly flagged, contact your faculty mentor for manual override.</li>
+                        </ul>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-red-700 dark:text-rose-300 hover:bg-red-100 dark:hover:bg-rose-900/30 transition-colors cursor-pointer"
+                        >
+                          Dismiss from Queue
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            removeItem(item.id);
+                            fileInputRef.current?.click();
+                          }}
+                          className="px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                        >
+                          Try Another File
+                        </button>
+                      </div>
                     </div>
                   )}
 

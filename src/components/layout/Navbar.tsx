@@ -140,7 +140,7 @@ export const Navbar: React.FC = () => {
 
             {/* Center: Desktop Role Navigation */}
             {isUserLoggedIn ? (
-              <nav className="hidden lg:flex items-center space-x-1">
+              <nav aria-label="Desktop Navigation" className="hidden lg:flex items-center space-x-1">
                 {currentNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
@@ -151,7 +151,8 @@ export const Navbar: React.FC = () => {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500 ${
                         isActive
                           ? 'bg-[#eef5ec] dark:bg-[#22232a] text-[#385529] dark:text-white border-b-2 border-[#385529] dark:border-emerald-500'
                           : 'text-[#385529] dark:text-gray-300 hover:text-[#a71a1b] dark:hover:text-white hover:bg-[#faf7f2] dark:hover:bg-[#22232a]'
@@ -177,7 +178,8 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAboutOpen(true)}
-                className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-colors cursor-pointer"
+                aria-label="About System & User Guide"
+                className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
                 title="About System & User Guide"
               >
                 <HelpCircle className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
@@ -189,7 +191,8 @@ export const Navbar: React.FC = () => {
                 href="https://github.com/saleemshaik2005/CBIT-Activity-Points"
                 target="_blank"
                 rel="noreferrer"
-                className="hidden md:flex p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all"
+                aria-label="GitHub Repository"
+                className="hidden md:flex p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
                 title="GitHub Repository"
               >
                 <Github className="w-4 h-4 text-gray-700 dark:text-gray-300" />
@@ -200,7 +203,8 @@ export const Navbar: React.FC = () => {
                   {/* Notification Bell */}
                   <Link
                     href="/notifications"
-                    className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
+                    aria-label={`View notifications (${unreadCount} unread)`}
+                    className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
                     title="View notifications"
                   >
                     <Bell className="w-4 h-4 text-[#385529] dark:text-gray-300" />
@@ -215,7 +219,10 @@ export const Navbar: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="flex items-center space-x-2 p-1 sm:p-1.5 rounded-xl hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer"
+                      aria-haspopup="true"
+                      aria-expanded={isUserMenuOpen}
+                      aria-label="User account menu"
+                      className="flex items-center space-x-2 p-1 sm:p-1.5 rounded-xl hover:bg-[#faf7f2] dark:hover:bg-[#22232a] border border-[#e8e3d8] dark:border-[#2e3039] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
                     >
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#385529] dark:bg-[#2a2b33] text-white dark:text-gray-200 font-bold flex items-center justify-center text-xs border border-transparent dark:border-[#383a45] overflow-hidden">
                         {currentUser.avatar_url ? (

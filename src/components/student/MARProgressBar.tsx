@@ -106,7 +106,8 @@ export const MARProgressBar: React.FC<Props> = ({
           {onDownloadPDF && (
             <button
               onClick={onDownloadPDF}
-              className="w-full md:w-auto inline-flex items-center justify-center space-x-2 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold px-4 py-2.5 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all text-xs cursor-pointer"
+              aria-label="Download Official MAR Sheet as PDF"
+              className="w-full md:w-auto inline-flex items-center justify-center space-x-2 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold px-4 py-2.5 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] shadow-xs hover:shadow transition-all text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#385529] dark:focus:ring-emerald-500"
             >
               <Download className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
               <span>Download Official MAR Sheet (PDF)</span>
@@ -121,13 +122,13 @@ export const MARProgressBar: React.FC<Props> = ({
         <h4 className="text-xs font-serif font-bold text-[#385529] dark:text-gray-200 uppercase tracking-wider mb-3">
           Semester-Wise Activity Points Earned (Sem I to VIII)
         </h4>
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
             const pts = progress.semesterBreakdown[sem] || 0;
             return (
               <div
                 key={sem}
-                className={`p-2 rounded-lg text-center border transition-all ${
+                className={`p-2.5 rounded-xl text-center border transition-all ${
                   pts > 0
                     ? 'bg-[#eef5ec] dark:bg-[#22232a] border-[#385529]/30 dark:border-emerald-600/40 text-[#385529] dark:text-emerald-400 font-semibold shadow-2xs'
                     : 'bg-[#faf9f5] dark:bg-[#121214] border-[#e8e3d8] dark:border-[#2c2d36] text-gray-400 dark:text-gray-500'
