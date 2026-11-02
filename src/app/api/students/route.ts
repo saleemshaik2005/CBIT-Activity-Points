@@ -32,6 +32,14 @@ export async function GET(req: NextRequest) {
       query = query.eq('mentor_id', user.id);
     } else if (callerRole === 'student' && user?.id) {
       query = query.eq('id', user.id);
+    } else if (callerRole === 'class_teacher' && profile) {
+      query = query.eq('role', 'student');
+      if (profile.section) query = query.eq('section', profile.section);
+      if (profile.department) query = query.eq('department', profile.department);
+    } else if (callerRole === 'hod' && profile) {
+      query = query.eq('role', 'student');
+      if (profile.department) query = query.eq('department', profile.department);
+      if (mentorId) query = query.eq('mentor_id', mentorId);
     } else {
       if (role && role !== 'all') {
         query = query.eq('role', role);
@@ -48,7 +56,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error('[Students API] Error querying profiles:', error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'Database error' }, { status: 500 });
     }
 
     // Map to student profile format
@@ -80,6 +88,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[Students API] Unexpected exception:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

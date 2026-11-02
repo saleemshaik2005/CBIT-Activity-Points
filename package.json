@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:security": "node tests/security.test.mjs",
+    "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

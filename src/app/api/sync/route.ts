@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[Sync API] GET handler error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to synchronize data' }, { status: 500 });
   }
 }
 
@@ -174,7 +174,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { action, payload } = body;
-    const db = readServerDB();
 
     switch (action) {
       case 'add_submission': {
@@ -242,10 +241,27 @@ export async function POST(req: NextRequest) {
           : 'pending_mentor';
 
         if (isValidUUID(id)) {
+          // IDOR Defense: If caller is a mentor, verify this submission belongs to their assigned mentee
+          if (callerRole === 'mentor' && user?.id) {
+            const { data: subCheck } = await supabaseAdmin
+              .from('student_submissions')
+              .select('id, student:profiles!student_id(mentor_id)')
+              .eq('id', id)
+              .maybeSingle();
+
+            const studentMentorId = (subCheck?.student as any)?.mentor_id;
+            if (!subCheck || studentMentorId !== user.id) {
+              return NextResponse.json(
+                { success: false, error: 'Forbidden: You can only evaluate submissions belonging to your assigned mentees.' },
+                { status: 403 }
+              );
+            }
+          }
+
           const updatePayload: any = {
             status: validStatus,
-            mentor_remarks: remarks !== undefined ? remarks : null,
-            awarded_points: status === 'approved' && awardedPoints !== undefined ? awardedPoints : 0,
+            mentor_remarks: remarks !== undefined ? String(remarks).slice(0, 1000) : null,
+            awarded_points: status === 'approved' && awardedPoints !== undefined ? Math.max(0, Math.min(100, Number(awardedPoints) || 0)) : 0,
             approved_by: status === 'approved' ? callerId : null,
             approved_at: status === 'approved' ? new Date().toISOString() : null,
             updated_at: new Date().toISOString(),
@@ -271,11 +287,30 @@ export async function POST(req: NextRequest) {
         const validIds = (ids || []).filter(isValidUUID);
 
         if (validIds.length > 0) {
+          // IDOR Defense: If mentor, ensure every ID belongs to an assigned mentee
+          if (callerRole === 'mentor' && user?.id) {
+            const { data: subsData } = await supabaseAdmin
+              .from('student_submissions')
+              .select('id, student:profiles!student_id(mentor_id)')
+              .in('id', validIds);
+
+            const hasUnauthorized = (subsData || []).some(
+              (s: any) => s.student?.mentor_id !== user.id
+            );
+
+            if (hasUnauthorized || (subsData?.length || 0) !== validIds.length) {
+              return NextResponse.json(
+                { success: false, error: 'Forbidden: Some selected submissions do not belong to your assigned mentees.' },
+                { status: 403 }
+              );
+            }
+          }
+
           await supabaseAdmin
             .from('student_submissions')
             .update({
               status: 'approved',
-              mentor_remarks: remarks || 'Approved by Faculty Mentor',
+              mentor_remarks: remarks ? String(remarks).slice(0, 1000) : 'Approved by Faculty Mentor',
               approved_by: callerId,
               approved_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
@@ -334,17 +369,37 @@ export async function POST(req: NextRequest) {
 
       case 'add_message': {
         const { submissionId, message } = payload;
-        if (isValidUUID(submissionId)) {
+        if (isValidUUID(submissionId) && message && typeof message.text === 'string') {
           const { data: current } = await supabaseAdmin
             .from('student_submissions')
-            .select('ai_extracted_data')
+            .select('id, student_id, ai_extracted_data, student:profiles!student_id(mentor_id)')
             .eq('id', submissionId)
-            .single();
+            .maybeSingle();
 
           if (current) {
+            // IDOR Protection: Verify caller is the student owner, assigned mentor, or admin/coordinator
+            const isOwner = user?.id && current.student_id === user.id;
+            const isAssignedMentor = user?.id && (current.student as any)?.mentor_id === user.id;
+            const isPrivileged = callerRole === 'admin' || callerRole === 'hod' || callerRole === 'class_teacher' || isTeamAuth;
+
+            if (!isOwner && !isAssignedMentor && !isPrivileged) {
+              return NextResponse.json(
+                { success: false, error: 'Forbidden: You cannot comment on this submission.' },
+                { status: 403 }
+              );
+            }
+
+            const cleanMessage = {
+              id: message.id || crypto.randomUUID(),
+              sender_role: callerRole,
+              sender_name: profile?.full_name || (callerRole === 'admin' ? 'Administrator' : 'Faculty'),
+              text: String(message.text).slice(0, 1000),
+              created_at: new Date().toISOString(),
+            };
+
             const curData = current.ai_extracted_data || {};
             const existingMsgs = Array.isArray(curData.messages) ? curData.messages : [];
-            curData.messages = [...existingMsgs, message];
+            curData.messages = [...existingMsgs, cleanMessage];
 
             await supabaseAdmin
               .from('student_submissions')
@@ -374,6 +429,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, lastUpdated: Date.now() });
   } catch (err: any) {
     console.error('[Sync API] POST error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to process request' }, { status: 500 });
   }
 }

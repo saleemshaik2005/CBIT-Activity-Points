@@ -4,10 +4,23 @@ import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const forwardedHost = request.headers.get('x-forwarded-host');
-  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
-  const appOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin;
+  const requestUrl = new URL(request.url);
+  const { searchParams, origin } = requestUrl;
+
+  // Validate origin against configured application URL to prevent Host Header Poisoning
+  let appOrigin = origin;
+  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configuredAppUrl && configuredAppUrl.startsWith('http')) {
+    try {
+      const parsedConfigured = new URL(configuredAppUrl);
+      // If deployed or running with configured domain, anchor to configured origin
+      if (process.env.NODE_ENV === 'production' || parsedConfigured.hostname === requestUrl.hostname) {
+        appOrigin = parsedConfigured.origin;
+      }
+    } catch {
+      // Fallback to request URL origin
+    }
+  }
 
   const code = searchParams.get('code');
   const error = searchParams.get('error');
@@ -110,6 +123,16 @@ export async function GET(request: Request) {
       phone_number: profile.phone_number || undefined,
     };
 
+    // Defensively sanitize JSON to prevent script escaping (Stored / Reflected XSS)
+    const safeProfileJson = JSON.stringify(userProfile)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026');
+
+    // Strict allowlist validation for redirect target
+    const ALLOWED_TARGETS = new Set(['/student', '/mentor', '/teacher', '/hod', '/admin']);
+    const safeRedirect = ALLOWED_TARGETS.has(redirectPath) ? redirectPath : '/student';
+
     const htmlResponse = `<!DOCTYPE html>
 <html>
 <head>
@@ -130,12 +153,12 @@ export async function GET(request: Request) {
   </div>
   <script>
     try {
-      var profile = ${JSON.stringify(userProfile)};
+      var profile = ${safeProfileJson};
       localStorage.setItem('cbit_is_auth', 'true');
       localStorage.setItem('cbit_current_user', JSON.stringify(profile));
       localStorage.setItem('cbit_mar_active_role', profile.role);
       localStorage.setItem('cbit_spms_portal_mode', 'user');
-      window.location.replace('${redirectPath}');
+      window.location.replace('${safeRedirect}');
     } catch(e) {
       window.location.replace('/login?error=' + encodeURIComponent('Failed to synchronize session'));
     }
@@ -144,7 +167,11 @@ export async function GET(request: Request) {
 </html>`;
 
     return new Response(htmlResponse, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'no-referrer',
+      },
     });
   }
 

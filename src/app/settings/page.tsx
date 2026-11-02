@@ -52,6 +52,8 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const [approvalAlerts, setApprovalAlerts] = useState(true);
   const [broadcastAlerts, setBroadcastAlerts] = useState(true);
@@ -115,14 +117,35 @@ export default function SettingsPage() {
     setTimeout(() => setProfileSuccess(false), 3000);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) return;
-    setPasswordSuccess(true);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setTimeout(() => setPasswordSuccess(false), 4000);
+    setPasswordError('');
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setPasswordError(data.error || 'Failed to update password.');
+      } else {
+        setPasswordSuccess(true);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setPasswordSuccess(false), 4000);
+      }
+    } catch {
+      setPasswordError('Network error while updating password.');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -406,6 +429,12 @@ export default function SettingsPage() {
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Password updated successfully!</span>
+              </div>
+            )}
+
+            {passwordError && (
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 text-xs font-bold flex items-center gap-2 border border-red-200 dark:border-red-800">
+                <span>{passwordError}</span>
               </div>
             )}
 

@@ -40,6 +40,7 @@ public/uploads/*
 
 # internal docs, blueprints, and seeding scripts
 *.pdf
+output/
 scripts/seed_production_roster.js
 scripts/make_pdf.js
 scratch/

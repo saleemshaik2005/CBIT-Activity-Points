@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// In-memory rate limiting for brute-force protection
-const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
+// In-memory rate limiting with automated eviction to prevent memory leaks
+const failedAttempts = new Map<string, { count: number; lockedUntil: number; lastSeen: number }>();
 
-// Default fallback values: SHA-256 hash for 'cbit-team-2026' and fallback salt
-const DEFAULT_PASS_HASH = 'e39ab1373129bab68c3a91717145e50fa5e4c3941749895f92ae9c814a3cf5e2';
-const DEFAULT_SECRET = 'cbit-spms-team-salt-2026';
+// Cleanup stale rate limit entries every 15 minutes
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, record] of failedAttempts.entries()) {
+      if (now - record.lastSeen > 30 * 60 * 1000 && record.lockedUntil < now) {
+        failedAttempts.delete(ip);
+      }
+    }
+  }, 15 * 60 * 1000).unref?.();
+}
 
 function getClientIp(req: NextRequest): string {
+  // Use connection-level info or first untampered IP; default to loopback if unavailable
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
   const realIp = req.headers.get('x-real-ip');
@@ -17,7 +26,10 @@ function getClientIp(req: NextRequest): string {
 }
 
 export function generateSessionToken(): string | null {
-  const secret = process.env.SPMS_SECRET || DEFAULT_SECRET;
+  const secret = process.env.SPMS_SECRET;
+  if (!secret || secret.length < 16) {
+    return null;
+  }
   const timestamp = Date.now().toString();
   const signature = crypto
     .createHmac('sha256', secret)
@@ -36,7 +48,8 @@ export function verifySessionToken(token?: string | null): boolean {
   const time = parseInt(timestamp, 10);
   if (isNaN(time) || Date.now() - time > 1000 * 60 * 60 * 24) return false;
 
-  const secret = process.env.SPMS_SECRET || DEFAULT_SECRET;
+  const secret = process.env.SPMS_SECRET;
+  if (!secret || secret.length < 16) return false;
 
   const expectedSignature = crypto
     .createHmac('sha256', secret)
@@ -58,7 +71,18 @@ export function verifySessionToken(token?: string | null): boolean {
 // POST: Verify Team Passcode and set secure HTTP-only cookie
 export async function POST(req: NextRequest) {
   try {
-    const expectedHash = process.env.SPMS_TEAM_PASS_HASH || DEFAULT_PASS_HASH;
+    const expectedHash = process.env.SPMS_TEAM_PASS_HASH;
+    const secret = process.env.SPMS_SECRET;
+
+    if (!expectedHash || !secret) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Team authentication gateway is disabled on this server (SPMS_TEAM_PASS_HASH / SPMS_SECRET not configured).',
+        },
+        { status: 503 }
+      );
+    }
 
     const ip = getClientIp(req);
     const now = Date.now();
@@ -107,7 +131,7 @@ export async function POST(req: NextRequest) {
       } else if (count >= 3) {
         lockedUntil = now + 60 * 1000; // 1 min lock
       }
-      failedAttempts.set(ip, { count, lockedUntil });
+      failedAttempts.set(ip, { count, lockedUntil, lastSeen: now });
 
       return NextResponse.json(
         {

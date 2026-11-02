@@ -1,8 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
+// In-memory rate limiting with automated eviction
+const loginAttempts = new Map<string, { count: number; lockedUntil: number; lastSeen: number }>();
+
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, record] of loginAttempts.entries()) {
+      if (now - record.lastSeen > 30 * 60 * 1000 && record.lockedUntil < now) {
+        loginAttempts.delete(key);
+      }
+    }
+  }, 15 * 60 * 1000).unref?.();
+}
+
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  return '127.0.0.1';
+}
+
+function checkRateLimit(key: string, maxAttempts = 10, lockoutMs = 5 * 60 * 1000): { allowed: boolean; waitSeconds?: number } {
+  const now = Date.now();
+  const record = loginAttempts.get(key);
+  if (record && record.lockedUntil > now) {
+    return { allowed: false, waitSeconds: Math.ceil((record.lockedUntil - now) / 1000) };
+  }
+  return { allowed: true };
+}
+
+function recordFailedAttempt(key: string, maxAttempts = 10, lockoutMs = 5 * 60 * 1000) {
+  const now = Date.now();
+  const record = loginAttempts.get(key) || { count: 0, lockedUntil: 0, lastSeen: now };
+  record.count += 1;
+  record.lastSeen = now;
+  if (record.count >= maxAttempts) {
+    record.lockedUntil = now + lockoutMs;
+  }
+  loginAttempts.set(key, record);
+}
+
+function resetAttempts(key: string) {
+  loginAttempts.delete(key);
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(clientIp, 10, 5 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many login attempts. Please wait ${rateLimit.waitSeconds} seconds before trying again.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { identifier, password, mode, googleEmail, googleCredential } = body;
 
@@ -121,20 +179,20 @@ export async function POST(req: NextRequest) {
     let targetEmail = '';
     let foundProfile: any = null;
 
+    const GENERIC_AUTH_ERROR = 'Invalid credentials. Please verify your Roll Number / Email and password.';
+
     // 1. Identify User by Email or Roll Number / Faculty ID
     if (cleanId.includes('@')) {
       targetEmail = cleanId.toLowerCase();
-      const { data: p, error: pErr } = await supabaseAdmin
+      const { data: p } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .ilike('email', targetEmail)
         .maybeSingle();
 
-      if (pErr || !p) {
-        return NextResponse.json(
-          { success: false, error: `No registered account found with email: ${cleanId}. Please check your email or contact the administrator.` },
-          { status: 404 }
-        );
+      if (!p) {
+        recordFailedAttempt(clientIp);
+        return NextResponse.json({ success: false, error: GENERIC_AUTH_ERROR }, { status: 401 });
       }
       foundProfile = p;
     } else {
@@ -168,13 +226,8 @@ export async function POST(req: NextRequest) {
       }
 
       if (!p || !p.email) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `No registered student or faculty found with Roll Number or ID: "${cleanId}". Please enter your full 12-digit roll number (e.g., 160124771129) or 3-digit shortcut (e.g., 129).`,
-          },
-          { status: 404 }
-        );
+        recordFailedAttempt(clientIp);
+        return NextResponse.json({ success: false, error: GENERIC_AUTH_ERROR }, { status: 401 });
       }
 
       foundProfile = p;
@@ -182,49 +235,26 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Authenticate with Supabase Auth
-    let authData: any = null;
-    let authErr: any = null;
-
-    // 3.1 Try user-entered password
     const res1 = await supabaseAdmin.auth.signInWithPassword({
       email: targetEmail,
       password: cleanPassword,
     });
 
-    if (res1.data?.user) {
-      authData = res1.data;
-    } else {
-      authErr = res1.error;
-
-      // 3.2 If student formula was entered with different case (e.g. cbit@129, CBIT@129)
-      if (foundProfile.roll_number) {
-        const rollLast3 = foundProfile.roll_number.slice(-3);
-        const canonicalDefault = `Cbit@${rollLast3}`;
-
-        if (
-          cleanPassword.toLowerCase() === canonicalDefault.toLowerCase() ||
-          cleanPassword.toLowerCase() === `cbit@${rollLast3}`.toLowerCase()
-        ) {
-          const res2 = await supabaseAdmin.auth.signInWithPassword({
-            email: targetEmail,
-            password: canonicalDefault,
-          });
-          if (res2.data?.user) {
-            authData = res2.data;
-            authErr = null;
-          }
-        }
-      }
-    }
+    const authData = res1.data;
+    const authErr = res1.error;
 
     if (authErr || !authData?.user) {
+      recordFailedAttempt(clientIp);
       const isRateLimit = authErr?.message?.toLowerCase().includes('rate limit');
       const errorMsg = isRateLimit
-        ? 'Too many login attempts. Please wait 30 seconds before trying again, or use "Sign in with Google Mail".'
-        : `Incorrect password for ${foundProfile.full_name}. Default formula for students is Cbit@<last3digits> (e.g., Cbit@${foundProfile.roll_number ? foundProfile.roll_number.slice(-3) : '129'}).`;
+        ? 'Too many login attempts. Please wait 30 seconds before trying again.'
+        : GENERIC_AUTH_ERROR;
 
       return NextResponse.json({ success: false, error: errorMsg }, { status: 401 });
     }
+
+    // Reset failed attempts on success
+    resetAttempts(clientIp);
 
     // 4. Dynamically resolve assigned mentor details from database
     let mentorData: any = null;

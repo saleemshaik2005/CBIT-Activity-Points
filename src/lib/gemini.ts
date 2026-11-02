@@ -527,7 +527,6 @@ function makeAIRequest(model: string, key: string, payload: string): Promise<AIE
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData),
       },
-      rejectUnauthorized: false,
       timeout: 35000,
     };
 

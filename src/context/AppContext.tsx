@@ -429,15 +429,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('[AppContext] Supabase session check error:', e);
     }
 
-    // Multi-device real-time sync listeners
+    // Multi-device real-time sync listeners (debounced and visibility-aware)
+    let lastFocusSync = 0;
     const onFocus = () => {
-      syncWithServer();
+      const now = Date.now();
+      if (now - lastFocusSync > 15000) {
+        lastFocusSync = now;
+        syncWithServer();
+      }
     };
     window.addEventListener('focus', onFocus);
 
+    // Conservative 60-second polling ONLY when the browser tab is actively visible
     const pollInterval = setInterval(() => {
-      syncWithServer();
-    }, 5000);
+      if (typeof document !== 'undefined' && !document.hidden) {
+        syncWithServer();
+      }
+    }, 60000);
 
     return () => {
       window.removeEventListener('focus', onFocus);

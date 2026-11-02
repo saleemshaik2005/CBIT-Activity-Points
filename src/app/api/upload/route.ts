@@ -57,8 +57,22 @@ async function compressImageBuffer(
   }
 }
 
-// Sliding window upload tracker (max 50 certificates per student/IP per 24 hours)
+// Sliding window upload tracker with automated eviction
 const uploadRateLimiter = new Map<string, number[]>();
+
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, timestamps] of uploadRateLimiter.entries()) {
+      const active = timestamps.filter((t) => now - t < 24 * 60 * 60 * 1000);
+      if (active.length === 0) {
+        uploadRateLimiter.delete(key);
+      } else {
+        uploadRateLimiter.set(key, active);
+      }
+    }
+  }, 30 * 60 * 1000).unref?.();
+}
 
 function checkDailyUploadQuota(key: string, limit = 50, windowMs = 24 * 60 * 60 * 1000): boolean {
   const now = Date.now();
@@ -72,18 +86,54 @@ function checkDailyUploadQuota(key: string, limit = 50, windowMs = 24 * 60 * 60 
   return true;
 }
 
+function validateMagicBytes(buffer: Buffer): { valid: boolean; detectedMime?: string; ext?: string } {
+  if (buffer.length < 4) return { valid: false };
+
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return { valid: true, detectedMime: 'image/jpeg', ext: 'jpg' };
+  }
+
+  // PNG: 89 50 4E 47
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
+    return { valid: true, detectedMime: 'image/png', ext: 'png' };
+  }
+
+  // PDF: %PDF
+  if (buffer.subarray(0, 4).toString('ascii') === '%PDF') {
+    return { valid: true, detectedMime: 'application/pdf', ext: 'pdf' };
+  }
+
+  // WEBP: RIFF....WEBP
+  if (
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    return { valid: true, detectedMime: 'image/webp', ext: 'webp' };
+  }
+
+  return { valid: false };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'anonymous';
     const { user } = await getAuthenticatedUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required to upload files.' },
+        { status: 401 }
+      );
+    }
+
+    const effectiveUserId = user.id;
 
     // 1. Handle Multipart Form Data
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const file = formData.get('file') as File | null;
-      const callerStudentId = (formData.get('studentId') as string) || '';
-      const effectiveUserId = user?.id || callerStudentId || clientIp;
       const isAvatar = (formData.get('type') as string) === 'avatar';
       const bucket = isAvatar ? 'avatars' : 'certificates';
 
@@ -99,15 +149,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { success: false, error: 'File size exceeds maximum 20MB limit.' },
           { status: 413 }
-        );
-      }
-
-      // Explicit MIME type verification
-      const rawMime = file.type || 'image/jpeg';
-      if (!ALLOWED_MIME_TYPES.has(rawMime.toLowerCase())) {
-        return NextResponse.json(
-          { success: false, error: `Unsupported file type (${rawMime}). Only JPG, PNG, WEBP, and PDF files are allowed.` },
-          { status: 415 }
         );
       }
 
@@ -127,10 +168,24 @@ export async function POST(req: NextRequest) {
       const rawBuffer = Buffer.from(bytes);
       const originalSize = rawBuffer.byteLength;
 
+      // Cryptographic magic bytes validation
+      const magicCheck = validateMagicBytes(rawBuffer);
+      if (!magicCheck.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Unsupported or spoofed file format. Upload rejected. Only genuine JPG, PNG, WEBP, and PDF files are permitted.',
+          },
+          { status: 415 }
+        );
+      }
+
+      const verifiedMime = magicCheck.detectedMime || 'image/jpeg';
+
       // Compress image before storing in Supabase
       const { buffer, contentType: outMime, ext } = await compressImageBuffer(
         rawBuffer,
-        rawMime,
+        verifiedMime,
         isAvatar
       );
 
