@@ -1,6 +1,7 @@
 -- ==============================================================================
 -- CBIT MAR (Mandatory Additional Requirements) Activity Points System
 -- Complete Supabase PostgreSQL Database Schema
+-- Idempotent, Safe for Pre-existing and New Databases
 -- ==============================================================================
 
 -- 1. ENUMS & EXTENSIONS
@@ -14,6 +15,20 @@ END $$;
 
 DO $$ BEGIN
     CREATE TYPE submission_status AS ENUM ('draft', 'pending_mentor', 'approved', 'rejected');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE processing_job_status AS ENUM (
+        'UPLOADED',
+        'QUEUED',
+        'PROCESSING',
+        'PARSED',
+        'MANUAL_REVIEW_REQUIRED',
+        'FAILED_RETRYABLE',
+        'FAILED_FATAL'
+    );
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -68,9 +83,20 @@ CREATE TABLE IF NOT EXISTS public.activity_categories (
     max_points_allowed INTEGER NOT NULL,
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT uq_activity_category_sno_subtype UNIQUE (sno, sub_type)
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure unique constraint on (sno, sub_type) exists even if table was created previously
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uq_activity_category_sno_subtype'
+    ) THEN
+        ALTER TABLE public.activity_categories 
+        ADD CONSTRAINT uq_activity_category_sno_subtype UNIQUE (sno, sub_type);
+    END IF;
+EXCEPTION
+    WHEN duplicate_table OR duplicate_object THEN null;
+END $$;
 
 -- Seed all 24 Official CBIT MAR Categories (Idempotent Upsert)
 INSERT INTO public.activity_categories (sno, name, sub_type, default_points, max_points_allowed, description)
@@ -128,6 +154,7 @@ CREATE TABLE IF NOT EXISTS public.student_submissions (
     storage_bucket TEXT DEFAULT 'certificates',
     storage_path TEXT,
     file_type TEXT,
+    file_hash TEXT,
     ai_extracted_data JSONB,
     status submission_status NOT NULL DEFAULT 'pending_mentor',
     mentor_remarks TEXT,
@@ -137,27 +164,19 @@ CREATE TABLE IF NOT EXISTS public.student_submissions (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure new columns exist even if student_submissions was created previously
+ALTER TABLE public.student_submissions ADD COLUMN IF NOT EXISTS storage_bucket TEXT DEFAULT 'certificates';
+ALTER TABLE public.student_submissions ADD COLUMN IF NOT EXISTS storage_path TEXT;
+ALTER TABLE public.student_submissions ADD COLUMN IF NOT EXISTS file_hash TEXT;
+
 -- Indices for queries
 CREATE INDEX IF NOT EXISTS idx_submissions_student ON public.student_submissions(student_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_status ON public.student_submissions(status);
 CREATE INDEX IF NOT EXISTS idx_submissions_semester ON public.student_submissions(semester);
+CREATE INDEX IF NOT EXISTS idx_submissions_file_hash ON public.student_submissions(file_hash);
+CREATE INDEX IF NOT EXISTS idx_submissions_student_hash ON public.student_submissions(student_id, file_hash);
 
--- 6. ROW LEVEL SECURITY (RLS) POLICIES
-
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.activity_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
-
--- Activity Categories & System Settings are readable by everyone
-CREATE POLICY "Public Read Categories" ON public.activity_categories FOR SELECT USING (true);
-CREATE POLICY "Public Read System Settings" ON public.system_settings FOR SELECT USING (true);
-CREATE POLICY "Admin Full Control Categories" ON public.activity_categories FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
-);
-CREATE POLICY "Admin Full Control Settings" ON public.system_settings FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
-);
+-- 6. HELPER FUNCTIONS & ROW LEVEL SECURITY (RLS) POLICIES
 
 -- Helper function for role checking without recursion
 CREATE OR REPLACE FUNCTION public.get_my_role()
@@ -165,21 +184,52 @@ RETURNS user_role AS $$
     SELECT role FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+-- Activity Categories & System Settings are readable by everyone
+DROP POLICY IF EXISTS "Public Read Categories" ON public.activity_categories;
+CREATE POLICY "Public Read Categories" ON public.activity_categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read System Settings" ON public.system_settings;
+CREATE POLICY "Public Read System Settings" ON public.system_settings FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admin Full Control Categories" ON public.activity_categories;
+CREATE POLICY "Admin Full Control Categories" ON public.activity_categories FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+);
+
+DROP POLICY IF EXISTS "Admin Full Control Settings" ON public.system_settings;
+CREATE POLICY "Admin Full Control Settings" ON public.system_settings FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+);
+
 -- Profile Policies
+DROP POLICY IF EXISTS "Authenticated users can view profiles" ON public.profiles;
 CREATE POLICY "Authenticated users can view profiles" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Users can update own basic profile" ON public.profiles;
 CREATE POLICY "Users can update own basic profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Admins have full access to profiles" ON public.profiles;
 CREATE POLICY "Admins have full access to profiles" ON public.profiles FOR ALL USING (public.get_my_role() = 'admin');
 
 -- Submission Policies
+DROP POLICY IF EXISTS "Students can view own submissions" ON public.student_submissions;
 CREATE POLICY "Students can view own submissions" ON public.student_submissions 
     FOR SELECT USING (student_id = auth.uid());
 
+DROP POLICY IF EXISTS "Students can create submissions" ON public.student_submissions;
 CREATE POLICY "Students can create submissions" ON public.student_submissions 
     FOR INSERT WITH CHECK (student_id = auth.uid());
 
+DROP POLICY IF EXISTS "Students can update draft/rejected submissions" ON public.student_submissions;
 CREATE POLICY "Students can update draft/rejected submissions" ON public.student_submissions 
     FOR UPDATE USING (student_id = auth.uid() AND status IN ('draft', 'rejected'));
 
+DROP POLICY IF EXISTS "Mentors can view their mentees submissions" ON public.student_submissions;
 CREATE POLICY "Mentors can view their mentees submissions" ON public.student_submissions 
     FOR SELECT USING (
         EXISTS (
@@ -188,6 +238,7 @@ CREATE POLICY "Mentors can view their mentees submissions" ON public.student_sub
         )
     );
 
+DROP POLICY IF EXISTS "Mentors can update (approve/reject) their mentees submissions" ON public.student_submissions;
 CREATE POLICY "Mentors can update (approve/reject) their mentees submissions" ON public.student_submissions 
     FOR UPDATE USING (
         EXISTS (
@@ -196,6 +247,7 @@ CREATE POLICY "Mentors can update (approve/reject) their mentees submissions" ON
         )
     );
 
+DROP POLICY IF EXISTS "HOD, Class Teachers, Admins can view all submissions in dept" ON public.student_submissions;
 CREATE POLICY "HOD, Class Teachers, Admins can view all submissions in dept" ON public.student_submissions 
     FOR SELECT USING (
         EXISTS (
@@ -267,26 +319,6 @@ WITH CHECK (
 -- 9. ASYNCHRONOUS EVENT-DRIVEN PROCESSING & IDEMPOTENT QUEUE
 -- ==============================================================================
 
--- Add document binary hash column to student_submissions for deduplication
-ALTER TABLE public.student_submissions ADD COLUMN IF NOT EXISTS file_hash TEXT;
-CREATE INDEX IF NOT EXISTS idx_submissions_file_hash ON public.student_submissions(file_hash);
-CREATE INDEX IF NOT EXISTS idx_submissions_student_hash ON public.student_submissions(student_id, file_hash);
-
--- Explicit Processing State Enum
-DO $$ BEGIN
-    CREATE TYPE processing_job_status AS ENUM (
-        'UPLOADED',
-        'QUEUED',
-        'PROCESSING',
-        'PARSED',
-        'MANUAL_REVIEW_REQUIRED',
-        'FAILED_RETRYABLE',
-        'FAILED_FATAL'
-    );
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
 -- Background AI Processing Jobs Table
 CREATE TABLE IF NOT EXISTS public.certificate_processing_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -314,12 +346,15 @@ CREATE INDEX IF NOT EXISTS idx_jobs_hash ON public.certificate_processing_jobs(f
 
 ALTER TABLE public.certificate_processing_jobs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Students can view own processing jobs" ON public.certificate_processing_jobs;
 CREATE POLICY "Students can view own processing jobs" ON public.certificate_processing_jobs
     FOR SELECT USING (student_id = auth.uid() OR public.get_my_role() IN ('mentor', 'class_teacher', 'hod', 'admin'));
 
+DROP POLICY IF EXISTS "Service and Students can insert jobs" ON public.certificate_processing_jobs;
 CREATE POLICY "Service and Students can insert jobs" ON public.certificate_processing_jobs
     FOR INSERT WITH CHECK (student_id = auth.uid() OR public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "Service and Admins can update jobs" ON public.certificate_processing_jobs;
 CREATE POLICY "Service and Admins can update jobs" ON public.certificate_processing_jobs
     FOR UPDATE USING (student_id = auth.uid() OR public.get_my_role() = 'admin');
 
@@ -353,10 +388,11 @@ CREATE INDEX IF NOT EXISTS idx_audit_created ON public.activity_point_audit_logs
 
 ALTER TABLE public.activity_point_audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Read policies: Users can view their relevant audit trails; Admins view all
+DROP POLICY IF EXISTS "Admins have full view on audit logs" ON public.activity_point_audit_logs;
 CREATE POLICY "Admins have full view on audit logs" ON public.activity_point_audit_logs
     FOR SELECT USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "Faculty can view relevant mentee audit logs" ON public.activity_point_audit_logs;
 CREATE POLICY "Faculty can view relevant mentee audit logs" ON public.activity_point_audit_logs
     FOR SELECT USING (
         actor_id = auth.uid()
@@ -367,13 +403,13 @@ CREATE POLICY "Faculty can view relevant mentee audit logs" ON public.activity_p
         OR public.get_my_role() IN ('class_teacher', 'hod')
     );
 
+DROP POLICY IF EXISTS "Students can view audit logs for own submissions" ON public.activity_point_audit_logs;
 CREATE POLICY "Students can view audit logs for own submissions" ON public.activity_point_audit_logs
     FOR SELECT USING (student_id = auth.uid());
 
+DROP POLICY IF EXISTS "Authenticated users and service can insert audit logs" ON public.activity_point_audit_logs;
 CREATE POLICY "Authenticated users and service can insert audit logs" ON public.activity_point_audit_logs
     FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Strict Immutability: NO UPDATE OR DELETE policies are created for activity_point_audit_logs.
 -- Attempts to update or delete rows from this table will fail by default under RLS.
-
-
