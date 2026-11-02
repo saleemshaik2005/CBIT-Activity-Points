@@ -101,7 +101,7 @@ export default function HODStudentsDirectoryPage() {
             </h1>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Department of AI&DS • Comprehensive registry of all <strong>{DEPARTMENT_ALL_STUDENTS.length} students</strong> across Section 1, 2, and 3.
+            Department of AI&DS • Comprehensive registry of all <strong>{DEPARTMENT_ALL_STUDENTS.length} registered students</strong> in AI&DS Section 2 cohort.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export default function HODStudentsDirectoryPage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-3.5 py-2 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36] transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-2 bg-white dark:bg-[#22232a] hover:bg-[#faf7f2] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             <Download className="w-3.5 h-3.5 text-[#a16b15] dark:text-amber-400" />
             <span>Export Department Audit (CSV)</span>
@@ -121,10 +121,8 @@ export default function HODStudentsDirectoryPage() {
             onChange={(e) => setSectionFilter(e.target.value)}
             className="px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
           >
-            <option value="all">All Sections (1, 2, 3)</option>
-            <option value="1">Section 1</option>
-            <option value="2">Section 2</option>
-            <option value="3">Section 3</option>
+            <option value="all">All Cohort (Section 2 - {DEPARTMENT_ALL_STUDENTS.length} Students)</option>
+            <option value="2">AI&DS Section 2</option>
           </select>
         </div>
       </div>

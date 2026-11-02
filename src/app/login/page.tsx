@@ -458,7 +458,17 @@ function LoginFormContent() {
                 >
                   <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
                   <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 1</span>
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Faculty Review</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. Shobarani</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleQuickUser('sheena_it@cbit.ac.in', 'Cbit@facultyM2', 'mentor')}
+                  className="p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#fbf5eb] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex flex-col items-center justify-center text-center group cursor-pointer"
+                >
+                  <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
+                  <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 2</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. Sheena</span>
                 </button>
 
                 <button
@@ -468,7 +478,7 @@ function LoginFormContent() {
                 >
                   <Briefcase className="w-4 h-4 text-[#a16b15] dark:text-amber-400 group-hover:scale-110 transition-transform mb-1" />
                   <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Mentor 3</span>
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Faculty Review</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Dr. Srilakshmi</span>
                 </button>
 
                 <button

@@ -24,7 +24,7 @@ import {
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
-import { DEPARTMENT_FACULTY_MENTORS, FacultyMentorDetail } from '@/lib/mar-constants';
+import { DEPARTMENT_FACULTY_MENTORS, DEPARTMENT_ALL_STUDENTS, FacultyMentorDetail } from '@/lib/mar-constants';
 
 export default function HODMentorsPage() {
   const { currentUser, addNotification } = useApp();
@@ -52,7 +52,7 @@ export default function HODMentorsPage() {
       title: `HOD Verification Reminder: ${mentor.name}`,
       message: `Dear ${mentor.name}, kindly expedite the review of ${mentor.pendingReviews} pending student certificates in your verification queue.`,
       link: '/mentor',
-      sender_name: 'Head of Department (AI&DS)',
+      sender_name: 'Dr. K. Radhika (Professor & Head, AI&DS Dept.)',
     });
     setReminderSentId(mentor.id);
     setTimeout(() => setReminderSentId(null), 4000);
@@ -71,7 +71,7 @@ export default function HODMentorsPage() {
             </h1>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Department of AI&DS • Comprehensive overview of all <strong>{DEPARTMENT_FACULTY_MENTORS.length} Faculty Mentors</strong> and their assigned mentees.
+            Department of AI&DS • Comprehensive overview of all <strong>{DEPARTMENT_FACULTY_MENTORS.length} Designated Faculty Mentors</strong> and their assigned Section 2 mentees ({DEPARTMENT_ALL_STUDENTS.length} total students).
           </p>
         </div>
 
@@ -83,10 +83,8 @@ export default function HODMentorsPage() {
             onChange={(e) => setSectionFilter(e.target.value)}
             className="px-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
           >
-            <option value="all">All Sections (1, 2, 3)</option>
-            <option value="1">Section 1 Mentors</option>
-            <option value="2">Section 2 Mentors</option>
-            <option value="3">Section 3 Mentors</option>
+            <option value="all">All Mentors (Section 2)</option>
+            <option value="2">AI&DS Section 2 Mentors ({DEPARTMENT_FACULTY_MENTORS.length})</option>
           </select>
         </div>
       </div>
@@ -109,7 +107,7 @@ export default function HODMentorsPage() {
             {DEPARTMENT_FACULTY_MENTORS.length} Faculty Mentors
           </div>
           <div className="bg-[#fbf5eb] dark:bg-[#22232a] text-[#a16b15] dark:text-amber-400 px-3 py-1.5 rounded-xl font-bold border border-[#a16b15]/30">
-            193 Total Mentees Assigned
+            {DEPARTMENT_ALL_STUDENTS.length} Total Mentees Assigned
           </div>
         </div>
       </div>

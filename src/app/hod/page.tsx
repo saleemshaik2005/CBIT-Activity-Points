@@ -31,7 +31,7 @@ export default function HODDashboardPage() {
   const satisfiedCount = DEPARTMENT_ALL_STUDENTS.filter((s) => s.points >= s.target).length;
   const inProgressCount = DEPARTMENT_ALL_STUDENTS.filter((s) => s.points < s.target && s.points >= 30).length;
   const atRiskCount = DEPARTMENT_ALL_STUDENTS.filter((s) => s.points < 30).length;
-  const complianceRate = Math.round((satisfiedCount / totalStudents) * 100);
+  const complianceRate = totalStudents > 0 ? Math.round((satisfiedCount / totalStudents) * 100) : 0;
 
   const totalMentors = DEPARTMENT_FACULTY_MENTORS.length;
   const totalPendingInDept = DEPARTMENT_FACULTY_MENTORS.reduce((acc, m) => acc + m.pendingReviews, 0);
@@ -41,9 +41,9 @@ export default function HODDashboardPage() {
       recipient_role: 'student',
       type: 'announcement',
       title: 'HOD Notice: 5th Semester MAR Activity Verification Deadline',
-      message: 'All Department of AI&DS students with pending activity points are advised to submit verification certificates to their faculty mentors before the semester audit.',
+      message: 'All Department of AI&DS Section 2 students with pending activity points are advised to submit verification certificates to their faculty mentors before the semester audit.',
       link: '/student/upload',
-      sender_name: 'Head of Department (AI&DS)',
+      sender_name: 'Dr. K. Radhika (Professor & Head, AI&DS Dept.)',
     });
     setNoticeSent(true);
     setTimeout(() => setNoticeSent(false), 5000);
@@ -67,7 +67,7 @@ export default function HODDashboardPage() {
             Department MAR & Portfolio Analytics
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Head of Department: <strong>{currentUser.full_name}</strong> • 3 Academic Sections (AI&DS-1, 2, 3) • Batch 2024-2028 (5th Semester)
+            Head of Department: <strong>{currentUser.full_name || 'Dr. K. Radhika'}</strong> • AI&DS Section 2 ({totalStudents} Students) • 3 Faculty Mentors • Class Coordinator: <strong>Ms. Talla Sai Sree</strong> • Batch 2024-2028 (5th Semester)
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export default function HODDashboardPage() {
             className="px-4 py-2.5 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 border-b-2 border-[#a16b15] dark:border-[#383a45] cursor-pointer"
           >
             <BookOpen className="w-4 h-4 text-[#dfa94b] dark:text-amber-400" />
-            <span>Student Directory</span>
+            <span>Student Directory ({totalStudents})</span>
           </Link>
         </div>
       </div>
@@ -99,8 +99,8 @@ export default function HODDashboardPage() {
             <span className="text-[11px] font-bold uppercase">Total Students</span>
             <Users className="w-4 h-4 text-[#385529] dark:text-emerald-400" />
           </div>
-          <p className="text-2xl font-serif font-extrabold text-[#1c2718] dark:text-white">193</p>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Across 3 Sections</span>
+          <p className="text-2xl font-serif font-extrabold text-[#1c2718] dark:text-white">{totalStudents}</p>
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">AI&DS Section 2 Cohort</span>
         </div>
 
         <div className="bg-white dark:bg-[#1a1b20] p-4 sm:p-5 rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-1">
@@ -108,8 +108,8 @@ export default function HODDashboardPage() {
             <span className="text-[11px] font-bold uppercase">MAR Completed</span>
             <CheckCircle2 className="w-4 h-4" />
           </div>
-          <p className="text-2xl font-serif font-extrabold text-[#385529] dark:text-emerald-400">161</p>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">60+ Pts (Grad Ready)</span>
+          <p className="text-2xl font-serif font-extrabold text-[#385529] dark:text-emerald-400">{satisfiedCount}</p>
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 block">{complianceRate}% Graduation Ready</span>
         </div>
 
         <div className="bg-white dark:bg-[#1a1b20] p-4 sm:p-5 rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-1">
@@ -117,7 +117,7 @@ export default function HODDashboardPage() {
             <span className="text-[11px] font-bold uppercase">In Progress</span>
             <Clock className="w-4 h-4" />
           </div>
-          <p className="text-2xl font-serif font-extrabold text-[#a16b15] dark:text-amber-400">24</p>
+          <p className="text-2xl font-serif font-extrabold text-[#a16b15] dark:text-amber-400">{inProgressCount}</p>
           <span className="text-[10px] text-gray-500 dark:text-gray-400 block">30 - 59 Pts Earned</span>
         </div>
 
@@ -126,7 +126,7 @@ export default function HODDashboardPage() {
             <span className="text-[11px] font-bold uppercase">At-Risk (&lt;30 Pts)</span>
             <AlertTriangle className="w-4 h-4" />
           </div>
-          <p className="text-2xl font-serif font-extrabold text-red-600 dark:text-rose-400">8</p>
+          <p className="text-2xl font-serif font-extrabold text-red-600 dark:text-rose-400">{atRiskCount}</p>
           <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Needs Mentor Intervention</span>
         </div>
 
@@ -135,7 +135,7 @@ export default function HODDashboardPage() {
             <span className="text-[11px] font-bold uppercase">Compliance Rate</span>
             <TrendingUp className="w-4 h-4" />
           </div>
-          <p className="text-2xl font-serif font-extrabold text-[#3b566e] dark:text-sky-400">83.4%</p>
+          <p className="text-2xl font-serif font-extrabold text-[#3b566e] dark:text-sky-400">{complianceRate}%</p>
           <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Dept Target: 100%</span>
         </div>
 
@@ -144,57 +144,58 @@ export default function HODDashboardPage() {
       {/* Section Performance & Faculty Coordinators */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left: Section Comparison */}
+        {/* Left: Mentor-wise Standing */}
         <div className="lg:col-span-7 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-serif font-bold text-sm text-[#385529] dark:text-gray-100 uppercase tracking-wider flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
-              <span>Section-Wise MAR Standing</span>
+              <span>Faculty Mentorship Matrix: AI&DS Section 2</span>
             </h3>
             <Link
-              href="/hod/students"
+              href="/hod/mentors"
               className="text-xs font-bold text-[#385529] dark:text-emerald-400 hover:underline flex items-center gap-1"
             >
-              <span>View All</span>
+              <span>View Hierarchy</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
           <div className="space-y-3.5">
-            {[
-              { section: 'AI&DS Section 1', coordinator: 'Prof. M. Srinivasa Rao', enrolled: 66, satisfied: 58, rate: 87.8, queue: 3 },
-              { section: 'AI&DS Section 2', coordinator: 'Dr. T. Sridevi', enrolled: 64, satisfied: 54, rate: 84.3, queue: 6 },
-              { section: 'AI&DS Section 3', coordinator: 'Dr. B. Indira', enrolled: 63, satisfied: 49, rate: 77.7, queue: 5 },
-            ].map((sec) => (
-              <div
-                key={sec.section}
-                className="p-4 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36] space-y-2.5"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <div>
-                    <h4 className="font-bold text-xs text-gray-900 dark:text-white">{sec.section}</h4>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Coordinator: <strong>{sec.coordinator}</strong>
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3 text-xs">
-                    <span className="font-extrabold text-[#385529] dark:text-emerald-400">
-                      {sec.satisfied} / {sec.enrolled} Satisfied
-                    </span>
-                    <span className="font-serif font-black text-[#a16b15] dark:text-amber-400">
-                      {sec.rate}%
-                    </span>
-                  </div>
-                </div>
+            {DEPARTMENT_FACULTY_MENTORS.map((m) => {
+              const satisfied = m.mentees.filter((s) => s.points >= s.target).length;
+              const rate = m.mentees.length > 0 ? Math.round((satisfied / m.mentees.length) * 100) : 0;
 
-                <div className="w-full bg-[#e8e3d8] dark:bg-[#22232a] h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#385529] dark:bg-emerald-500 h-full rounded-full"
-                    style={{ width: `${sec.rate}%` }}
-                  />
+              return (
+                <div
+                  key={m.id}
+                  className="p-4 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36] space-y-2.5"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <div>
+                      <h4 className="font-bold text-xs text-gray-900 dark:text-white">{m.name}</h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        {m.designation} • Cabin: <strong>{m.cabin}</strong>
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3 text-xs">
+                      <span className="font-extrabold text-[#385529] dark:text-emerald-400">
+                        {satisfied} / {m.mentees.length} Satisfied
+                      </span>
+                      <span className="font-serif font-black text-[#a16b15] dark:text-amber-400">
+                        {rate}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-[#e8e3d8] dark:bg-[#22232a] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#385529] dark:bg-emerald-500 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${rate}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -244,7 +245,7 @@ export default function HODDashboardPage() {
                 Early-Warning MAR Intervention System
               </h4>
               <p className="text-xs text-red-700 dark:text-rose-300">
-                8 students in AI&DS have less than 30 points as of 5th Semester. Action is recommended before the semester MAR evaluation.
+                {atRiskCount} students in Section 2 currently have fewer than 30 points as of 5th Semester. Action is recommended before the semester MAR evaluation.
               </p>
             </div>
           </div>

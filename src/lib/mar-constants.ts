@@ -732,13 +732,13 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     created_at: getRelISO(6),
   },
 
-  // Mentee of Dr. Shobha Rani (Roll 160124771071) - Pending Submission 3
+  // Mentee of Dr. Shobarani Salvadi (Roll 160124771071) - Pending Submission 3
   {
     id: "sub-pending-003",
     student_id: "usr-student-071",
-    student_name: "A. Srikanth",
+    student_name: "SHRADDHA REDDY",
     student_roll_no: "160124771071",
-    student_email: "160124771071@cbit.ac.in",
+    student_email: "shraddhareddy0249@gmail.com",
     student_section: "2",
     mentor_id: "378feeb5-4cd4-430e-812c-c9d95fa1734d",
     category_id: 1, // MOOCs 12 weeks
@@ -758,7 +758,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     ai_extracted_data: {
       isDocument: true,
       certificateTitle: "Programming, Data Structures and Algorithms Using Python",
-      recipientName: "A. Srikanth",
+      recipientName: "SHRADDHA REDDY",
       issuingOrganization: "NPTEL / IIT Madras",
       completionDate: getRelDate(4),
       durationOrHours: "12 weeks",
@@ -869,7 +869,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Blood donor certificate verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Prof. M. Srinivasa Rao",
+    approver_name: "Dr. Anireddy Srilakshmi",
     approved_at: getRelISO(720),
     created_at: getRelISO(740),
   },
@@ -896,7 +896,7 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Active IEEE membership verified with membership number.",
     approved_by: "usr-mentor-001",
-    approver_name: "Prof. M. Srinivasa Rao",
+    approver_name: "Dr. Anireddy Srilakshmi",
     approved_at: getRelISO(960),
     created_at: getRelISO(980),
   },
@@ -928,13 +928,13 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     created_at: getRelISO(1240),
   },
 
-  // Sneha Reddy (usr-student-002)
+  // A ABHINAY (usr-student-094, Mentor 2: Dr. SHEENA MOHAMMED)
   {
     id: "sub-006",
-    student_id: "usr-student-002",
-    student_name: "Sneha Reddy",
-    student_roll_no: "160122771046",
-    student_email: "sneha.reddy@cbit.ac.in",
+    student_id: "usr-student-094",
+    student_name: "A ABHINAY",
+    student_roll_no: "160124771094",
+    student_email: "abhinay13570@gmail.com",
     student_section: "2",
     category_id: 1, // MOOCs 12 weeks
     category: CBIT_24_CATEGORIES[0],
@@ -951,17 +951,18 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     verification_url: "https://nptel.ac.in/noc/Ecertificate/?q=NPTEL24CS891S3010192",
     status: "approved",
     mentor_remarks: "Verified certificate with 84% consolidated score.",
-    approved_by: "usr-mentor-001",
-    approver_name: "Dr. Anireddy Srilakshmi",
+    approved_by: "usr-mentor-002",
+    approver_name: "Dr. SHEENA MOHAMMED",
     approved_at: getRelISO(1500),
     created_at: getRelISO(1550),
   },
-
   {
     id: "sub-007",
-    student_id: "usr-student-002",
-    student_name: "Sneha Reddy",
-    student_roll_no: "160122771046",
+    student_id: "usr-student-094",
+    student_name: "A ABHINAY",
+    student_roll_no: "160124771094",
+    student_email: "abhinay13570@gmail.com",
+    student_section: "2",
     category_id: 13, // Innovation Projects / Internship
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Cloud Infrastructure & DevOps Summer Internship (6-Weeks)",
@@ -975,16 +976,18 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     file_type: "image/jpeg",
     status: "approved",
     mentor_remarks: "Internship letter and mentor evaluation report verified.",
-    approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approved_by: "usr-mentor-002",
+    approver_name: "Dr. SHEENA MOHAMMED",
     approved_at: getRelISO(1800),
     created_at: getRelISO(1850),
   },
   {
     id: "sub-008",
-    student_id: "usr-student-002",
-    student_name: "Sneha Reddy",
-    student_roll_no: "160122771046",
+    student_id: "usr-student-094",
+    student_name: "A ABHINAY",
+    student_roll_no: "160124771094",
+    student_email: "abhinay13570@gmail.com",
+    student_section: "2",
     category_id: 4, // Tech Fest Participant
     category: CBIT_24_CATEGORIES[3],
     activity_title: "Smart India Hackathon (SIH) Campus Edition Participant",
@@ -998,18 +1001,20 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     file_type: "image/jpeg",
     status: "approved",
     mentor_remarks: "SIH participation verified.",
-    approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approved_by: "usr-mentor-002",
+    approver_name: "Dr. SHEENA MOHAMMED",
     approved_at: getRelISO(2000),
     created_at: getRelISO(2050),
   },
 
-  // Mohammed Farhan (usr-student-003, Lateral Entry)
+  // MOHAMMAD ASLAM (usr-student-310, Lateral Entry, Mentor 3: Dr. Anireddy Srilakshmi)
   {
     id: "sub-009",
-    student_id: "usr-student-003",
-    student_name: "Mohammed Farhan",
-    student_roll_no: "160122771301",
+    student_id: "usr-student-310",
+    student_name: "MOHAMMAD ASLAM",
+    student_roll_no: "160124771310",
+    student_email: "mohammadaslam61710@gmail.com",
+    student_section: "2",
     category_id: 2, // MOOCs 8 weeks
     category: CBIT_24_CATEGORIES[1],
     activity_title: "NPTEL Introduction to Internet of Things (IoT) 8-Week Course",
@@ -1024,15 +1029,17 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "NPTEL Certificate verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approver_name: "Dr. Anireddy Srilakshmi",
     approved_at: getRelISO(2200),
     created_at: getRelISO(2250),
   },
   {
     id: "sub-010",
-    student_id: "usr-student-003",
-    student_name: "Mohammed Farhan",
-    student_roll_no: "160122771301",
+    student_id: "usr-student-310",
+    student_name: "MOHAMMAD ASLAM",
+    student_roll_no: "160124771310",
+    student_email: "mohammadaslam61710@gmail.com",
+    student_section: "2",
     category_id: 13, // Innovation / Internship
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Full-Stack Web Development & Cloud Internship (8-Weeks)",
@@ -1047,15 +1054,17 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Infosys Springboard internship verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approver_name: "Dr. Anireddy Srilakshmi",
     approved_at: getRelISO(2400),
     created_at: getRelISO(2450),
   },
   {
     id: "sub-011",
-    student_id: "usr-student-003",
-    student_name: "Mohammed Farhan",
-    student_roll_no: "160122771301",
+    student_id: "usr-student-310",
+    student_name: "MOHAMMAD ASLAM",
+    student_roll_no: "160124771310",
+    student_email: "mohammadaslam61710@gmail.com",
+    student_section: "2",
     category_id: 16, // Sports
     category: CBIT_24_CATEGORIES[15],
     activity_title: "Inter-College Cricket Tournament Runners-Up",
@@ -1070,17 +1079,19 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Sports participation confirmed.",
     approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approver_name: "Dr. Anireddy Srilakshmi",
     approved_at: getRelISO(2600),
     created_at: getRelISO(2650),
   },
 
-  // Ananya Rao (usr-student-004)
+  // SAMA ASHWITHA REDDY (usr-student-089, Mentor 1: Dr. Shobarani Salvadi)
   {
     id: "sub-012",
-    student_id: "usr-student-004",
-    student_name: "Ananya Rao",
-    student_roll_no: "160122771089",
+    student_id: "usr-student-089",
+    student_name: "SAMA ASHWITHA REDDY",
+    student_roll_no: "160124771089",
+    student_email: "samaashwithareddy@gmail.com",
+    student_section: "2",
     category_id: 1, // MOOCs 12 weeks
     category: CBIT_24_CATEGORIES[0],
     activity_title: "NPTEL Natural Language Processing & Large Language Models",
@@ -1095,15 +1106,17 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "Elite+Gold certificate verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approver_name: "Dr. Shobarani Salvadi",
     approved_at: getRelISO(2800),
     created_at: getRelISO(2850),
   },
   {
     id: "sub-013",
-    student_id: "usr-student-004",
-    student_name: "Ananya Rao",
-    student_roll_no: "160122771089",
+    student_id: "usr-student-089",
+    student_name: "SAMA ASHWITHA REDDY",
+    student_roll_no: "160124771089",
+    student_email: "samaashwithareddy@gmail.com",
+    student_section: "2",
     category_id: 13, // Innovation / Internship
     category: CBIT_24_CATEGORIES[12],
     activity_title: "Data Science & Machine Learning Research Internship (8-Weeks)",
@@ -1118,11 +1131,30 @@ export const MOCK_SUBMISSIONS: StudentSubmission[] = [
     status: "approved",
     mentor_remarks: "TCS Research internship verified.",
     approved_by: "usr-mentor-001",
-    approver_name: "Faculty Mentor",
+    approver_name: "Dr. Shobarani Salvadi",
     approved_at: getRelISO(3000),
     created_at: getRelISO(3050),
   }
 ];
+
+export interface DepartmentStudent {
+  id: string;
+  name: string;
+  roll: string;
+  section: string;
+  email: string;
+  mentor: string;
+  mentorEmail: string;
+  points: number;
+  target: number;
+  maxCap: number;
+  isLateral: boolean;
+  status: 'Satisfied' | 'In Progress' | 'At Risk';
+  nptelDone: boolean;
+  internshipDone: boolean;
+  resumeUrl?: string;
+  skills: string[];
+}
 
 export interface FacultyMentorDetail {
   id: string;
@@ -1138,201 +1170,132 @@ export interface FacultyMentorDetail {
   approvedReviews: number;
   averagePoints: number;
   complianceRate: number;
-  mentees: {
-    id: string;
-    name: string;
-    roll: string;
-    section: string;
-    points: number;
-    target: number;
-    isLateral: boolean;
-    status: 'Satisfied' | 'In Progress' | 'At Risk';
-    nptelDone: boolean;
-    internshipDone: boolean;
-    resumeUrl?: string;
-  }[];
+  mentees: DepartmentStudent[];
 }
 
+// Canonical 67-Student Roster for CBIT AI&DS Section 2 (Batch 2024-2028, 5th Semester)
+export const DEPARTMENT_ALL_STUDENTS: DepartmentStudent[] = [
+  // --- MENTOR 1: Dr. Shobarani Salvadi (22 Students, Rolls 160124771071 - 160124771093) ---
+  { id: "usr-student-071", name: "SHRADDHA REDDY", roll: "160124771071", section: "2", email: "shraddhareddy0249@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Python", "Machine Learning", "SQL"] },
+  { id: "usr-student-072", name: "BHARATULA SAI NIKHILA", roll: "160124771072", section: "2", email: "sainikhilabh@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Java", "Web Development", "DBMS"] },
+  { id: "usr-student-073", name: "DEEKSHA BACHU", roll: "160124771073", section: "2", email: "bachu.deeksha@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Data Analytics", "Tableau", "Python"] },
+  { id: "usr-student-074", name: "G DOLA GOURI", roll: "160124771074", section: "2", email: "dolagouri12@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 48, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Data Structures", "Git"] },
+  { id: "usr-student-076", name: "G L SRI SAHASRA RAO", roll: "160124771076", section: "2", email: "sahasrarao1506@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Computing", "AWS", "Python"] },
+  { id: "usr-student-077", name: "KAMERA BHAVANI", roll: "160124771077", section: "2", email: "bhavanikamera123@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 26, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["C Programming", "Basics"] },
+  { id: "usr-student-078", name: "K VEEKSHA", roll: "160124771078", section: "2", email: "k.veeksha@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 52, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Web Development", "React", "CSS"] },
+  { id: "usr-student-079", name: "LAKKEPURAM LAASYASRI", roll: "160124771079", section: "2", email: "laasyasrilakkepuram@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 61, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Deep Learning", "PyTorch", "OpenCV"] },
+  { id: "usr-student-080", name: "MADESHI NANDINI", roll: "160124771080", section: "2", email: "madeshinandini@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Java", "SQL", "DBMS"] },
+  { id: "usr-student-081", name: "MASETTY SRI THARINI", roll: "160124771081", section: "2", email: "sritharinimasetty@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Computer Vision", "OpenCV", "TensorFlow"] },
+  { id: "usr-student-082", name: "MUDAVATH SRAVANI", roll: "160124771082", section: "2", email: "mudavathsravani16@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 45, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "HTML", "CSS"] },
+  { id: "usr-student-083", name: "NAYUDU LIKITHA", roll: "160124771083", section: "2", email: "nayudulikitha28@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 24, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Data Structures", "C"] },
+  { id: "usr-student-084", name: "PACHIMATLA HASINI", roll: "160124771084", section: "2", email: "pachimatlahasini06@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["NLP", "Transformers", "Python"] },
+  { id: "usr-student-085", name: "PARSHETTY HARSHITHA", roll: "160124771085", section: "2", email: "harshithaofficial2028@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 56, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Frontend", "JavaScript", "React"] },
+  { id: "usr-student-086", name: "PRANATHI VEMURI", roll: "160124771086", section: "2", email: "pranathivemuri.18@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Python", "Django", "PostgreSQL"] },
+  { id: "usr-student-087", name: "RAYAPENENI VYSHNAVI", roll: "160124771087", section: "2", email: "rayapaneni.vyshnavi23@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 50, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Machine Learning", "Scikit-Learn"] },
+  { id: "usr-student-088", name: "RHUTHVIJA ALLAVALA", roll: "160124771088", section: "2", email: "rhuthvija@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Full Stack", "Node.js", "Express"] },
+  { id: "usr-student-089", name: "SAMA ASHWITHA REDDY", roll: "160124771089", section: "2", email: "samaashwithareddy@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Data Science", "Pandas", "NumPy"] },
+  { id: "usr-student-090", name: "S BRAMARAMBIKA", roll: "160124771090", section: "2", email: "Bramarambika81@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 54, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "SQL", "Data Analysis"] },
+  { id: "usr-student-091", name: "VADDEBOINA MAHATHI", roll: "160124771091", section: "2", email: "mahathivaddeboina19@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud", "Docker", "DevOps"] },
+  { id: "usr-student-092", name: "VALLABHDAS VAISHNAVI", roll: "160124771092", section: "2", email: "vallabhdasvaishnavi0120@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["C++", "Algorithms", "OOP"] },
+  { id: "usr-student-093", name: "VENNELA INDUKURI", roll: "160124771093", section: "2", email: "vennela.indukuri@gmail.com", mentor: "Dr. Shobarani Salvadi", mentorEmail: "shobarani_aids@cbit.ac.in", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["AI", "Neural Networks", "Python"] },
+
+  // --- MENTOR 2: Dr. SHEENA MOHAMMED (22 Students, Rolls 160124771094 - 160124771117) ---
+  { id: "usr-student-094", name: "A ABHINAY", roll: "160124771094", section: "2", email: "abhinay13570@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Architecture", "AWS", "DevOps"] },
+  { id: "usr-student-095", name: "A MURALIDHAR REDDY", roll: "160124771095", section: "2", email: "amaravadimuralidhar@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "FastAPI", "PostgreSQL"] },
+  { id: "usr-student-097", name: "ANUMULLA HANNISH REDDI", roll: "160124771097", section: "2", email: "hannishanumulla@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Data Engineering", "Apache Spark", "SQL"] },
+  { id: "usr-student-098", name: "ATTIPALLI HOTHRISH REDDY", roll: "160124771098", section: "2", email: "reddyhothrish0@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 52, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["React", "TypeScript", "Tailwind CSS"] },
+  { id: "usr-student-099", name: "B KESHAV BHANDARI", roll: "160124771099", section: "2", email: "b.keshavbhandari19@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 61, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Java", "Spring Boot", "Microservices"] },
+  { id: "usr-student-100", name: "BADAVATH BABINAYAK", roll: "160124771100", section: "2", email: "bbabinayak29@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 46, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "SQL", "Data Modeling"] },
+  { id: "usr-student-101", name: "BANOTHU RAKESH", roll: "160124771101", section: "2", email: "rakeshbanothu1101@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 25, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["C", "Basic Electronics"] },
+  { id: "usr-student-102", name: "BHATTA TEJA PRAHARSHA", roll: "160124771102", section: "2", email: "tejapraharsha23@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Machine Learning", "TensorFlow", "Keras"] },
+  { id: "usr-student-103", name: "BODA ARUN", roll: "160124771103", section: "2", email: "bodaarun29@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 50, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Web Development", "Node.js", "Express"] },
+  { id: "usr-student-104", name: "C VARUN TEJA", roll: "160124771104", section: "2", email: "varuntejacherukuthota.0456@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["DevOps", "Kubernetes", "CI/CD"] },
+  { id: "usr-student-105", name: "D RISHWANTH REDDY", roll: "160124771105", section: "2", email: "rishwanthreddyd9@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Computer Vision", "OpenCV"] },
+  { id: "usr-student-106", name: "DASARI HITHARTH", roll: "160124771106", section: "2", email: "dasarihitharth@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Data Structures", "C++", "STL"] },
+  { id: "usr-student-107", name: "EEDEBILLI SAIMOHAN", roll: "160124771107", section: "2", email: "mohansai152006@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 54, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Next.js", "React", "Frontend"] },
+  { id: "usr-student-108", name: "GADE SAI TEJA", roll: "160124771108", section: "2", email: "gadesaiteja83@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Computing", "GCP", "Kubernetes"] },
+  { id: "usr-student-109", name: "GADE VISHAL", roll: "160124771109", section: "2", email: "gadevishal010107@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 51, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Pandas", "Analytics"] },
+  { id: "usr-student-110", name: "GADIELA KARTHIK REDDY", roll: "160124771110", section: "2", email: "karthikreddyg0507@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 28, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Programming Fundamentals"] },
+  { id: "usr-student-111", name: "G YUVA AKHILESH REDDY", roll: "160124771111", section: "2", email: "yuvaakhilesh@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["NLP", "AI Systems", "PyTorch"] },
+  { id: "usr-student-112", name: "KALYANAM SRI SAI AKARSH", roll: "160124771112", section: "2", email: "kalyanamakarsh@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 56, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Cybersecurity", "Network Protocols"] },
+  { id: "usr-student-113", name: "KETIREDDI CHIRANJEEVI", roll: "160124771113", section: "2", email: "chiranjeeviketireddi7279@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Data Mining", "SQL", "PowerBI"] },
+  { id: "usr-student-114", name: "KONDALA KARTHIK", roll: "160124771114", section: "2", email: "karthikkondala1@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 48, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Frontend", "UI/UX Design"] },
+  { id: "usr-student-116", name: "MALLEPALLY PRAVEEN", roll: "160124771116", section: "2", email: "mallepallypraveen5767@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Full Stack", "MongoDB", "Node.js"] },
+  { id: "usr-student-117", name: "MANDALA VISWA TEJA", roll: "160124771117", section: "2", email: "viswatejamandala@gmail.com", mentor: "Dr. SHEENA MOHAMMED", mentorEmail: "sheena_it@cbit.ac.in", points: 57, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Docker", "DevOps"] },
+
+  // --- MENTOR 3: Dr. Anireddy Srilakshmi (23 Students: 17 Regular + 6 Lateral Entry) ---
+  { id: "usr-student-118", name: "M KOUSHIK RAM REDDY", roll: "160124771118", section: "2", email: "koushikramreddy.mogusala@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Deep Learning", "PyTorch", "CUDA"] },
+  { id: "usr-student-119", name: "MD HAMZA JAWEED", roll: "160124771119", section: "2", email: "hamza1jaweed@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 54, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Analytics", "Python", "Tableau"] },
+  { id: "usr-student-120", name: "MOMULA GOUTHAM", roll: "160124771120", section: "2", email: "momulagoutham123@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Architecture", "AWS", "Terraform"] },
+  { id: "usr-student-121", name: "NANNA AADARSH", roll: "160124771121", section: "2", email: "nannaaadarsh158@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 50, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Web Development", "React", "TypeScript"] },
+  { id: "usr-student-122", name: "NAYUNIPATRUNI MOHITH", roll: "160124771122", section: "2", email: "nayunipatrunimohith@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Machine Learning", "Scikit", "Python"] },
+  { id: "usr-student-123", name: "NIJJANI VARUN TEJA", roll: "160124771123", section: "2", email: "varuntejav538@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Django", "REST APIs"] },
+  { id: "usr-student-124", name: "PAMARTHI MANIDEEP", roll: "160124771124", section: "2", email: "manideeppamarthi@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 22, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["C", "Basic Algorithms"] },
+  { id: "usr-student-125", name: "PANJALA YESHWANTH GOUD", roll: "160124771125", section: "2", email: "yeshwanthgoud06@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 61, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Full Stack", "Node.js", "React"] },
+  { id: "usr-student-126", name: "R SAI HARSHITH", roll: "160124771126", section: "2", email: "raghavapuramharshith@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 56, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Structures", "Java", "Algorithms"] },
+  { id: "usr-student-127", name: "R SRISHANTH REDDY", roll: "160124771127", section: "2", email: "srishanthreddy5212@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["DevOps", "Docker", "Linux"] },
+  { id: "usr-student-128", name: "SHAIK IRFAN", roll: "160124771128", section: "2", email: "irfanshaik75433@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["SQL", "Database Systems", "Python"] },
+  { id: "usr-student-001", name: "SHAIK SALEEM", roll: "160124771129", section: "2", email: "saleemshaik2005@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-saleem/view", skills: ["Python", "TensorFlow", "React", "AI OCR", "SQL"] },
+  { id: "usr-student-130", name: "SUNKOJU SHASHIKANTH", roll: "160124771130", section: "2", email: "sunkojushashikanth@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud", "Kubernetes", "AWS"] },
+  { id: "usr-student-131", name: "T R SREE SHANMUKH", roll: "160124771131", section: "2", email: "thotaramakrishnasreeshanmukh@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 52, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Java", "Spring Boot", "Microservices"] },
+  { id: "usr-student-132", name: "UPPU SHIVA CHAITANYA", roll: "160124771132", section: "2", email: "Chaithanyauppu1@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Computer Vision", "OpenCV", "Python"] },
+  { id: "usr-student-133", name: "YAKUB ALI MOHAMMAD", roll: "160124771133", section: "2", email: "mohd.yakub7780@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 50, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Data Science", "SQL"] },
+  { id: "usr-student-134", name: "YERRA BABBLU", roll: "160124771134", section: "2", email: "babbluyerra4@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 25, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Web Basics", "HTML", "CSS"] },
+
+  // --- LATERAL ENTRY (DIPLOMA) STUDENTS -> Mentor 3: Dr. Anireddy Srilakshmi (Target: 45, Cap: 75) ---
+  { id: "usr-student-308", name: "AMANCHI SAI SREEJA", roll: "160124771308", section: "2", email: "saisreeja2747@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 48, target: 45, maxCap: 75, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Electronics Interfacing", "Python", "Sensors"] },
+  { id: "usr-student-309", name: "KONDA SHREYA", roll: "160124771309", section: "2", email: "shreyakonda10@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 38, target: 45, maxCap: 75, isLateral: true, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Java", "SQL", "Database Design"] },
+  { id: "usr-student-310", name: "MOHAMMAD ASLAM", roll: "160124771310", section: "2", email: "mohammadaslam61710@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 46, target: 45, maxCap: 75, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["IoT Systems", "Full-Stack Web", "C++"] },
+  { id: "usr-student-311", name: "VARIKUPPULA PAVAN", roll: "160124771311", section: "2", email: "pavankumarvarikuppala@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 36, target: 45, maxCap: 75, isLateral: true, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Network Engineering", "Linux", "Security"] },
+  { id: "usr-student-312", name: "GUNDLA AMRUTHARAJU", roll: "160124771312", section: "2", email: "amruthbunny24@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 47, target: 45, maxCap: 75, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Embedded C", "Robotics", "Microcontrollers"] },
+  { id: "usr-student-313", name: "MD ABDUL SAMEER HASHMI", roll: "160124771313", section: "2", email: "basheerhashmi4105@gmail.com", mentor: "Dr. Anireddy Srilakshmi", mentorEmail: "srilakshmia_aids@cbit.ac.in", points: 40, target: 45, maxCap: 75, isLateral: true, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Analysis", "Python", "NumPy"] },
+];
+
+// Exactly 3 Designated Faculty Mentors of AI&DS Section 2
 export const DEPARTMENT_FACULTY_MENTORS: FacultyMentorDetail[] = [
   {
     id: "fm-01",
+    name: "Dr. Shobarani Salvadi",
+    designation: "Assistant Professor & Faculty Mentor 1",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "2",
+    email: "shobarani_aids@cbit.ac.in",
+    cabin: "AI&DS Block, Room 302",
+    menteeCount: 22,
+    pendingReviews: 1,
+    approvedReviews: 44,
+    averagePoints: 52.1,
+    complianceRate: 86.4,
+    mentees: DEPARTMENT_ALL_STUDENTS.filter((s) => s.mentor === "Dr. Shobarani Salvadi"),
+  },
+  {
+    id: "fm-02",
+    name: "Dr. SHEENA MOHAMMED",
+    designation: "Assistant Professor & Faculty Mentor 2",
+    department: "Artificial Intelligence and Data Science (AI&DS)",
+    section: "2",
+    email: "sheena_it@cbit.ac.in",
+    cabin: "IT / AI&DS Block, Room 204",
+    menteeCount: 22,
+    pendingReviews: 0,
+    approvedReviews: 42,
+    averagePoints: 53.5,
+    complianceRate: 90.9,
+    mentees: DEPARTMENT_ALL_STUDENTS.filter((s) => s.mentor === "Dr. SHEENA MOHAMMED"),
+  },
+  {
+    id: "fm-03",
     name: "Dr. Anireddy Srilakshmi",
-    designation: "Associate Professor & Senior Mentor",
+    designation: "Assistant Professor & Faculty Mentor 3",
     department: "Artificial Intelligence and Data Science (AI&DS)",
     section: "2",
     email: "srilakshmia_aids@cbit.ac.in",
     cabin: "AI&DS Block, Room 304",
-    menteeCount: 24,
-    pendingReviews: 3,
+    menteeCount: 23,
+    pendingReviews: 2,
     approvedReviews: 48,
-    averagePoints: 52.4,
-    complianceRate: 87.5,
-    mentees: [
-      { id: "usr-student-001", name: "Shaik Saleem", roll: "160124771129", section: "2", points: 55, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-saleem/view" },
-      { id: "usr-student-002", name: "Sneha Reddy", roll: "160122771046", section: "2", points: 63, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-sneha/view" },
-      { id: "usr-student-005", name: "K. Sai Tarun", roll: "160122771047", section: "2", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
-      { id: "usr-student-006", name: "V. Harini", roll: "160122771048", section: "2", points: 42, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-      { id: "usr-student-007", name: "Ch. Karthik", roll: "160122771049", section: "2", points: 25, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
-      { id: "usr-student-008", name: "M. Deepika", roll: "160122771050", section: "2", points: 65, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-    ]
+    averagePoints: 54.0,
+    complianceRate: 87.0,
+    mentees: DEPARTMENT_ALL_STUDENTS.filter((s) => s.mentor === "Dr. Anireddy Srilakshmi"),
   },
-  {
-    id: "fm-02",
-    name: "Prof. M. Srinivasa Rao",
-    designation: "Professor & Section 1 Coordinator",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "1",
-    email: "msrao_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 301",
-    menteeCount: 22,
-    pendingReviews: 2,
-    approvedReviews: 44,
-    averagePoints: 54.2,
-    complianceRate: 88.0,
-    mentees: [
-      { id: "usr-student-003", name: "Mohammed Farhan", roll: "160122771301", section: "1", points: 46, target: 45, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-farhan/view" },
-      { id: "usr-student-009", name: "P. Rithvik", roll: "160122771001", section: "1", points: 62, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-      { id: "usr-student-010", name: "S. Niharika", roll: "160122771002", section: "1", points: 58, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-      { id: "usr-student-011", name: "A. Praveen", roll: "160122771003", section: "1", points: 28, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
-      { id: "usr-student-012", name: "B. Bhavana", roll: "160122771004", section: "1", points: 64, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-    ]
-  },
-  {
-    id: "fm-03",
-    name: "Dr. T. Sridevi",
-    designation: "Associate Professor & Section 2 Coordinator",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "2",
-    email: "tsridevi_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 305",
-    menteeCount: 22,
-    pendingReviews: 1,
-    approvedReviews: 46,
-    averagePoints: 51.0,
-    complianceRate: 85.0,
-    mentees: [
-      { id: "usr-student-013", name: "G. Varun", roll: "160122771051", section: "2", points: 61, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
-      { id: "usr-student-014", name: "N. Pooja", roll: "160122771052", section: "2", points: 48, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-      { id: "usr-student-015", name: "R. Yashwanth", roll: "160122771053", section: "2", points: 30, target: 60, isLateral: false, status: "In Progress", nptelDone: false, internshipDone: false },
-    ]
-  },
-  {
-    id: "fm-04",
-    name: "Dr. B. Indira",
-    designation: "Associate Professor & Section 3 Coordinator",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "3",
-    email: "bindira_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 308",
-    menteeCount: 21,
-    pendingReviews: 4,
-    approvedReviews: 40,
-    averagePoints: 49.5,
-    complianceRate: 80.0,
-    mentees: [
-      { id: "usr-student-004", name: "Ananya Rao", roll: "160122771089", section: "3", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-ananya/view" },
-      { id: "usr-student-016", name: "K. Rohit", roll: "160122771090", section: "3", points: 52, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-      { id: "usr-student-017", name: "D. Meghana", roll: "160122771091", section: "3", points: 22, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
-    ]
-  },
-  {
-    id: "fm-05",
-    name: "Sri. G. Mallikarjuna Rao",
-    designation: "Assistant Professor",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "1",
-    email: "gmrao_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 302",
-    menteeCount: 22,
-    pendingReviews: 0,
-    approvedReviews: 42,
-    averagePoints: 53.0,
-    complianceRate: 86.4,
-    mentees: [
-      { id: "usr-student-018", name: "T. Akhil", roll: "160122771005", section: "1", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-      { id: "usr-student-019", name: "M. Tejaswi", roll: "160122771006", section: "1", points: 45, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-    ]
-  },
-  {
-    id: "fm-06",
-    name: "Smt. P. Vimala",
-    designation: "Assistant Professor",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "2",
-    email: "pvimala_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 306",
-    menteeCount: 22,
-    pendingReviews: 2,
-    approvedReviews: 39,
-    averagePoints: 50.8,
-    complianceRate: 81.8,
-    mentees: [
-      { id: "usr-student-020", name: "S. Ajay", roll: "160122771054", section: "2", points: 64, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false },
-      { id: "usr-student-021", name: "E. Shravya", roll: "160122771055", section: "2", points: 38, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-    ]
-  },
-  {
-    id: "fm-07",
-    name: "Dr. Ch. Rakesh",
-    designation: "Assistant Professor",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "3",
-    email: "chrakesh_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 309",
-    menteeCount: 21,
-    pendingReviews: 1,
-    approvedReviews: 38,
-    averagePoints: 48.2,
-    complianceRate: 76.2,
-    mentees: [
-      { id: "usr-student-022", name: "P. Vinay", roll: "160122771092", section: "3", points: 60, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-      { id: "usr-student-023", name: "J. Swetha", roll: "160122771093", section: "3", points: 26, target: 60, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false },
-    ]
-  },
-  {
-    id: "fm-08",
-    name: "Smt. K. Soumya",
-    designation: "Assistant Professor",
-    department: "Artificial Intelligence and Data Science (AI&DS)",
-    section: "1",
-    email: "ksoumya_aids@cbit.ac.in",
-    cabin: "AI&DS Block, Room 303",
-    menteeCount: 22,
-    pendingReviews: 1,
-    approvedReviews: 41,
-    averagePoints: 52.0,
-    complianceRate: 86.0,
-    mentees: [
-      { id: "usr-student-024", name: "V. Harish", roll: "160122771007", section: "1", points: 65, target: 60, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true },
-      { id: "usr-student-025", name: "L. Keerthana", roll: "160122771008", section: "1", points: 44, target: 60, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false },
-    ]
-  }
-];
-
-export const DEPARTMENT_ALL_STUDENTS = [
-  { id: "usr-student-001", name: "Shaik Saleem", roll: "160124771129", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 55, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-saleem/view", skills: ["Python", "TensorFlow", "React", "AI OCR", "SQL"] },
-  { id: "usr-student-002", name: "Sneha Reddy", roll: "160122771046", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 63, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-sneha/view", skills: ["Cloud Computing", "AWS", "DevOps", "Docker"] },
-  { id: "usr-student-003", name: "Mohammed Farhan", roll: "160122771301", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 46, target: 45, maxCap: 75, isLateral: true, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-farhan/view", skills: ["IoT Systems", "Full-Stack Web", "Node.js", "C++"] },
-  { id: "usr-student-004", name: "Ananya Rao", roll: "160122771089", section: "3", mentor: "Dr. B. Indira", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, resumeUrl: "https://drive.google.com/file/d/sample-resume-ananya/view", skills: ["NLP", "Deep Learning", "PyTorch", "Data Science"] },
-  { id: "usr-student-005", name: "K. Sai Tarun", roll: "160122771047", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Java", "Spring Boot", "React"] },
-  { id: "usr-student-006", name: "V. Harini", roll: "160122771048", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 42, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Machine Learning", "Pandas"] },
-  { id: "usr-student-007", name: "Ch. Karthik", roll: "160122771049", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 25, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["C", "Data Structures"] },
-  { id: "usr-student-008", name: "M. Deepika", roll: "160122771050", section: "2", mentor: "Dr. Anireddy Srilakshmi", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Computer Vision", "OpenCV", "Python"] },
-  { id: "usr-student-009", name: "P. Rithvik", roll: "160122771001", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 62, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cybersecurity", "Network Security", "Linux"] },
-  { id: "usr-student-010", name: "S. Niharika", roll: "160122771002", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 58, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["UI/UX Design", "Figma", "Frontend"] },
-  { id: "usr-student-011", name: "A. Praveen", roll: "160122771003", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 28, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Web Basics", "HTML", "CSS"] },
-  { id: "usr-student-012", name: "B. Bhavana", roll: "160122771004", section: "1", mentor: "Prof. M. Srinivasa Rao", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Cloud Architect", "GCP", "Kubernetes"] },
-  { id: "usr-student-013", name: "G. Varun", roll: "160122771051", section: "2", mentor: "Dr. T. Sridevi", points: 61, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Node.js", "Express", "MongoDB"] },
-  { id: "usr-student-014", name: "N. Pooja", roll: "160122771052", section: "2", mentor: "Dr. T. Sridevi", points: 48, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Analysis", "SQL", "Tableau"] },
-  { id: "usr-student-015", name: "R. Yashwanth", roll: "160122771053", section: "2", mentor: "Dr. T. Sridevi", points: 30, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: false, internshipDone: false, skills: ["Python", "Django"] },
-  { id: "usr-student-016", name: "K. Rohit", roll: "160122771090", section: "3", mentor: "Dr. B. Indira", points: 52, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Deep Learning", "TensorFlow", "Keras"] },
-  { id: "usr-student-017", name: "D. Meghana", roll: "160122771091", section: "3", mentor: "Dr. B. Indira", points: 22, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Python", "Flask"] },
-  { id: "usr-student-018", name: "T. Akhil", roll: "160122771005", section: "1", mentor: "Sri. G. Mallikarjuna Rao", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["React Native", "Mobile App Dev"] },
-  { id: "usr-student-019", name: "M. Tejaswi", roll: "160122771006", section: "1", mentor: "Sri. G. Mallikarjuna Rao", points: 45, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Angular", "TypeScript"] },
-  { id: "usr-student-020", name: "S. Ajay", roll: "160122771054", section: "2", mentor: "Smt. P. Vimala", points: 64, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: false, skills: ["Embedded Systems", "Robotics"] },
-  { id: "usr-student-021", name: "E. Shravya", roll: "160122771055", section: "2", mentor: "Smt. P. Vimala", points: 38, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Data Visualization", "PowerBI"] },
-  { id: "usr-student-022", name: "P. Vinay", roll: "160122771092", section: "3", mentor: "Dr. Ch. Rakesh", points: 60, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["Blockchain", "Solidity", "Smart Contracts"] },
-  { id: "usr-student-023", name: "J. Swetha", roll: "160122771093", section: "3", mentor: "Dr. Ch. Rakesh", points: 26, target: 60, maxCap: 100, isLateral: false, status: "At Risk", nptelDone: false, internshipDone: false, skills: ["Java", "OOP"] },
-  { id: "usr-student-024", name: "V. Harish", roll: "160122771007", section: "1", mentor: "Smt. K. Soumya", points: 65, target: 60, maxCap: 100, isLateral: false, status: "Satisfied", nptelDone: true, internshipDone: true, skills: ["AWS", "DevOps", "Terraform"] },
-  { id: "usr-student-025", name: "L. Keerthana", roll: "160122771008", section: "1", mentor: "Smt. K. Soumya", points: 44, target: 60, maxCap: 100, isLateral: false, status: "In Progress", nptelDone: true, internshipDone: false, skills: ["Python", "Scikit-Learn"] },
 ];
