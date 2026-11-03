@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { fileToPermanentDataURL } from '@/lib/storage-db';
+import { FeedbackModal } from '@/components/modals/FeedbackModal';
 import {
   Settings,
+  MessageSquare,
   User,
   Moon,
   Sun,
@@ -31,6 +33,7 @@ export default function SettingsPage() {
   const [resumeUrl, setResumeUrl] = useState(currentUser.resume_url || '');
   const [skillsInput, setSkillsInput] = useState((currentUser.skills || []).join(', '));
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   // Synchronize form fields whenever currentUser changes (fixes refresh reverting to default values)
   useEffect(() => {

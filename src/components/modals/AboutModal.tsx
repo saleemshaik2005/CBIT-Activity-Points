@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { FeedbackModal } from '@/components/modals/FeedbackModal';
 import {
   Award,
   Sparkles,
@@ -14,6 +15,7 @@ import {
   ExternalLink,
   ChevronRight,
   Github,
+  MessageSquare,
 } from 'lucide-react';
 import { CBIT_24_CATEGORIES, DEFAULT_SETTINGS } from '@/lib/mar-constants';
 
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   if (!isOpen) return null;
 
   return (
@@ -170,15 +173,31 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <ExternalLink className="w-3 h-3 ml-0.5" />
           </a>
 
-          <button
-            onClick={onClose}
-            className="px-5 py-2 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            Close Guide
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsFeedbackOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#eef5ec] dark:bg-[#22232a] hover:bg-[#d8ebd3] dark:hover:bg-[#2d303a] text-[#385529] dark:text-emerald-400 font-bold text-xs rounded-xl border border-[#385529]/20 transition-all cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Share Feedback</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="px-5 py-2 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Close Guide
+            </button>
+          </div>
         </div>
 
       </div>
+
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
     </div>
   );
 };

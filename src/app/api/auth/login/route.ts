@@ -59,9 +59,16 @@ export async function POST(req: NextRequest) {
         .ilike('email', verifiedEmail)
         .maybeSingle();
 
+      if (pErr) {
+        console.error('[Google Login API] Database profile query error:', pErr);
+        return NextResponse.json(
+          { success: false, error: 'Database service is temporarily experiencing high load. Please try again in a moment.' },
+          { status: 503 }
+        );
+      }
+
       // Ensure any student has a valid official roll_number
       const isUnauthorized =
-        pErr ||
         !foundProfile ||
         (foundProfile.role === 'student' && (!foundProfile.roll_number || !foundProfile.roll_number.trim()));
 
@@ -130,7 +137,15 @@ export async function POST(req: NextRequest) {
         .ilike('email', targetEmail)
         .maybeSingle();
 
-      if (pErr || !p) {
+      if (pErr) {
+        console.error('[Login API] Database query error for email:', pErr);
+        return NextResponse.json(
+          { success: false, error: 'Database service is temporarily experiencing high load. Please try again in a few moments.' },
+          { status: 503 }
+        );
+      }
+
+      if (!p) {
         return NextResponse.json(
           { success: false, error: `No registered account found with email: ${cleanId}. Please check your email or contact the administrator.` },
           { status: 404 }
@@ -140,11 +155,19 @@ export async function POST(req: NextRequest) {
     } else {
       // 2. Look up by roll_number or faculty ID
       // 2.1 Direct exact match
-      let { data: p } = await supabaseAdmin
+      let { data: p, error: pRollErr } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .eq('roll_number', cleanId)
         .maybeSingle();
+
+      if (pRollErr) {
+        console.error('[Login API] Database query error for roll_number:', pRollErr);
+        return NextResponse.json(
+          { success: false, error: 'Database service is temporarily experiencing high load. Please try again in a few moments.' },
+          { status: 503 }
+        );
+      }
 
       // 2.2 If student entered 3-digit shortcut (e.g., 071, 094, 129, 308)
       if (!p && cleanId.length === 3) {

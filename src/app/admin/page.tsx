@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import {
@@ -29,6 +29,11 @@ import {
   GraduationCap,
   FileText,
   Eye,
+  MessageSquare,
+  Star,
+  Bug,
+  Heart,
+  RefreshCw,
 } from 'lucide-react';
 import { DEPARTMENT_ALL_STUDENTS } from '@/lib/mar-constants';
 
@@ -77,6 +82,40 @@ export default function AdminHubPage() {
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
 
   // System Audit Logs
+  // Student & Faculty Feedback State
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+  const [feedbackCategoryFilter, setFeedbackCategoryFilter] = useState<string>('all');
+
+  const fetchFeedbacks = async () => {
+    setLoadingFeedbacks(true);
+    try {
+      const res = await fetch('/api/feedback');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.feedbacks)) {
+        setFeedbacks(data.feedbacks);
+      }
+    } catch (e) {
+      console.error('Failed to load feedback', e);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const totalFeedbacks = feedbacks.length;
+  const avgRating =
+    totalFeedbacks > 0
+      ? (feedbacks.reduce((acc, f) => acc + (Number(f.rating) || 5), 0) / totalFeedbacks).toFixed(1)
+      : '5.0';
+  const filteredFeedbacks =
+    feedbackCategoryFilter === 'all'
+      ? feedbacks
+      : feedbacks.filter((f) => f.category === feedbackCategoryFilter);
+
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([
     {
       id: 'log-001',
@@ -772,6 +811,153 @@ export default function AdminHubPage() {
           </div>
         </Link>
 
+      </div>
+
+      {/* Classroom & Faculty Feedback Inbox */}
+      <div className="bg-white dark:bg-[#1a1b20] rounded-2xl border border-[#e8e3d8] dark:border-[#2c2d36] p-6 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-[#2c2d36] pb-3">
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-2">
+              <MessageSquare className="w-5 h-5 text-[#385529] dark:text-emerald-400" />
+              <h2 className="text-base font-serif font-bold text-gray-900 dark:text-gray-100">
+                Classroom Feedback &amp; Improvements Inbox
+              </h2>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Live feedback, suggestions, and bug reports submitted by Section 2 students and faculty.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={fetchFeedbacks}
+              disabled={loadingFeedbacks}
+              className="px-3 py-1.5 bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2e3039] text-[#385529] dark:text-emerald-400 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingFeedbacks ? 'animate-spin' : ''}`} />
+              <span>Refresh Inbox</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Feedback Summary Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36]">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block">Total Submissions</span>
+            <span className="text-xl font-bold font-serif text-[#385529] dark:text-emerald-400">{totalFeedbacks}</span>
+          </div>
+          <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36]">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block">Average Rating</span>
+            <span className="text-xl font-bold font-serif text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              ⭐ {avgRating} <span className="text-xs text-gray-400 font-normal">/ 5.0</span>
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36]">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block">💡 Suggestions</span>
+            <span className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400">
+              {feedbacks.filter((f) => f.category === 'suggestion').length}
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36]">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block">🐛 Bug Reports</span>
+            <span className="text-xl font-bold font-serif text-rose-600 dark:text-rose-400">
+              {feedbacks.filter((f) => f.category === 'bug').length}
+            </span>
+          </div>
+        </div>
+
+        {/* Filter Chips */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          {[
+            { id: 'all', label: 'All Feedback' },
+            { id: 'suggestion', label: '💡 Suggestions' },
+            { id: 'bug', label: '🐛 Bugs' },
+            { id: 'ai_scanner', label: '🤖 AI Scanner' },
+            { id: 'praise', label: '❤️ Praise' },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setFeedbackCategoryFilter(cat.id)}
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                feedbackCategoryFilter === cat.id
+                  ? 'bg-[#385529] text-white shadow-2xs'
+                  : 'bg-[#faf9f5] dark:bg-[#121214] text-gray-600 dark:text-gray-400 border border-[#e8e3d8] dark:border-[#2c2d36] hover:bg-gray-100 dark:hover:bg-[#22232a]'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Feedbacks List */}
+        {filteredFeedbacks.length === 0 ? (
+          <div className="py-10 text-center space-y-2 bg-[#faf9f5] dark:bg-[#121214] rounded-xl border border-dashed border-[#e8e3d8] dark:border-[#2c2d36]">
+            <MessageSquare className="w-8 h-8 text-gray-400 mx-auto" />
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              No feedback entries found in this category.
+            </p>
+            <p className="text-[11px] text-gray-400">
+              Student and faculty feedback submitted from Settings or the Guide modal will appear here in real time.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredFeedbacks.map((f: any) => (
+              <div
+                key={f.id}
+                className="p-4 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36] space-y-2 hover:border-[#385529]/40 transition-colors"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="flex items-center text-amber-500">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i < (f.rating || 5) ? 'fill-amber-400 text-amber-500' : 'text-gray-300 dark:text-gray-600'}`}
+                        />
+                      ))}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        f.category === 'bug'
+                          ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-red-900'
+                          : f.category === 'ai_scanner'
+                          ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-900'
+                          : f.category === 'praise'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900'
+                          : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-200 dark:border-blue-900'
+                      }`}
+                    >
+                      {f.category}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-gray-500 dark:text-gray-400">
+                    {new Date(f.created_at).toLocaleString([], {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-sans whitespace-pre-wrap">
+                  {f.message}
+                </p>
+
+                <div className="flex items-center justify-between pt-1 border-t border-gray-200/60 dark:border-[#2c2d36] text-[11px] text-gray-500 dark:text-gray-400">
+                  <span>
+                    By: <strong>{f.user_name}</strong>
+                    {f.user_roll ? ` (${f.user_roll})` : ''} • {f.user_email}
+                  </span>
+                  <span className="capitalize text-gray-400 font-medium">{f.user_role}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Live System Audit Log */}
