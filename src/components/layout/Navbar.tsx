@@ -54,7 +54,6 @@ export const Navbar: React.FC = () => {
   const isPrivilegedUser =
     isTeamMode ||
     currentUser.role === 'admin' ||
-    currentUser.email?.toLowerCase() === 'saleemshaik2005@gmail.com' ||
     currentUser.email?.toLowerCase() === 'cbit.spms.admin@gmail.com';
 
   const roleNavItems: Record<UserRole, { label: string; href: string; icon: React.ElementType }[]> = {

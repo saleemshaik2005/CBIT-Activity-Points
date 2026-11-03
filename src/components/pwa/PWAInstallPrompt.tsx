@@ -69,6 +69,12 @@ export const PWAInstallPrompt: React.FC = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
+    // Allow opening manual install prompt anytime via custom event (e.g. from footer)
+    const handleManualOpen = () => {
+      setShowPrompt(true);
+    };
+    window.addEventListener('open-pwa-install', handleManualOpen);
+
     // Listen for successful install
     window.addEventListener('appinstalled', () => {
       setShowPrompt(false);
@@ -79,6 +85,7 @@ export const PWAInstallPrompt: React.FC = () => {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('open-pwa-install', handleManualOpen);
     };
   }, []);
 
@@ -172,7 +179,7 @@ export const PWAInstallPrompt: React.FC = () => {
                 Got It
               </button>
             </div>
-          ) : (
+          ) : deferredPrompt ? (
             /* Android / Chrome Standard Install Button */
             <div className="flex items-center space-x-2">
               <button
@@ -188,6 +195,24 @@ export const PWAInstallPrompt: React.FC = () => {
                 className="py-2 px-3 text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
               >
                 Not Now
+              </button>
+            </div>
+          ) : (
+            /* Fallback Instructions if Browser Prompt Already Consumed */
+            <div className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
+              <div className="flex items-center space-x-2 text-[11px] bg-[#faf9f5] dark:bg-[#22232a] p-2.5 rounded-xl border border-[#e8e3d8] dark:border-[#2e3039]">
+                <Smartphone className="w-4 h-4 text-[#385529] dark:text-emerald-400 flex-shrink-0" />
+                <span>
+                  Tap your browser menu (<strong>⋮</strong>), then tap{' '}
+                  <strong className="text-[#385529] dark:text-emerald-400">Install App</strong> or{' '}
+                  <strong className="text-[#385529] dark:text-emerald-400">Add to Home screen</strong>.
+                </span>
+              </div>
+              <button
+                onClick={handleDismiss}
+                className="w-full py-2 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                Got It
               </button>
             </div>
           )}

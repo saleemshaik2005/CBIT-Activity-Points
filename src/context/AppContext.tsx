@@ -576,7 +576,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Prevent client-side role escalation in User Mode unless privileged maintainer/admin
     const isPrivilegedUser =
       currentUser.role === 'admin' ||
-      currentUser.email?.toLowerCase() === 'saleemshaik2005@gmail.com' ||
       currentUser.email?.toLowerCase() === 'cbit.spms.admin@gmail.com';
 
     const portalMode = typeof window !== 'undefined' ? localStorage.getItem('cbit_spms_portal_mode') : 'user';
