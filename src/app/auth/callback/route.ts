@@ -92,6 +92,23 @@ export async function GET(request: Request) {
     else if (profile.role === 'hod') redirectPath = '/hod';
     else if (profile.role === 'admin') redirectPath = '/admin';
 
+    // Sync Google OAuth avatar to database if profile does not have one
+    const googleAvatar =
+      session.user.user_metadata?.avatar_url ||
+      session.user.user_metadata?.picture ||
+      null;
+
+    let effectiveAvatar = profile.avatar_url;
+    if (!effectiveAvatar && googleAvatar) {
+      effectiveAvatar = googleAvatar;
+      try {
+        await supabaseAdmin
+          .from('profiles')
+          .update({ avatar_url: googleAvatar, updated_at: new Date().toISOString() })
+          .eq('id', profile.id);
+      } catch (e) {}
+    }
+
     const userProfile = {
       id: profile.id,
       email: profile.email,
@@ -106,7 +123,7 @@ export async function GET(request: Request) {
       mentor_name: (profile as any).mentor?.full_name || undefined,
       mentor_email: (profile as any).mentor?.email || undefined,
       mentor_phone: (profile as any).mentor?.phone_number || undefined,
-      avatar_url: profile.avatar_url || undefined,
+      avatar_url: effectiveAvatar || undefined,
       phone_number: profile.phone_number || undefined,
     };
 
