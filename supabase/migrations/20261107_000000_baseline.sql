@@ -52,6 +52,14 @@ CREATE INDEX IF NOT EXISTS idx_profiles_roll ON public.profiles(roll_number);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 CREATE INDEX IF NOT EXISTS idx_profiles_mentor ON public.profiles(mentor_id);
 
+-- Helper function to fetch the authoritative role of the caller in RLS policies
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS public.user_role AS $$
+    SELECT role FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.get_my_role() TO authenticated, anon, service_role;
+
 -- Activity Categories
 CREATE TABLE IF NOT EXISTS public.activity_categories (
     id SERIAL PRIMARY KEY,

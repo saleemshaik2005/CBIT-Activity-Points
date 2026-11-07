@@ -4,6 +4,15 @@
 -- Replaces mock notifications with server-enforced, recipient-scoped notifications.
 -- ==============================================================================
 
+-- 1. Helper function to fetch the authoritative role of the caller in RLS policies
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS public.user_role AS $$
+    SELECT role FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.get_my_role() TO authenticated, anon, service_role;
+
+-- 2. Notifications Table
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     recipient_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -39,7 +48,7 @@ USING (
             OR recipient_role = public.get_my_role()
         )
     )
-    OR public.get_my_role() = 'admin'
+    OR public.get_my_role() = 'admin'::user_role
 );
 
 -- Update Policy: Users can only update their own notifications (e.g., mark as read)
@@ -53,7 +62,7 @@ WITH CHECK (auth.uid() = recipient_id);
 DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
 CREATE POLICY "Users can delete own notifications"
 ON public.notifications FOR DELETE
-USING (auth.uid() = recipient_id OR public.get_my_role() = 'admin');
+USING (auth.uid() = recipient_id OR public.get_my_role() = 'admin'::user_role);
 
 -- Insert Policy: Authenticated users can insert notifications targeted to appropriate parties or admin
 DROP POLICY IF EXISTS "Authenticated users can create notifications" ON public.notifications;

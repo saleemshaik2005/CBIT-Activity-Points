@@ -4,6 +4,14 @@
 -- and creates atomic transactional RPCs for mentor reviews.
 -- ==============================================================================
 
+-- Helper function to fetch the authoritative role of the caller in RLS policies
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS public.user_role AS $$
+    SELECT role FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.get_my_role() TO authenticated, anon, service_role;
+
 -- 1. Function to prevent unauthorized modification of sensitive profile fields
 CREATE OR REPLACE FUNCTION public.guard_profile_updates()
 RETURNS TRIGGER AS $$
@@ -157,7 +165,7 @@ BEGIN
         sender_name
     ) VALUES (
         v_sub.student_id,
-        'student',
+        'student'::user_role,
         CASE
             WHEN p_status = 'approved' THEN 'approval'
             WHEN p_status = 'rejected' THEN 'rejection'
