@@ -9,6 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { RouteGuard } from '@/components/layout/RouteGuard';
 import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt';
 import { UploadScanFloater } from '@/components/student/UploadScanFloater';
+import { StagingBanner } from '@/components/layout/StagingBanner';
 
 export const metadata: Metadata = {
   title: 'CBIT Student Portfolio Management System - Academic & Activity Tracking',
@@ -38,6 +39,7 @@ export default function RootLayout({
         <AppProvider>
           <UploadProvider>
             <RouteGuard>
+              <StagingBanner />
               <Navbar />
               <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
                 {children}

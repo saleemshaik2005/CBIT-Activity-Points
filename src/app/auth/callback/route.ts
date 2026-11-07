@@ -85,6 +85,24 @@ export async function GET(request: Request) {
       );
     }
 
+    // Reject deactivated accounts
+    if (profile.is_active === false) {
+      console.warn(`[OAuth Callback] Inactive account attempted login: ${email}`);
+      await supabase.auth.signOut();
+      return NextResponse.redirect(
+        `${appOrigin}/login?error=${encodeURIComponent('Your account has been deactivated. Please contact the administrator.')}`
+      );
+    }
+
+    // Google login must reject faculty/admin accounts configured for password login
+    if (profile.login_method === 'password' || profile.role !== 'student') {
+      console.warn(`[OAuth Callback] Password-only account attempted Google sign-in: ${email}`);
+      await supabase.auth.signOut();
+      return NextResponse.redirect(
+        `${appOrigin}/login?error=${encodeURIComponent('Faculty and administrative accounts must sign in using college email and password.')}`
+      );
+    }
+
     // Determine target route based on role
     let redirectPath = '/student';
     if (profile.role === 'mentor') redirectPath = '/mentor';

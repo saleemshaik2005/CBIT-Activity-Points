@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { VerificationCard } from '@/components/mentor/VerificationCard';
+import { MentorAnalytics } from '@/components/mentor/MentorAnalytics';
 import {
   CheckCircle,
   ShieldCheck,

@@ -1,0 +1,105 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { evaluateRoleAccess } from '@/lib/auth';
+import { UserProfile, UserRole } from '@/types';
+
+describe('Role Authorization Matrix & Guard Enforcement', () => {
+  const activeStudentProfile: Partial<UserProfile> = {
+    id: 'student-uuid-1',
+    email: '160122733001@cbit.org.in',
+    role: 'student',
+    is_active: true,
+    must_change_password: false,
+  };
+
+  const activeMentorProfile: Partial<UserProfile> = {
+    id: 'mentor-uuid-1',
+    email: 'faculty.mentor@cbit.ac.in',
+    role: 'mentor',
+    is_active: true,
+    must_change_password: false,
+  };
+
+  const activeClassTeacherProfile: Partial<UserProfile> = {
+    id: 'ct-uuid-1',
+    email: 'class.teacher@cbit.ac.in',
+    role: 'class_teacher',
+    is_active: true,
+    must_change_password: false,
+  };
+
+  const activeHodProfile: Partial<UserProfile> = {
+    id: 'hod-uuid-1',
+    email: 'hod.cse@cbit.ac.in',
+    role: 'hod',
+    is_active: true,
+    must_change_password: false,
+  };
+
+  const activeAdminProfile: Partial<UserProfile> = {
+    id: 'admin-uuid-1',
+    email: 'admin@cbit.ac.in',
+    role: 'admin',
+    is_active: true,
+    must_change_password: false,
+  };
+
+  it('permits student role on student-allowed endpoints', () => {
+    const check = evaluateRoleAccess(activeStudentProfile, ['student']);
+    assert.equal(check.allowed, true);
+    assert.equal(check.status, 200);
+  });
+
+  it('rejects student role on faculty/admin endpoints', () => {
+    const facultyRoles: UserRole[] = ['mentor', 'class_teacher', 'hod', 'admin'];
+    const check = evaluateRoleAccess(activeStudentProfile, facultyRoles);
+    assert.equal(check.allowed, false);
+    assert.equal(check.status, 403);
+    assert.match(check.reason || '', /Insufficient privileges/i);
+  });
+
+  it('permits all faculty roles on review/approval endpoints', () => {
+    const facultyRoles: UserRole[] = ['mentor', 'class_teacher', 'hod', 'admin'];
+    assert.equal(evaluateRoleAccess(activeMentorProfile, facultyRoles).allowed, true);
+    assert.equal(evaluateRoleAccess(activeClassTeacherProfile, facultyRoles).allowed, true);
+    assert.equal(evaluateRoleAccess(activeHodProfile, facultyRoles).allowed, true);
+    assert.equal(evaluateRoleAccess(activeAdminProfile, facultyRoles).allowed, true);
+  });
+
+  it('blocks inactive user accounts regardless of their role', () => {
+    const inactiveMentor: Partial<UserProfile> = {
+      ...activeMentorProfile,
+      is_active: false,
+    };
+    const check = evaluateRoleAccess(inactiveMentor, ['mentor']);
+    assert.equal(check.allowed, false);
+    assert.equal(check.status, 403);
+    assert.match(check.reason || '', /deactivated/i);
+  });
+
+  it('blocks access when must_change_password is true, unless explicitly allowed', () => {
+    const pendingPasswordChange: Partial<UserProfile> = {
+      ...activeMentorProfile,
+      must_change_password: true,
+    };
+
+    // Standard endpoint blocked
+    const standardCheck = evaluateRoleAccess(pendingPasswordChange, ['mentor']);
+    assert.equal(standardCheck.allowed, false);
+    assert.equal(standardCheck.status, 403);
+    assert.match(standardCheck.reason || '', /change your temporary password/i);
+
+    // Password change endpoint exempted
+    const exemptedCheck = evaluateRoleAccess(pendingPasswordChange, ['mentor'], {
+      allowMustChangePassword: true,
+    });
+    assert.equal(exemptedCheck.allowed, true);
+    assert.equal(exemptedCheck.status, 200);
+  });
+
+  it('rejects unauthenticated or non-existent profile', () => {
+    const check = evaluateRoleAccess(null, ['student']);
+    assert.equal(check.allowed, false);
+    assert.equal(check.status, 403);
+  });
+});

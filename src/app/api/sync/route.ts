@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { readServerDB, writeServerDB } from '@/lib/server-db';
-import { StudentSubmission, UserProfile, NotificationItem, SystemSettings, ActivityCategory } from '@/types';
+import { StudentSubmission, NotificationItem, SystemSettings, ActivityCategory } from '@/types';
 import { getAuthenticatedUser } from '@/lib/supabase/server';
 import { verifySessionToken } from '@/app/api/auth/team-gate/route';
 import crypto from 'crypto';
@@ -20,7 +19,7 @@ export async function GET(req: NextRequest) {
     const teamCookie = req.cookies.get('cbit_spms_team_session')?.value;
     const isTeamAuth = verifySessionToken(teamCookie);
 
-    // Fetch public categories and settings (always safe)
+    // Fetch public categories and settings
     const [catsRes, settingsRes] = await Promise.all([
       supabaseAdmin
         .from('activity_categories')
@@ -38,7 +37,7 @@ export async function GET(req: NextRequest) {
     const categories = catsRes.data || [];
     const settings = settingsRes.data || null;
 
-    // If caller is NOT authenticated (and not in team sandbox), return only public rules without private records
+    // If caller is NOT authenticated, return only public rules without private records
     if (!user && !isTeamAuth) {
       return NextResponse.json({
         success: true,
@@ -81,23 +80,32 @@ export async function GET(req: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    // Role-based scope enforcement:
-    // - Students can ONLY read their own submissions
-    // - Mentors can ONLY read their mentees' submissions
-    // - HOD, Class Teacher, Admin, Team can read all in department
     if (callerRole === 'student' && user?.id) {
       subsQuery = subsQuery.eq('student_id', user.id);
     } else if (callerRole === 'mentor' && user?.id) {
       subsQuery = subsQuery.eq('student.mentor_id', user.id);
     }
 
-    const { data: rawSubs, error: subsError } = await subsQuery;
+    // Also fetch real notifications from database
+    let notifsQuery = supabaseAdmin
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-    if (subsError) {
-      console.warn('[Sync API] Submissions query warning:', subsError.message);
+    if (user?.id) {
+      notifsQuery = notifsQuery.or(
+        `recipient_id.eq.${user.id},and(recipient_id.is.null,or(recipient_role.eq.${callerRole},recipient_role.is.null))`
+      );
     }
 
-    const serverSubs: StudentSubmission[] = (rawSubs || []).map((row: any) => {
+    const [subsRes, notifsRes] = await Promise.all([subsQuery, notifsQuery]);
+
+    if (subsRes.error) {
+      console.warn('[Sync API] Submissions query warning:', subsRes.error.message);
+    }
+
+    const serverSubs: StudentSubmission[] = (subsRes.data || []).map((row: any) => {
       const student = row.student || {};
       const cat = row.category || {};
       const aiMeta = row.ai_extracted_data || {};
@@ -145,7 +153,7 @@ export async function GET(req: NextRequest) {
         categories,
         settings,
         profiles: {},
-        notifications: [],
+        notifications: notifsRes.data || [],
         lastUpdated: Date.now(),
       },
     });
@@ -174,7 +182,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { action, payload } = body;
-    const db = readServerDB();
+
+    if (!action) {
+      return NextResponse.json({ success: false, error: 'Action parameter is required.' }, { status: 400 });
+    }
 
     switch (action) {
       case 'add_submission': {
@@ -210,7 +221,7 @@ export async function POST(req: NextRequest) {
           semester: sub.semester || 5,
           academic_year: sub.academic_year || '2025-2026',
           claimed_points: sub.claimed_points || 0,
-          awarded_points: 0, // Points are never self-awarded!
+          awarded_points: 0, // Points are never self-awarded
           certificate_url: sub.certificate_url || '',
           file_type: sub.file_type || 'application/pdf',
           ai_extracted_data: packedAiData,
@@ -223,12 +234,78 @@ export async function POST(req: NextRequest) {
         const { error: insertErr } = await supabaseAdmin.from('student_submissions').insert(row);
         if (insertErr) {
           console.error('[Sync API] Submission insert error:', insertErr);
+          return NextResponse.json({ success: false, error: insertErr.message }, { status: 500 });
+        }
+
+        // Notify mentor if student has one assigned
+        if (profile?.mentor_id) {
+          await supabaseAdmin.from('notifications').insert({
+            recipient_id: profile.mentor_id,
+            recipient_role: 'mentor',
+            type: 'submission',
+            title: 'New Certificate Under Review',
+            message: `${profile.full_name} submitted "${row.activity_title}" (${row.claimed_points} claimed pts).`,
+            link: '/mentor',
+            related_submission_id: subId,
+            sender_id: user?.id,
+            sender_name: profile.full_name,
+            is_read: false,
+          });
+        }
+        break;
+      }
+
+      case 'update_submission': {
+        const { id, updatedData } = payload;
+        if (!isValidUUID(id)) {
+          return NextResponse.json({ success: false, error: 'Invalid submission ID.' }, { status: 400 });
+        }
+
+        // Fetch submission to verify ownership
+        const { data: existingSub, error: fetchErr } = await supabaseAdmin
+          .from('student_submissions')
+          .select('student_id, status')
+          .eq('id', id)
+          .single();
+
+        if (fetchErr || !existingSub) {
+          return NextResponse.json({ success: false, error: 'Submission not found.' }, { status: 404 });
+        }
+
+        if (callerRole === 'student') {
+          if (existingSub.student_id !== user?.id) {
+            return NextResponse.json({ success: false, error: 'Forbidden: You do not own this submission.' }, { status: 403 });
+          }
+          if (existingSub.status === 'approved') {
+            return NextResponse.json({ success: false, error: 'Forbidden: Approved submissions cannot be modified.' }, { status: 403 });
+          }
+        }
+
+        const safeUpdate: any = {};
+        if (updatedData.activity_title !== undefined) safeUpdate.activity_title = updatedData.activity_title;
+        if (updatedData.issuing_organization !== undefined) safeUpdate.issuing_organization = updatedData.issuing_organization;
+        if (updatedData.event_date !== undefined) safeUpdate.event_date = updatedData.event_date;
+        if (updatedData.semester !== undefined) safeUpdate.semester = updatedData.semester;
+        if (updatedData.category_id !== undefined) safeUpdate.category_id = updatedData.category_id;
+        if (updatedData.claimed_points !== undefined) safeUpdate.claimed_points = updatedData.claimed_points;
+        if (updatedData.certificate_url !== undefined) safeUpdate.certificate_url = updatedData.certificate_url;
+        if (updatedData.status !== undefined && ['draft', 'pending_mentor'].includes(updatedData.status)) {
+          safeUpdate.status = updatedData.status;
+        }
+        safeUpdate.updated_at = new Date().toISOString();
+
+        const { error: updateErr } = await supabaseAdmin
+          .from('student_submissions')
+          .update(safeUpdate)
+          .eq('id', id);
+
+        if (updateErr) {
+          return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 });
         }
         break;
       }
 
       case 'update_submission_status': {
-        // Only mentors, faculty, HOD, and admins can approve or reject
         if (callerRole === 'student') {
           return NextResponse.json(
             { success: false, error: 'Forbidden: Students cannot approve or reject certificates.' },
@@ -241,21 +318,64 @@ export async function POST(req: NextRequest) {
           ? status
           : 'pending_mentor';
 
-        if (isValidUUID(id)) {
-          const updatePayload: any = {
-            status: validStatus,
-            mentor_remarks: remarks !== undefined ? remarks : null,
-            awarded_points: status === 'approved' && awardedPoints !== undefined ? awardedPoints : 0,
-            approved_by: status === 'approved' ? callerId : null,
-            approved_at: status === 'approved' ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString(),
-          };
-
-          await supabaseAdmin
-            .from('student_submissions')
-            .update(updatePayload)
-            .eq('id', id);
+        if (!isValidUUID(id)) {
+          return NextResponse.json({ success: false, error: 'Valid submission ID required.' }, { status: 400 });
         }
+
+        // Verify mentor mentee scoping if caller is mentor
+        const { data: subWithStudent, error: subErr } = await supabaseAdmin
+          .from('student_submissions')
+          .select('student_id, activity_title, student:profiles!student_id(mentor_id)')
+          .eq('id', id)
+          .single();
+
+        if (subErr || !subWithStudent) {
+          return NextResponse.json({ success: false, error: 'Submission not found.' }, { status: 404 });
+        }
+
+        const studentMentorId = (subWithStudent.student as any)?.mentor_id;
+        if (callerRole === 'mentor' && studentMentorId !== user?.id) {
+          return NextResponse.json(
+            { success: false, error: 'Forbidden: You are not the assigned mentor for this student.' },
+            { status: 403 }
+          );
+        }
+
+        const updatePayload: any = {
+          status: validStatus,
+          mentor_remarks: remarks !== undefined ? remarks : null,
+          awarded_points: validStatus === 'approved' && awardedPoints !== undefined ? awardedPoints : 0,
+          approved_by: validStatus === 'approved' ? callerId : null,
+          approved_at: validStatus === 'approved' ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { error: updateErr } = await supabaseAdmin
+          .from('student_submissions')
+          .update(updatePayload)
+          .eq('id', id);
+
+        if (updateErr) {
+          return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 });
+        }
+
+        // Create student notification
+        await supabaseAdmin.from('notifications').insert({
+          recipient_id: subWithStudent.student_id,
+          recipient_role: 'student',
+          type: validStatus === 'approved' ? 'approval' : validStatus === 'rejected' ? 'rejection' : 'clarification',
+          title: validStatus === 'approved'
+            ? `Certificate Approved (+${updatePayload.awarded_points} Pts)`
+            : validStatus === 'rejected'
+            ? 'Certificate Rejected'
+            : 'Mentor Requested Clarification',
+          message: remarks || `Status updated to ${validStatus}.`,
+          link: '/student/history',
+          related_submission_id: id,
+          sender_id: user?.id,
+          sender_name: profile?.full_name || 'Faculty Mentor',
+          is_read: false,
+        });
         break;
       }
 
@@ -271,7 +391,7 @@ export async function POST(req: NextRequest) {
         const validIds = (ids || []).filter(isValidUUID);
 
         if (validIds.length > 0) {
-          await supabaseAdmin
+          const { error: bulkErr } = await supabaseAdmin
             .from('student_submissions')
             .update({
               status: 'approved',
@@ -281,19 +401,162 @@ export async function POST(req: NextRequest) {
               updated_at: new Date().toISOString(),
             })
             .in('id', validIds);
+
+          if (bulkErr) {
+            return NextResponse.json({ success: false, error: bulkErr.message }, { status: 500 });
+          }
         }
         break;
       }
 
       case 'delete_submission': {
         const { id } = payload;
-        if (isValidUUID(id)) {
-          let deleteQuery = supabaseAdmin.from('student_submissions').delete().eq('id', id);
-          // Students can only delete their own submissions
-          if (callerRole === 'student' && user?.id) {
-            deleteQuery = deleteQuery.eq('student_id', user.id);
-          }
-          await deleteQuery;
+        if (!isValidUUID(id)) {
+          return NextResponse.json({ success: false, error: 'Valid submission ID required.' }, { status: 400 });
+        }
+
+        let deleteQuery = supabaseAdmin.from('student_submissions').delete().eq('id', id);
+        if (callerRole === 'student' && user?.id) {
+          deleteQuery = deleteQuery.eq('student_id', user.id);
+        }
+
+        const { error: delErr } = await deleteQuery;
+        if (delErr) {
+          return NextResponse.json({ success: false, error: delErr.message }, { status: 500 });
+        }
+        break;
+      }
+
+      case 'update_profile': {
+        const targetId = callerRole === 'student' && user?.id ? user.id : payload.userId || callerId;
+        if (!isValidUUID(targetId)) {
+          return NextResponse.json({ success: false, error: 'Invalid profile ID.' }, { status: 400 });
+        }
+
+        const p = payload.profile || payload;
+        const safeProfile: any = {};
+        if (p.phone_number !== undefined) safeProfile.phone_number = p.phone_number;
+        if (p.skills !== undefined) safeProfile.skills = Array.isArray(p.skills) ? p.skills : [];
+        if (p.github_url !== undefined) safeProfile.github_url = p.github_url;
+        if (p.linkedin_url !== undefined) safeProfile.linkedin_url = p.linkedin_url;
+        if (p.resume_url !== undefined) safeProfile.resume_url = p.resume_url;
+        if (p.avatar_url !== undefined) safeProfile.avatar_url = p.avatar_url;
+        safeProfile.updated_at = new Date().toISOString();
+
+        const { error: profErr } = await supabaseAdmin
+          .from('profiles')
+          .update(safeProfile)
+          .eq('id', targetId);
+
+        if (profErr) {
+          return NextResponse.json({ success: false, error: profErr.message }, { status: 500 });
+        }
+        break;
+      }
+
+      case 'reassign_mentor': {
+        if (!['hod', 'class_teacher', 'admin'].includes(callerRole)) {
+          return NextResponse.json(
+            { success: false, error: 'Forbidden: Only HoD, Class Coordinator, or Admin can reassign mentors.' },
+            { status: 403 }
+          );
+        }
+
+        const { studentId, newMentorId } = payload;
+        if (!isValidUUID(studentId) || !isValidUUID(newMentorId)) {
+          return NextResponse.json(
+            { success: false, error: 'Valid student ID and new mentor ID are required.' },
+            { status: 400 }
+          );
+        }
+
+        const { error: reassignErr } = await supabaseAdmin
+          .from('profiles')
+          .update({ mentor_id: newMentorId, updated_at: new Date().toISOString() })
+          .eq('id', studentId);
+
+        if (reassignErr) {
+          return NextResponse.json({ success: false, error: reassignErr.message }, { status: 500 });
+        }
+
+        // Notify student of reassignment
+        await supabaseAdmin.from('notifications').insert({
+          recipient_id: studentId,
+          recipient_role: 'student',
+          type: 'reassignment',
+          title: 'Faculty Mentor Reassigned',
+          message: 'Your official faculty mentor assignment has been updated by the department coordinator.',
+          link: '/student',
+          sender_id: user?.id,
+          sender_name: profile?.full_name || 'Department Coordinator',
+          is_read: false,
+        });
+        break;
+      }
+
+      case 'update_user_role': {
+        if (callerRole !== 'admin') {
+          return NextResponse.json(
+            { success: false, error: 'Forbidden: Only Administrators can modify user roles.' },
+            { status: 403 }
+          );
+        }
+
+        const { targetUserId, newRole } = payload;
+        if (!isValidUUID(targetUserId) || !newRole) {
+          return NextResponse.json({ success: false, error: 'Valid user ID and role required.' }, { status: 400 });
+        }
+
+        const { error: roleErr } = await supabaseAdmin
+          .from('profiles')
+          .update({ role: newRole, updated_at: new Date().toISOString() })
+          .eq('id', targetUserId);
+
+        if (roleErr) {
+          return NextResponse.json({ success: false, error: roleErr.message }, { status: 500 });
+        }
+        break;
+      }
+
+      case 'add_notification': {
+        const { recipient_id, recipient_role, type, title, message, link, related_submission_id } = payload;
+        const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
+          recipient_id: recipient_id && isValidUUID(recipient_id) ? recipient_id : null,
+          recipient_role: recipient_role || null,
+          type: type || 'announcement',
+          title: String(title || 'Announcement').trim(),
+          message: String(message || '').trim(),
+          link: link || null,
+          related_submission_id: related_submission_id && isValidUUID(related_submission_id) ? related_submission_id : null,
+          sender_id: user?.id,
+          sender_name: profile?.full_name || 'System Notification',
+          is_read: false,
+        });
+
+        if (notifErr) {
+          return NextResponse.json({ success: false, error: notifErr.message }, { status: 500 });
+        }
+        break;
+      }
+
+      case 'mark_notification_read': {
+        const { id } = payload;
+        if (isValidUUID(id) && user?.id) {
+          await supabaseAdmin
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', id)
+            .eq('recipient_id', user.id);
+        }
+        break;
+      }
+
+      case 'mark_all_notifications_read': {
+        if (user?.id) {
+          await supabaseAdmin
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('recipient_id', user.id);
         }
         break;
       }
@@ -306,7 +569,10 @@ export async function POST(req: NextRequest) {
           );
         }
         const newSettings: Partial<SystemSettings> = payload;
-        await supabaseAdmin.from('system_settings').update(newSettings).eq('id', 1);
+        const { error: setErr } = await supabaseAdmin.from('system_settings').update(newSettings).eq('id', 1);
+        if (setErr) {
+          return NextResponse.json({ success: false, error: setErr.message }, { status: 500 });
+        }
         break;
       }
 
@@ -319,7 +585,7 @@ export async function POST(req: NextRequest) {
         }
         const cat: ActivityCategory = payload;
         if (cat.id) {
-          await supabaseAdmin
+          const { error: catErr } = await supabaseAdmin
             .from('activity_categories')
             .update({
               default_points: cat.default_points,
@@ -328,6 +594,10 @@ export async function POST(req: NextRequest) {
               is_active: cat.is_active,
             })
             .eq('id', cat.id);
+
+          if (catErr) {
+            return NextResponse.json({ success: false, error: catErr.message }, { status: 500 });
+          }
         }
         break;
       }
@@ -346,10 +616,14 @@ export async function POST(req: NextRequest) {
             const existingMsgs = Array.isArray(curData.messages) ? curData.messages : [];
             curData.messages = [...existingMsgs, message];
 
-            await supabaseAdmin
+            const { error: msgErr } = await supabaseAdmin
               .from('student_submissions')
               .update({ ai_extracted_data: curData, updated_at: new Date().toISOString() })
               .eq('id', submissionId);
+
+            if (msgErr) {
+              return NextResponse.json({ success: false, error: msgErr.message }, { status: 500 });
+            }
           }
         }
         break;
@@ -359,16 +633,23 @@ export async function POST(req: NextRequest) {
         const { avatarUrl } = payload;
         const targetId = callerRole === 'student' && user?.id ? user.id : payload.studentId || callerId;
         if (isValidUUID(targetId)) {
-          await supabaseAdmin
+          const { error: avErr } = await supabaseAdmin
             .from('profiles')
             .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
             .eq('id', targetId);
+
+          if (avErr) {
+            return NextResponse.json({ success: false, error: avErr.message }, { status: 500 });
+          }
         }
         break;
       }
 
       default:
-        break;
+        return NextResponse.json(
+          { success: false, error: `Unknown synchronization action: '${action}'.` },
+          { status: 400 }
+        );
     }
 
     return NextResponse.json({ success: true, lastUpdated: Date.now() });

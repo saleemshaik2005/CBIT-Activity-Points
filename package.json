@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npx tsx --test tests/mar-calculation.test.ts tests/magic-bytes.test.ts tests/auth-guards.test.ts tests/ai-fallback.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -604,7 +604,7 @@ export function generateForensicTamperAssessment(
   title: string,
   hasAnomalies: boolean = false,
   extractedRecipient?: string,
-  expectedStudentName: string = 'Shaik Saleem'
+  expectedStudentName: string = 'Student'
 ): AITamperAnalysis {
   const recipientClean = (extractedRecipient || '').trim().toLowerCase();
   const studentClean = expectedStudentName.trim().toLowerCase();
@@ -616,42 +616,36 @@ export function generateForensicTamperAssessment(
 
   if (hasAnomalies || isNameMismatched) {
     return {
-      authenticityScore: 28,
+      authenticityScore: 50,
       isSuspicious: true,
-      manipulationRisk: 'High',
-      riskPercentage: 88,
-      statusLabel: 'High Tampering Risk',
-      pipelineEngine: 'CBIT Neural Vision & Document Forensics Engine',
+      manipulationRisk: 'Moderate',
+      riskPercentage: 50,
+      statusLabel: 'Requires manual verification',
+      pipelineEngine: 'CBIT Document Intelligence Engine',
       findings: [
-        `1. Background Continuity: Discontinuous background grid and compression noise halos detected around certificate center.`,
-        `2. Text Rendering & Bounding Boxes: ${
-          isNameMismatched
-            ? `Recipient name "${extractedRecipient}" does not match the submitting student profile ("${expectedStudentName}"). Typographic bounding box artifacts detected.`
-            : `Mismatched font antialiasing and baseline alignment deviation detected in recipient name text field.`
-        }`,
-        `3. Localized Blurring/Smudging: Detected localized softening and digital erasure smudging near the candidate name and issuing date stamps.`,
-        `4. Conclusion: High probability of digital name insertion or document alteration. Immediate mentor review recommended.`,
+        isNameMismatched
+          ? `Recipient name on document ("${extractedRecipient}") differs from student profile ("${expectedStudentName}"). Mentor verification required.`
+          : 'Potential anomaly or formatting inconsistency detected in document text.',
+        'Automated confidence estimate is provisional. Final verification rests with the faculty mentor.',
       ],
-      fontConsistency: 'Mismatched',
-      compressionArtifacts: 'Anomalous',
-      edgeAlignment: 'Irregular',
+      fontConsistency: 'Flagged',
+      compressionArtifacts: 'Normal',
+      edgeAlignment: 'Natural',
       metadataCheck: 'Inconsistent',
       verifiedAt: new Date().toISOString(),
     };
   }
 
   return {
-    authenticityScore: 97,
+    authenticityScore: 85,
     isSuspicious: false,
     manipulationRisk: 'Low',
-    riskPercentage: 3,
-    statusLabel: 'Authentic & Legitimate',
-    pipelineEngine: 'CBIT Neural Vision & Document Forensics Engine',
+    riskPercentage: 15,
+    statusLabel: 'No obvious anomaly detected',
+    pipelineEngine: 'CBIT Document Intelligence Engine',
     findings: [
-      '1. Background Continuity: Continuous security guilloche borders and uniform background paper grain without structural breaks.',
-      '2. Text Rendering & Bounding Boxes: Consistent font weights, stroke thicknesses, and baseline typography alignment across all certificate fields.',
-      '3. Localized Blurring/Smudging: Sharp pixel edge fidelity with zero localized erasure marks or digital whiteout boxes.',
-      '4. Conclusion: High-confidence authentic institutional certificate matching official issuing authority standards.',
+      'Document structure and recipient match profile criteria.',
+      'Automated analysis is an estimate and does not constitute proof of authenticity; faculty mentor review is authoritative.',
     ],
     fontConsistency: 'Consistent',
     compressionArtifacts: 'Normal',
@@ -662,209 +656,46 @@ export function generateForensicTamperAssessment(
 }
 
 /**
- * Intelligent Document Analyzer Fallback
- * Provides ultra-resilient document analysis in offline scenarios or unexpected network drops.
+ * Honest Document Analyzer Fallback
+ * When AI models are unavailable, returns honest manual review status without fabricated data.
  */
-function fallbackSemanticDocumentAnalyzer(
+export function fallbackSemanticDocumentAnalyzer(
   fileBufferBase64: string,
   mimeType: string,
   fileName?: string,
   options?: CertificatePipelineOptions,
-  expectedStudentName: string = 'Shaik Saleem'
+  expectedStudentName: string = 'Student'
 ): AIExtractionResult {
-  const name = (fileName || '').toLowerCase().trim();
-
-  // Inappropriate, adult, or offensive image detection
-  const inappropriateKeywords = [
-    'nsfw', 'nude', 'sexy', 'porn', 'adult', 'violence', 'weapon',
-    'offensive', 'inappropriate', 'vulgar', 'hate', 'abuse',
-  ];
-  if (inappropriateKeywords.some((kw) => name.includes(kw))) {
-    return {
-      isDocument: false,
-      documentRejectionReason:
-        'This image contains inappropriate content and is strictly ineligible for academic certificate submission.',
-      certificateTitle: '',
-      recipientName: '',
-      issuingOrganization: '',
-      completionDate: '',
-      matchedCategorySno: 1,
-      matchedCategoryName: '',
-      matchedSubType: '',
-      suggestedPoints: 0,
-      confidenceScore: 0,
-      summary: '',
-    };
-  }
-
-  // Non-document file patterns (selfies, random camera photos, scenery, memes, pets, etc.)
-  const nonDocKeywords = [
-    'selfie', 'meme', 'photo_of_', 'cat', 'dog', 'pet', 'animal', 'car', 'bike',
-    'food', 'sunset', 'landscape', 'scenery', 'wallpaper', 'avatar', 'portrait',
-    'profile', 'face', 'snap', 'tiktok', 'reel', 'insta', 'fb_img', 'whatsapp_image',
-    'camera', 'dcim', 'screenshot_202', 'random', 'nature', 'drawing',
-    'game', 'pubg', 'freefire', 'movie', 'poster', 'thumbnail',
-  ];
-
-  const academicDocKeywords = [
-    'cert', 'nptel', 'swayam', 'coursera', 'mooc', 'udemy', 'hackathon', 'techfest',
-    'workshop', 'fest', 'sports', 'tournament', 'nss', 'blood', 'donation', 'internship',
-    'paper', 'publication', 'ieee', 'journal', 'csi', 'conference', 'symposium', 'letter',
-    'mark', 'score', 'cbit', 'degree', 'merit', 'participation', 'appreciation', 'completion',
-    'achievement', 'training', 'webinar', 'credential', 'proof', 'document', 'mar',
-  ];
-
-  const hasNonDocKeyword = nonDocKeywords.some((kw) => name.includes(kw));
-  const hasAcademicKeyword = academicDocKeywords.some((kw) => name.includes(kw));
-  const isPdf = mimeType.includes('pdf') || name.endsWith('.pdf');
-
-  const isGenericCameraPhoto =
-    /^img[-_]?\d+/i.test(name) ||
-    /^dsc[-_]?\d+/i.test(name) ||
-    /^photo/i.test(name) ||
-    /^image/i.test(name) ||
-    /^pic/i.test(name);
-
-  if (hasNonDocKeyword || (isGenericCameraPhoto && !hasAcademicKeyword && !isPdf)) {
-    return {
-      isDocument: false,
-      documentRejectionReason:
-        'The uploaded image does not appear to be an official certificate or document proof. AI has restricted this image from being submitted to your mentor.',
-      certificateTitle: '',
-      recipientName: '',
-      issuingOrganization: '',
-      completionDate: '',
-      matchedCategorySno: 1,
-      matchedCategoryName: '',
-      matchedSubType: '',
-      suggestedPoints: 0,
-      confidenceScore: 0,
-      summary: '',
-    };
-  }
-
-  if (!hasAcademicKeyword && !isPdf) {
-    return {
-      isDocument: false,
-      documentRejectionReason:
-        'The uploaded image could not be identified as an official academic certificate or event proof. Please upload a clear certificate image or PDF.',
-      certificateTitle: '',
-      recipientName: '',
-      issuingOrganization: '',
-      completionDate: '',
-      matchedCategorySno: 1,
-      matchedCategoryName: '',
-      matchedSubType: '',
-      suggestedPoints: 0,
-      confidenceScore: 0,
-      summary: '',
-    };
-  }
-
-  let catSno = 2;
-  let catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
-  let subType = 'Participant';
-  let points = 3;
-  let certTitle = 'National Level Technical Symposium & Workshop';
-  let issuer = 'Chaitanya Bharathi Institute of Technology (CBIT)';
-
-  if (
-    name.includes('nptel') ||
-    name.includes('swayam') ||
-    name.includes('coursera') ||
-    name.includes('mooc') ||
-    name.includes('udemy')
-  ) {
-    catSno = 1;
-    catName = 'MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)';
-    subType = '12 weeks';
-    points = 20;
-    certTitle = 'NPTEL Online Certification Course';
-    issuer = 'NPTEL (Ministry of Education, Govt of India)';
-  } else if (
-    name.includes('hackathon') ||
-    name.includes('techfest') ||
-    name.includes('workshop') ||
-    name.includes('symposium')
-  ) {
-    catSno = 2;
-    catName = 'Tech Fest / Workshop / Hackathon / Conference / Seminar';
-    subType = name.includes('organizer') ? 'Organizer' : 'Participant';
-    points = name.includes('organizer') ? 5 : 3;
-    certTitle = 'Technical Hackathon & Workshop';
-    issuer = 'CBIT Hyderabad';
-  } else if (
-    name.includes('sports') ||
-    name.includes('tournament') ||
-    name.includes('cricket') ||
-    name.includes('football')
-  ) {
-    catSno = 13;
-    catName = 'Sports (Inter-College, University, State, National)';
-    subType = 'College level';
-    points = 5;
-    certTitle = 'Inter-College Sports Tournament';
-    issuer = 'Sports & Physical Education Board';
-  } else if (
-    name.includes('nss') ||
-    name.includes('blood') ||
-    name.includes('community') ||
-    name.includes('service')
-  ) {
-    catSno = 11;
-    catName = 'Rural Reporting / Community Service';
-    subType = 'General';
-    points = 5;
-    certTitle = 'Community Service & Social Leadership Activity';
-    issuer = 'National Service Scheme (NSS)';
-  } else if (name.includes('internship') || name.includes('training') || name.includes('offer')) {
-    catSno = 10;
-    catName = 'Innovation Projects (other than course requirements)';
-    subType = 'General';
-    points = 20;
-    certTitle = 'Industry Internship & Practical Training';
-    issuer = 'Tech R&D Center';
-  } else if (
-    name.includes('paper') ||
-    name.includes('ieee') ||
-    name.includes('journal') ||
-    name.includes('publication')
-  ) {
-    catSno = 6;
-    catName = 'Publication in News Magazine / Journal';
-    subType = 'Journal';
-    points = 15;
-    certTitle = 'Research Paper Publication / Presentation';
-    issuer = 'IEEE / Academic Journal';
-  } else {
-    const cleanName = (fileName || 'Certificate').replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-    certTitle = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
-    if (!certTitle.toLowerCase().includes('certificate')) {
-      certTitle += ' Certificate';
-    }
-  }
-
-  const todayStr = new Date().toISOString().split('T')[0];
-
   return {
     isDocument: true,
-    documentRejectionReason: undefined,
-    certificateTitle: certTitle,
+    certificateTitle: fileName ? fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') : 'Activity Certificate',
     recipientName: expectedStudentName,
-    issuingOrganization: issuer,
-    completionDate: todayStr,
-    durationOrHours: subType.includes('weeks') ? subType : 'Completed',
-    credentialId: undefined,
-    verificationUrl: options?.clientQrPayloads?.[0] || undefined,
-    qrCodes: options?.clientQrPayloads,
-    pipelineEngine: 'CBIT Neural Vision & Document Forensics Engine',
-    matchedCategorySno: catSno,
-    matchedCategoryName: catName,
-    matchedSubType: subType,
-    suggestedPoints: points,
-    confidenceScore: 0.94,
-    summary: `Official participation certificate for ${certTitle}, issued by ${issuer}.`,
-    keySkillsOrTopics: ['Technical Participation', 'Academic Proof'],
-    tamperAnalysis: generateForensicTamperAssessment(certTitle, false, expectedStudentName, expectedStudentName),
+    issuingOrganization: 'Pending Mentor Verification',
+    completionDate: new Date().toISOString().split('T')[0],
+    matchedCategorySno: 1,
+    matchedCategoryName: 'MOOCs (SWAYAM/ NPTEL/ COURSERA/or equivalent)',
+    matchedSubType: 'General',
+    suggestedPoints: 0,
+    confidenceScore: 0,
+    summary: 'Automated AI analysis was unavailable during upload. Document has been routed honestly for direct mentor review.',
+    keySkillsOrTopics: ['Manual Mentor Review Required'],
+    tamperAnalysis: {
+      authenticityScore: undefined as any,
+      isSuspicious: false,
+      manipulationRisk: 'Low',
+      riskPercentage: 0,
+      statusLabel: 'Requires manual verification',
+      pipelineEngine: 'CBIT Document Intelligence Engine (Manual Review Mode)',
+      findings: [
+        'Automated AI vision service was unreachable or offline during upload.',
+        'No synthetic authenticity score was generated to preserve data integrity.',
+        'Your faculty mentor will verify the certificate proof directly.',
+      ],
+      fontConsistency: 'Consistent',
+      compressionArtifacts: 'Normal',
+      edgeAlignment: 'Natural',
+      metadataCheck: 'Missing',
+      verifiedAt: new Date().toISOString(),
+    },
   };
 }

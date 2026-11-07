@@ -35,6 +35,9 @@ export interface UserProfile {
   skills?: string[];
   github_url?: string;
   linkedin_url?: string;
+  login_method?: 'google' | 'password';
+  must_change_password?: boolean;
+  is_active?: boolean;
   created_at?: string;
 }
 

@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
+import { NotificationItem } from '@/types';
 import {
   Bell,
   CheckCircle2,
@@ -11,8 +13,8 @@ import {
   Megaphone,
   CheckCheck,
   ArrowRight,
+  ArrowLeft,
   Send,
-  Sparkles,
 } from 'lucide-react';
 
 function formatNotificationDate(dateStr: string): string {
@@ -36,39 +38,120 @@ function formatNotificationDate(dateStr: string): string {
 }
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const {
     currentUser,
-    notifications,
+    notifications: contextNotifs,
     markNotificationAsRead,
     markAllNotificationsAsRead,
     addNotification,
   } = useApp();
 
+  const [dbNotifs, setDbNotifs] = useState<NotificationItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementMsg, setAnnouncementMsg] = useState('');
   const [targetAudience, setTargetAudience] = useState<'all' | 'student' | 'mentor'>('all');
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
 
-  // Retain unread notifications until explicitly read or marked by the user
+  // Load real server notifications
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchServerNotifications() {
+      try {
+        const res = await fetch('/api/notifications', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.notifications) && isMounted) {
+            setDbNotifs(json.notifications);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load server notifications:', err);
+      }
+    }
+    fetchServerNotifications();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  const filteredNotifs = notifications.filter((n) => {
+  // Prefer database-backed notifications, falling back to context if server is empty
+  const activeNotifications = dbNotifs.length > 0 ? dbNotifs : contextNotifs;
+
+  const filteredNotifs = activeNotifications.filter((n) => {
     if (filter === 'unread') return !n.is_read;
     return true;
   });
 
-  const handleBroadcast = (e: React.FormEvent) => {
+  const handleSafeBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 2) {
+      router.back();
+    } else {
+      if (currentUser.role === 'mentor') router.push('/mentor');
+      else if (currentUser.role === 'class_teacher') router.push('/teacher');
+      else if (currentUser.role === 'hod') router.push('/hod');
+      else if (currentUser.role === 'admin') router.push('/admin');
+      else router.push('/student');
+    }
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    markNotificationAsRead(id);
+    setDbNotifs((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+    } catch {}
+  };
+
+  const handleMarkAllAsRead = async () => {
+    markAllNotificationsAsRead();
+    setDbNotifs((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAll: true }),
+      });
+    } catch {}
+  };
+
+  const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!announcementTitle.trim() || !announcementMsg.trim()) return;
 
-    addNotification({
-      recipient_role: targetAudience,
-      type: 'announcement',
-      title: announcementTitle,
-      message: announcementMsg,
+    const newAnnouncement = {
+      recipient_role: targetAudience === 'all' ? undefined : targetAudience,
+      type: 'announcement' as const,
+      title: announcementTitle.trim(),
+      message: announcementMsg.trim(),
       link: '/student/guidelines',
+    };
+
+    addNotification({
+      ...newAnnouncement,
       sender_name: `${currentUser.full_name} (${currentUser.role.toUpperCase()})`,
     });
+
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAnnouncement),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.notification) {
+          setDbNotifs((prev) => [json.notification, ...prev]);
+        }
+      }
+    } catch {}
 
     setAnnouncementTitle('');
     setAnnouncementMsg('');
@@ -81,21 +164,31 @@ export default function NotificationsPage() {
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2 text-[#385529] dark:text-gray-200">
-            <Bell className="w-5 h-5" />
-            <h1 className="text-xl font-serif font-extrabold text-gray-900 dark:text-white">
-              Notifications & Activity Feed
-            </h1>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleSafeBack}
+            className="p-2 rounded-xl bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] border border-[#e8e3d8] dark:border-[#2e3039] text-[#385529] dark:text-gray-300 transition-all cursor-pointer flex-shrink-0"
+            title="Go back"
+            aria-label="Back to dashboard"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-2 text-[#385529] dark:text-gray-200">
+              <Bell className="w-5 h-5" />
+              <h1 className="text-xl font-serif font-extrabold text-gray-900 dark:text-white">
+                Notifications & Activity Feed
+              </h1>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Verified updates on submissions, approvals, and academic notifications.
+            </p>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Real-time updates regarding certificate submissions, mentor approvals, and academic notices.
-          </p>
         </div>
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={markAllNotificationsAsRead}
+            onClick={handleMarkAllAsRead}
             className="px-3 py-1.5 bg-[#faf9f5] dark:bg-[#22232a] hover:bg-[#eef5ec] dark:hover:bg-[#2a2b33] text-[#385529] dark:text-gray-300 text-xs font-bold rounded-xl border border-[#e8e3d8] dark:border-[#2e3039] transition-all flex items-center space-x-1.5 cursor-pointer"
           >
             <CheckCheck className="w-4 h-4" />
@@ -179,7 +272,7 @@ export default function NotificationsPage() {
                 : 'bg-white dark:bg-[#1a1b20] text-gray-600 dark:text-gray-400 border border-[#e8e3d8] dark:border-[#2e3039]'
             }`}
           >
-            All ({notifications.length})
+            All ({activeNotifications.length})
           </button>
           <button
             onClick={() => setFilter('unread')}
@@ -189,7 +282,7 @@ export default function NotificationsPage() {
                 : 'bg-white dark:bg-[#1a1b20] text-gray-600 dark:text-gray-400 border border-[#e8e3d8] dark:border-[#2e3039]'
             }`}
           >
-            Unread ({notifications.filter((n) => !n.is_read).length})
+            Unread ({activeNotifications.filter((n) => !n.is_read).length})
           </button>
         </div>
 
@@ -204,7 +297,7 @@ export default function NotificationsPage() {
             {filteredNotifs.map((item) => (
               <div
                 key={item.id}
-                onClick={() => markNotificationAsRead(item.id)}
+                onClick={() => handleMarkAsRead(item.id)}
                 className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-3 cursor-pointer ${
                   item.is_read
                     ? 'bg-white dark:bg-[#1a1b20] border-[#e8e3d8] dark:border-[#2c2d36] opacity-80'

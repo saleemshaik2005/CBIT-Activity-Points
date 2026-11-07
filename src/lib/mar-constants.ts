@@ -445,46 +445,85 @@ export function calculateStudentMARProgress(
   targetPoints: number = 60,
   maxPointsAllowed: number = 100
 ): MARCalculationResult {
-  const approvedSubmissions = submissions.filter(s => s.status === 'approved');
-  const pendingSubmissions = submissions.filter(s => s.status === 'pending_mentor');
+  const approvedSubmissions = (submissions || []).filter(s => s && s.status === 'approved');
+  const pendingSubmissions = (submissions || []).filter(s => s && s.status === 'pending_mentor');
 
-  // Group approved submissions by Category SNo (1 to 24)
-  const categoryPointsMap: Record<number, number> = {};
-  const semesterMap: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
-
-  let totalUncappedApprovedPoints = 0;
   let totalPendingPoints = 0;
-
   pendingSubmissions.forEach(sub => {
-    totalPendingPoints += (sub.claimed_points || 0);
+    totalPendingPoints += Number(sub.claimed_points || 0);
   });
+
+  // Track points per (sno, sub_type) tuple to apply subcategory caps correctly
+  const subtypeEarnedMap: Record<string, number> = {};
+  const semesterMap: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+  let totalUncappedApprovedPoints = 0;
 
   approvedSubmissions.forEach(sub => {
     const pts = Number(sub.awarded_points !== undefined && sub.awarded_points !== null ? sub.awarded_points : (sub.claimed_points || 0));
     totalUncappedApprovedPoints += pts;
 
-    // Attribute to category
-    const cat = categories.find(c => c.id === sub.category_id || c.sno === sub.category_id) || sub.category;
+    // Resolve category and sub_type
+    const cat = categories.find(c => c.id === sub.category_id || (c.sno === sub.category_id && (!sub.category?.sub_type || c.sub_type === sub.category?.sub_type))) || sub.category;
     const sno = cat ? cat.sno : (typeof sub.category_id === 'number' ? sub.category_id : 1);
-    categoryPointsMap[sno] = (categoryPointsMap[sno] || 0) + pts;
+    const subType = (cat?.sub_type || sub.category?.sub_type || 'General').trim();
+    const key = `${sno}::${subType}`;
 
-    // Attribute to semester
+    subtypeEarnedMap[key] = (subtypeEarnedMap[key] || 0) + pts;
+
     const sem = Number(sub.semester) || 1;
-    semesterMap[sem] = (semesterMap[sem] || 0) + pts;
+    if (sem >= 1 && sem <= 8) {
+      semesterMap[sem] = (semesterMap[sem] || 0) + pts;
+    }
   });
 
-  // Apply maximum allowable cap per category SNo
-  let totalCappedApprovedPoints = 0;
-  Object.entries(categoryPointsMap).forEach(([snoStr, earned]) => {
+  // Apply subtype caps first, then overall category caps
+  const categoryCappedMap: Record<number, number> = {};
+
+  // Group categories by SNo
+  const catsBySno: Record<number, ActivityCategory[]> = {};
+  categories.forEach(c => {
+    if (!catsBySno[c.sno]) catsBySno[c.sno] = [];
+    catsBySno[c.sno].push(c);
+  });
+
+  // Evaluate each category SNo (1 to 24)
+  Object.entries(catsBySno).forEach(([snoStr, catList]) => {
     const sno = Number(snoStr);
-    const matchingCats = categories.filter(c => c.sno === sno || c.id === sno);
-    const maxCap = matchingCats.length > 0 ? matchingCats[0].max_points_allowed : 40;
-    totalCappedApprovedPoints += Math.min(earned, maxCap);
+    let categorySubtypesCappedSum = 0;
+
+    // Highest allowable cap for the category overall
+    const overallCategoryMaxCap = Math.max(...catList.map(c => c.max_points_allowed));
+
+    catList.forEach(c => {
+      const key = `${c.sno}::${(c.sub_type || 'General').trim()}`;
+      const earned = subtypeEarnedMap[key] || 0;
+
+      // Apply official subcategory cap
+      const subCapped = Math.min(earned, c.max_points_allowed);
+      categorySubtypesCappedSum += subCapped;
+    });
+
+    // Apply overall category cap across all its subtypes
+    const finalCategoryPoints = Math.min(categorySubtypesCappedSum, overallCategoryMaxCap);
+    categoryCappedMap[sno] = finalCategoryPoints;
   });
 
-  // Apply program-level max cap (100 pts for Regular, 75 pts for Lateral Entry)
-  const finalApprovedPoints = Math.min(totalCappedApprovedPoints, maxPointsAllowed);
+  // Also include any submissions where category SNo was not in categories array
+  Object.entries(subtypeEarnedMap).forEach(([key, earned]) => {
+    const sno = Number(key.split('::')[0]);
+    if (!categoryCappedMap[sno]) {
+      categoryCappedMap[sno] = Math.min(earned, 40);
+    }
+  });
 
+  // Sum all category capped points
+  let totalCappedApprovedPoints = 0;
+  Object.values(categoryCappedMap).forEach(pts => {
+    totalCappedApprovedPoints += pts;
+  });
+
+  // Apply program-level max cap (100 for regular, 75 for lateral entry)
+  const finalApprovedPoints = Math.min(totalCappedApprovedPoints, maxPointsAllowed);
   const percentage = Math.min(100, Math.round((finalApprovedPoints / targetPoints) * 100));
   const isCompleted = finalApprovedPoints >= targetPoints;
   const pointsRemaining = Math.max(0, targetPoints - finalApprovedPoints);
@@ -499,7 +538,7 @@ export function calculateStudentMARProgress(
     isCompleted,
     pointsRemaining,
     semesterBreakdown: semesterMap,
-    categoryPointsMap,
+    categoryPointsMap: categoryCappedMap,
     approvedCount: approvedSubmissions.length,
     pendingCount: pendingSubmissions.length,
   };

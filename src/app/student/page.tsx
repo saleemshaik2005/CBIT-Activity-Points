@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { MARProgressBar } from '@/components/student/MARProgressBar';
 import { CategoryBreakdown } from '@/components/student/CategoryBreakdown';
+import { StudentAnalytics } from '@/components/student/StudentAnalytics';
+import { MARPlanner } from '@/components/student/MARPlanner';
 import { generateOfficialCBITMARPDF } from '@/lib/pdf-generator';
 import { StudentSubmission } from '@/types';
 import {
@@ -103,6 +105,12 @@ export default function StudentDashboardPage() {
         isLateralEntry={currentUser.is_lateral_entry}
         onDownloadPDF={handleDownloadPDF}
       />
+
+      {/* Student Analytics & On-Track Assessment */}
+      <StudentAnalytics />
+
+      {/* MAR Practical Planner */}
+      <MARPlanner />
 
       {/* Two Column Layout: Recent Submissions & Action Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

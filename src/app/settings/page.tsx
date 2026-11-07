@@ -21,6 +21,7 @@ import {
   Camera,
   UploadCloud,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -33,9 +34,11 @@ export default function SettingsPage() {
   const [resumeUrl, setResumeUrl] = useState(currentUser.resume_url || '');
   const [skillsInput, setSkillsInput] = useState((currentUser.skills || []).join(', '));
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
-  // Synchronize form fields whenever currentUser changes (fixes refresh reverting to default values)
+  // Synchronize form fields whenever currentUser changes
   useEffect(() => {
     setFullName(currentUser.full_name || '');
     setPhoneNumber(currentUser.phone_number || '');
@@ -55,10 +58,25 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const [approvalAlerts, setApprovalAlerts] = useState(true);
   const [broadcastAlerts, setBroadcastAlerts] = useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isPushSupported, setIsPushSupported] = useState(false);
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+      setIsPushSupported(true);
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          setIsPushSubscribed(!!sub);
+        });
+      });
+    }
+  }, []);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -86,7 +104,6 @@ export default function SettingsPage() {
           }
         }
 
-        // Fallback to permanent data URL if upload route is unreachable
         const base64Url = await fileToPermanentDataURL(file);
         updateUserAvatar(base64Url);
         setProfileSuccess(true);
@@ -99,36 +116,135 @@ export default function SettingsPage() {
     }
   };
 
-  const handleProfileSave = (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSavingProfile(true);
+    setProfileError(null);
+
     const parsedSkills = skillsInput
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
 
-    updateUserProfile({
-      full_name: fullName,
-      phone_number: phoneNumber,
-      email,
-      resume_url: resumeUrl || undefined,
-      skills: parsedSkills.length > 0 ? parsedSkills : undefined,
-    });
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone_number: phoneNumber,
+          skills: parsedSkills,
+          resume_url: resumeUrl || null,
+        }),
+      });
 
-    setProfileSuccess(true);
-    setTimeout(() => setProfileSuccess(false), 3000);
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setProfileError(json.error || 'Failed to save profile changes.');
+        return;
+      }
+
+      updateUserProfile(json.profile || {
+        phone_number: phoneNumber,
+        resume_url: resumeUrl || undefined,
+        skills: parsedSkills,
+      });
+
+      setProfileSuccess(true);
+      setTimeout(() => setProfileSuccess(false), 3000);
+    } catch (err: any) {
+      setProfileError(err.message || 'Network error saving profile.');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) return;
-    setPasswordSuccess(true);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setTimeout(() => setPasswordSuccess(false), 4000);
+    setIsSavingPassword(true);
+    setPasswordError(null);
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation password do not match.');
+      setIsSavingPassword(false);
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters long.');
+      setIsSavingPassword(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: currentPassword.trim(),
+          newPassword: newPassword.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setPasswordError(json.error || 'Failed to update password.');
+        return;
+      }
+
+      setPasswordSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPasswordSuccess(false), 4000);
+    } catch (err: any) {
+      setPasswordError(err.message || 'Error occurred while updating password.');
+    } finally {
+      setIsSavingPassword(false);
+    }
   };
 
-  const handleLogout = () => {
+  const handlePushToggle = async () => {
+    if (!isPushSupported) return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (isPushSubscribed) {
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await sub.unsubscribe();
+          await fetch('/api/push/subscribe', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          });
+        }
+        setIsPushSubscribed(false);
+      } else {
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKey || undefined,
+        });
+        const subJson = sub.toJSON();
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+            keys: subJson.keys,
+            userAgent: navigator.userAgent,
+          }),
+        });
+        setIsPushSubscribed(true);
+      }
+    } catch (err) {
+      console.warn('Push subscription toggle error:', err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
     logout();
     router.push('/login');
   };
@@ -145,7 +261,7 @@ export default function SettingsPage() {
           </h1>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Upload your profile picture, update contact details, adjust color themes, and manage notifications.
+          Upload your profile picture, update verified contact details, manage themes, and configure notifications.
         </p>
       </div>
 
@@ -158,9 +274,9 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
             
             {/* Avatar Section */}
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col items-center text-center space-y-3 pb-4 border-b border-[#e8e3d8] dark:border-[#2c2d36]">
               <div className="relative group">
-                <div className="w-16 h-16 rounded-2xl bg-[#385529] dark:bg-[#2a2b33] text-white font-serif font-bold text-2xl flex items-center justify-center border-2 border-[#a16b15]/40 overflow-hidden shadow-xs">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-[#eef5ec] dark:bg-[#22232a] border-2 border-[#385529] dark:border-emerald-500 shadow-md flex items-center justify-center">
                   {currentUser.avatar_url ? (
                     <img
                       src={currentUser.avatar_url}
@@ -168,129 +284,78 @@ export default function SettingsPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span>{currentUser.full_name.charAt(0)}</span>
+                    <User className="w-10 h-10 text-[#385529] dark:text-emerald-400" />
                   )}
                 </div>
 
-                {/* Upload Hover Overlay */}
-                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex flex-col items-center justify-center cursor-pointer text-white text-[10px] font-bold gap-0.5">
-                  {isUploadingAvatar ? (
-                    <Loader2 className="w-4 h-4 text-[#dfa94b] animate-spin" />
-                  ) : (
-                    <Camera className="w-4 h-4 text-[#dfa94b]" />
-                  )}
-                  <span>{isUploadingAvatar ? 'Saving...' : 'Change'}</span>
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#385529] hover:bg-[#273e1c] text-white rounded-full shadow-md cursor-pointer transition-transform hover:scale-110"
+                  title="Upload New Profile Picture"
+                >
+                  <Camera className="w-3.5 h-3.5" />
                   <input
+                    id="avatar-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
                     onChange={handleAvatarChange}
                     disabled={isUploadingAvatar}
-                    className="hidden"
                   />
                 </label>
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">{currentUser.full_name}</h3>
-                <p className="text-[11px] text-[#a16b15] dark:text-amber-400 font-semibold capitalize">
-                  {currentUser.role.replace('_', ' ')}
-                </p>
-                <label className={`text-[10px] text-[#385529] dark:text-emerald-400 font-bold hover:underline cursor-pointer inline-flex items-center gap-1 mt-0.5 ${isUploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
-                  {isUploadingAvatar ? (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>Uploading to Server...</span>
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud className="w-3 h-3" />
-                      <span>Upload Photo</span>
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    disabled={isUploadingAvatar}
-                    className="hidden"
-                  />
-                </label>
+                <h2 className="font-serif font-bold text-base text-gray-900 dark:text-white">
+                  {currentUser.full_name}
+                </h2>
+                <div className="flex items-center justify-center space-x-1 text-xs text-gray-500 dark:text-gray-400 pt-0.5">
+                  <span className="capitalize font-bold text-[#385529] dark:text-emerald-400">
+                    {currentUser.role.replace('_', ' ')}
+                  </span>
+                  <span>•</span>
+                  <span>{currentUser.department}</span>
+                </div>
               </div>
             </div>
 
-            {profileSuccess && (
-              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 animate-in fade-in">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Profile updated successfully!</span>
-              </div>
-            )}
-
-            <div className="pt-3 border-t border-gray-100 dark:border-[#2a2b33] space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                  <Hash className="w-3.5 h-3.5 text-gray-400" />
-                  <span>{currentUser.role === 'student' ? 'Roll Number' : 'Faculty / Staff ID'}</span>
-                </span>
-                <span className="font-mono font-bold text-gray-800 dark:text-gray-200">
-                  {currentUser.roll_number ||
-                    (currentUser.role === 'student' ? '160124771129' : 'AI&DS Faculty Counselor')}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-gray-400" />
-                  <span>Department</span>
-                </span>
-                <span className="font-semibold text-gray-800 dark:text-gray-200 text-right truncate max-w-[180px]">
-                  {currentUser.department}
-                </span>
-              </div>
-
-              {currentUser.role === 'student' && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Section & Batch</span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-200">
-                      Section {currentUser.section || '2'} • {currentUser.batch_year}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Faculty Counselor</span>
-                    <span className="font-semibold text-[#385529] dark:text-emerald-400">
-                      {currentUser.mentor_name || 'Dr. Anireddy Srilakshmi'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Entry Category</span>
-                    <span className="font-bold text-[#a16b15] dark:text-amber-400">
-                      {currentUser.is_lateral_entry ? 'Lateral Entry (45 Pts)' : '4-Yr Regular (60 Pts)'}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Edit Information Form */}
-          <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-3">
-            <h3 className="font-serif font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wide">
-              Personal Information
-            </h3>
-
+            {/* Profile Edit Form */}
             <form onSubmit={handleProfileSave} className="space-y-3 text-xs">
+              {profileSuccess && (
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  <span>Profile updated and verified on database!</span>
+                </div>
+              )}
+
+              {profileError && (
+                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 font-bold flex items-center gap-2 border border-rose-200 dark:border-rose-800">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
               <div>
                 <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-                  Full Name
+                  Full Name (Official Roster)
                 </label>
                 <input
                   type="text"
-                  required
+                  disabled
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                  className="w-full px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2e3039] bg-gray-100 dark:bg-[#121214] text-gray-500 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                  Official Email
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={email}
+                  className="w-full px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2e3039] bg-gray-100 dark:bg-[#121214] text-gray-500 cursor-not-allowed"
                 />
               </div>
 
@@ -299,50 +364,63 @@ export default function SettingsPage() {
                   Contact Phone Number
                 </label>
                 <input
-                  type="text"
+                  type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="e.g. 9876543210 (Optional)"
-                  className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-                  Official Email ID
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. 9876543210"
                   className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
                 />
               </div>
 
               {currentUser.role === 'student' && (
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-                    Skills (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={skillsInput}
-                    onChange={(e) => setSkillsInput(e.target.value)}
-                    placeholder="Python, React, TensorFlow, AI"
-                    className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                      Professional Resume URL
+                    </label>
+                    <input
+                      type="url"
+                      value={resumeUrl}
+                      onChange={(e) => setResumeUrl(e.target.value)}
+                      placeholder="https://drive.google.com/..."
+                      className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
+                      Technical Skills (Comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={skillsInput}
+                      onChange={(e) => setSkillsInput(e.target.value)}
+                      placeholder="Python, React, Machine Learning, Java"
+                      className="w-full px-3 py-1.5 rounded-xl border border-gray-300 dark:border-[#2e3039] bg-white dark:bg-[#121214] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#385529]"
+                    />
+                  </div>
+                </>
               )}
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                disabled={isSavingProfile}
+                className="w-full py-2.5 bg-[#385529] hover:bg-[#273e1c] text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center space-x-1.5"
               >
-                Save Profile Changes
+                {isSavingProfile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                <span>Save Profile Changes</span>
               </button>
             </form>
           </div>
+
+          {/* Feedback & Bug Reporting Button */}
+          <button
+            onClick={() => setIsFeedbackOpen(true)}
+            className="w-full py-2.5 bg-white dark:bg-[#1a1b20] hover:bg-gray-50 text-gray-800 dark:text-gray-200 font-bold text-xs rounded-xl border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs transition-all flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <MessageSquare className="w-4 h-4 text-[#385529] dark:text-emerald-400" />
+            <span>Send Feedback or Bug Report</span>
+          </button>
 
           {/* Logout Button */}
           <button
@@ -398,7 +476,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Password Change Card */}
+          {/* Password Change Card (Faculty & Password Accounts) */}
           <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-4">
             <h3 className="font-serif font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
               <Lock className="w-4 h-4 text-[#385529] dark:text-gray-300" />
@@ -407,8 +485,15 @@ export default function SettingsPage() {
 
             {passwordSuccess && (
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                 <span>Password updated successfully!</span>
+              </div>
+            )}
+
+            {passwordError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-2 border border-rose-200 dark:border-rose-800">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{passwordError}</span>
               </div>
             )}
 
@@ -419,7 +504,6 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="password"
-                  required
                   placeholder="••••••••"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -430,7 +514,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-300 mb-1">
-                    New Password
+                    New Password (Min 8 chars)
                   </label>
                   <input
                     type="password"
@@ -459,15 +543,17 @@ export default function SettingsPage() {
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#385529] hover:bg-[#273e1c] dark:bg-[#2a2b33] dark:hover:bg-[#343640] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                  disabled={isSavingPassword}
+                  className="px-5 py-2 bg-[#385529] hover:bg-[#273e1c] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5"
                 >
-                  Update Password
+                  {isSavingPassword ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  <span>Update Password</span>
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Notification Preferences */}
+          {/* Notification Preferences & Web Push */}
           <div className="bg-white dark:bg-[#1a1b20] rounded-2xl p-6 border border-[#e8e3d8] dark:border-[#2c2d36] shadow-xs space-y-3">
             <h3 className="font-serif font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
               <Bell className="w-4 h-4 text-[#a16b15] dark:text-amber-400" />
@@ -475,9 +561,28 @@ export default function SettingsPage() {
             </h3>
 
             <div className="space-y-2.5 pt-1 text-xs">
+              {isPushSupported && (
+                <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36] cursor-pointer">
+                  <div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 block">
+                      Browser Web Push Notifications
+                    </span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      Receive instant desktop/mobile push alerts when certificates are reviewed
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={isPushSubscribed}
+                    onChange={handlePushToggle}
+                    className="w-4 h-4 accent-[#385529] rounded"
+                  />
+                </label>
+              )}
+
               <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#faf9f5] dark:bg-[#121214] border border-[#e8e3d8] dark:border-[#2c2d36] cursor-pointer">
                 <div>
-                  <span className="font-bold text-gray-800 dark:text-gray-200 block">Certificate Review Alerts</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200 block">Certificate Review In-App Alerts</span>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400">Get notified when submissions are verified or rejected</span>
                 </div>
                 <input
@@ -507,6 +612,7 @@ export default function SettingsPage() {
 
       </div>
 
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </div>
   );
 }

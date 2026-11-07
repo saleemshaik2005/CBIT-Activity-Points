@@ -24,8 +24,14 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
-.env
+.env*
+!.env.example
+
+# local sensitive files & provisioning outputs
+.local/
+credentials/
+*.credentials*
+output/
 
 # typescript
 *.tsbuildinfo
@@ -43,4 +49,3 @@ public/uploads/*
 scripts/seed_production_roster.js
 scripts/make_pdf.js
 scratch/
-
